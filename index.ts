@@ -2,11 +2,12 @@ console.log("Hello via Bun!");
 
 const server = Bun.serve<{ socketId: number; username: string }>({
     fetch(req, server) {
-        const usernameFromCookies = req.headers.get("username");
+        console.log(req);
+        const usernameFromHeader = req.headers.get("username");
         const success = server.upgrade(req, {
             data: {
                 socketId: Math.random(),
-                username: usernameFromCookies,
+                username: usernameFromHeader,
             },
         });
         if (success) return undefined;
@@ -28,6 +29,7 @@ const server = Bun.serve<{ socketId: number; username: string }>({
             ws.publish;
         },
     },
+    port: 5555,
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);
