@@ -17,9 +17,19 @@ type Message = {
 };
 
 type MessageBackToClients = {
+    id: string;
     sender: string;
     message: string;
 };
+
+function generateSimpleId() {
+    const id = `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+    console.log("unique id : " + id);
+    
+    return id;
+}
+
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
         const usernameFromHeader = req.headers.get("username");
@@ -62,13 +72,14 @@ function processIncomingMessage(
 
         case "message": {
             const messageBackToClients: MessageBackToClients = {
+                id: generateSimpleId(),
                 sender: ws.data.username,
                 message: messageAsObject.message,
             };
-            console.log(messageBackToClients);
             const messageAsString: string =
                 JSON.stringify(messageBackToClients);
-            ws.publish("the-group-chat", messageAsString);
+            server.publish("the-group-chat", messageAsString);
+            console.log("publish!" + messageBackToClients);
             break;
         }
         default:
