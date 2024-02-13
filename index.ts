@@ -24,7 +24,7 @@ const server = Bun.serve<Websocket>({
         },
         // this is called when a message is received
         async message(ws, message) {
-            processIncomingMessage(server, message, ws);
+            processIncomingMessage(server, message);
         },
     },
     port: 5555,

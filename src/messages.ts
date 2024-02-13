@@ -1,30 +1,31 @@
-import type { Server, ServerWebSocket } from "bun";
+import type { Server } from "bun";
 import { checkIfMessageIsString, generateSimpleId } from "./helper";
-import type { Websocket, Auth, Message, MessageBackToClients } from "./types";
+import { type MessagePayload, PayloadSubType } from "./types";
 
 export function processIncomingMessage(
     server: Server,
-    message: string | Buffer,
-    ws: ServerWebSocket<Websocket>
+    message: string | Buffer
 ) {
-    const messageAsString: string = checkIfMessageIsString(message);
-    const messageAsObject: Auth | Message = JSON.parse(messageAsString);
+    let messageAsString: string = checkIfMessageIsString(message);
+    console.log("messageAsString: " + messageAsString);
+    const messageAsObject: MessagePayload = JSON.parse(messageAsString);
 
     switch (messageAsObject.type) {
-        case "auth":
-            ws.data.username = messageAsObject.username;
+        case PayloadSubType.auth: {
+            // ws.data.username = messageAsObject.;
             break;
+        }
+        case PayloadSubType.message: {
+            // assign a unique id to the message if it does not have one
+            if (messageAsObject.id === undefined) {
+                messageAsObject.id = generateSimpleId();
+                messageAsString = JSON.stringify(messageAsObject);
+            } else {
+                throw new Error("where did this message get its id from?");
+            }
 
-        case "message": {
-            const messageBackToClients: MessageBackToClients = {
-                id: generateSimpleId(),
-                sender: ws.data.username,
-                message: messageAsObject.message,
-            };
-            const messageAsString: string =
-                JSON.stringify(messageBackToClients);
             server.publish("the-group-chat", messageAsString);
-            console.log("publish!" + messageBackToClients);
+            console.log("publish!" + messageAsString);
             break;
         }
         default:
