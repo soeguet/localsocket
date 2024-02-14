@@ -5,6 +5,15 @@ console.log("Hello via Bun!");
 
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
+        const url = new URL(req.url);
+        console.log(url.pathname);
+        if (url.pathname === "/register-user") {
+            const headers = {
+                "Access-Control-Allow-Origin": "*",
+            };
+            return new Response("Home page!", { headers });
+        }
+
         const usernameFromHeader = req.headers.get("username");
         const success = server.upgrade(req, {
             data: {
