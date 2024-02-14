@@ -6,6 +6,11 @@ export type Websocket = {
     username: string;
 };
 
+export type AuthPayload = {
+    type: PayloadSubType.auth;
+    username: string;
+};
+
 /**
  * Represents an authentication object.
  */
@@ -82,3 +87,30 @@ export type MessagePayload = {
     message: MessageType;
     quote?: QuoteType;
 };
+
+/**
+ * Represents a registered user.
+ */
+export type RegisteredUser = {
+    id: string;
+    username: string;
+    clientColor: string;
+    profilePhotoUrl: string;
+};
+
+export type ColorTypes =
+    | "red"
+    | "blue"
+    | "green"
+    | "yellow"
+    | "purple"
+    | "orange"
+    | "gray"
+    | "white"
+    | "black"
+    | "pink"
+    | "teal"
+    | "cyan"
+    | "lime"
+    | "indigo"
+    | "violet";

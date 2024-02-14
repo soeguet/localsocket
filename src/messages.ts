@@ -1,6 +1,6 @@
 import type { Server } from "bun";
 import { checkIfMessageIsString, generateSimpleId } from "./helper";
-import { type MessagePayload, PayloadSubType } from "./types";
+import { type MessagePayload, PayloadSubType } from "./customTypes";
 
 export function processIncomingMessage(
     server: Server,
