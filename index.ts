@@ -1,12 +1,18 @@
-import type { RegisteredUser, UsernameObject, Websocket } from "./src/customTypes";
+import type {
+    RegisteredUser,
+    UsernameObject,
+    Websocket,
+} from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
-import { checkIfUsernameExists, getAllUsers, registerUser } from "./src/userRegister";
+import {
+    getAllUsers,
+    registerUser,
+} from "./src/userRegister";
 
 console.log("Hello via Bun!");
 
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
-
         const headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -26,19 +32,16 @@ const server = Bun.serve<Websocket>({
         ) {
             return req
                 .json()
-                .then(async(data) => {
+                .then(async (data) => {
+                    const dataAsObject: UsernameObject = data as UsernameObject;
 
-                    const dataAsObject:UsernameObject = data as UsernameObject;
+                    await registerUser(dataAsObject.username);
 
-                    const usernameExists = await checkIfUsernameExists(dataAsObject.username);
-
-                    if(!usernameExists){
-                        await registerUser(dataAsObject.username);
-                    }
-                    console.log("usernameExists: " + usernameExists);
-
-                    const mapOfAllRegisteredUsers:Map<string, RegisteredUser> = getAllUsers();
-                    const responseToSend = JSON.stringify(Array.from(mapOfAllRegisteredUsers));
+                    const mapOfAllRegisteredUsers: Map<string, RegisteredUser> =
+                        getAllUsers();
+                    const responseToSend = JSON.stringify(
+                        Array.from(mapOfAllRegisteredUsers)
+                    );
 
                     return new Response(responseToSend, {
                         status: 200,

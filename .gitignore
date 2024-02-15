@@ -176,3 +176,4 @@ dist
 package-lock.json
 bun.lockb
 .vscode
+users.sqlite
