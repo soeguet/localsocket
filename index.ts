@@ -1,12 +1,24 @@
-import type { Websocket } from "./src/customTypes";
+import type { RegisteredUser, UsernameObject, Websocket } from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
+import { checkIfUsernameExists, getAllUsers, registerUser } from "./src/userRegister";
 
 console.log("Hello via Bun!");
 
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
-        const url = new URL(req.url);
-        console.log(url.pathname);
+
+        const headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        };
+
+        // preflight request for CORS
+        if (req.method === "OPTIONS") {
+            return new Response(null, {
+                headers,
+            });
+        }
 
         if (
             req.method === "POST" &&
@@ -14,13 +26,23 @@ const server = Bun.serve<Websocket>({
         ) {
             return req
                 .json()
-                .then((data) => {
-                    console.log(data);
-                    return new Response(JSON.stringify({ status: "success" }), {
+                .then(async(data) => {
+
+                    const dataAsObject:UsernameObject = data as UsernameObject;
+
+                    const usernameExists = await checkIfUsernameExists(dataAsObject.username);
+
+                    if(!usernameExists){
+                        await registerUser(dataAsObject.username);
+                    }
+                    console.log("usernameExists: " + usernameExists);
+
+                    const mapOfAllRegisteredUsers:Map<string, RegisteredUser> = getAllUsers();
+                    const responseToSend = JSON.stringify(Array.from(mapOfAllRegisteredUsers));
+
+                    return new Response(responseToSend, {
                         status: 200,
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
+                        headers,
                     });
                 })
                 .catch((error) => {
@@ -31,9 +53,7 @@ const server = Bun.serve<Websocket>({
                         }),
                         {
                             status: 400,
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
+                            headers,
                         }
                     );
                 });
@@ -49,7 +69,9 @@ const server = Bun.serve<Websocket>({
         if (success) return undefined;
 
         // handle HTTP request normally
-        return new Response("who are you and what do you want?", { status: 404 });
+        return new Response("who are you and what do you want?", {
+            status: 404,
+        });
     },
     websocket: {
         perMessageDeflate: true,

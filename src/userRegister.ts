@@ -1,21 +1,42 @@
 import type { RegisteredUser } from "./customTypes";
-import { generateSimpleId, getRandomColor, getRandomProfilePicUrl } from "./helper";
+import {
+    generateSimpleId,
+    getRandomColor,
+    getRandomProfilePicUrl,
+} from "./helper";
+import { Database } from "bun:sqlite";
+
+const userDb = new Database("users.sqlite", { create: true });
+const createTableSQL = `
+CREATE TABLE IF NOT EXISTS registered_users (
+    id TEXT PRIMARY KEY,
+    user TEXT NOT NULL,
+);`;
+
+userDb.query(createTableSQL);
 
 const userRegister: Map<string, RegisteredUser> = new Map();
 
-export function checkIfUsernameExists(username: string): boolean {
-    return userRegister.has(username);
+export async function checkIfUsernameExists(
+    username: string
+): Promise<boolean> {
+    const map = getAllUsers();
+    map.forEach((value) => {
+        console.log("value.username: " + value.username);
+        console.log("username: " + username);
+        if (value.username === username) {
+            return true;
+        }
+    });
+
+    return false;
 }
 
 export async function registerUser(username: string): Promise<void> {
     const userId = generateSimpleId();
     const randomPhotoUrl = await getRandomProfilePicUrl();
-    userRegister.set(userId, {
-        id: userId,
-        username: username,
-        clientColor: getRandomColor(),
-        profilePhotoUrl: randomPhotoUrl,
-    });
+    const addUser = userDb.query("INSERT INTO registered_users (id, user) VALUES (?, ?);");
+    addUser.all(userId, JSON.stringify({ id: userId, username: username, clientColor: getRandomColor(), profilePhotoUrl: randomPhotoUrl }));
 }
 
 export function getUser(username: string): RegisteredUser | undefined {
