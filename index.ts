@@ -1,13 +1,9 @@
 import type {
-    RegisteredUser,
     UsernameObject,
     Websocket,
 } from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
-import {
-    getAllUsers,
-    registerUser,
-} from "./src/userRegister";
+import { getAllUsers, registerUser } from "./src/userRegister";
 
 console.log("Hello via Bun!");
 
@@ -32,16 +28,18 @@ const server = Bun.serve<Websocket>({
         ) {
             return req
                 .json()
-                .then(async (data) => {
-                    const dataAsObject: UsernameObject = data as UsernameObject;
+                .then(async (data: UsernameObject) => {
+                    console.log(data);
+                    const dataAsObject: UsernameObject = data;
 
                     await registerUser(dataAsObject.username);
 
-                    const mapOfAllRegisteredUsers: Map<string, RegisteredUser> =
-                        getAllUsers();
+                    const arrayOfAllRegisteredUsers = getAllUsers();
                     const responseToSend = JSON.stringify(
-                        Array.from(mapOfAllRegisteredUsers)
+                        arrayOfAllRegisteredUsers
                     );
+
+                    console.log(responseToSend);
 
                     return new Response(responseToSend, {
                         status: 200,

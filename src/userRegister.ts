@@ -51,7 +51,7 @@ async function checkIfDbInUse(): Promise<void> {
 
 /**
  * Registers a user with the given username.
- * 
+ *
  * @param username - The username of the user to register.
  * @returns A Promise that resolves when the user is successfully registered.
  */
@@ -69,7 +69,12 @@ export async function registerUser(username: string): Promise<void> {
     dbInUseFlag = true;
 
     const userId = generateSimpleId();
-    const randomPhotoUrl = await getRandomProfilePicUrl();
+    let randomPhotoUrl = "";
+    try {
+        randomPhotoUrl = await getRandomProfilePicUrl();
+    } catch (error) {
+        console.error(error + " - no photo url found!");
+    }
     const addUserStatement = userDb.query(
         "INSERT INTO registered_users (id, user) VALUES (?, ?);"
     );
@@ -109,16 +114,9 @@ export function deleteUser(clientId: string): void {
     user.run(clientId);
 }
 
-type DbRowType = [id: string, user: string];
-
-export function getAllUsers(): Map<string, RegisteredUser> {
+export function getAllUsers() {
     const allUserStatement = userDb.query("SELECT * FROM registered_users;");
-    const results = allUserStatement.all();
-    const userMap: Map<string, RegisteredUser> = new Map();
-    for (const [id, user] of results as DbRowType[]) {
-        userMap.set(id, JSON.parse(user));
-    }
-    return userMap;
+    return allUserStatement.all();
 }
 
 export function clearAllUsers(): void {

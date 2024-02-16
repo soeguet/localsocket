@@ -56,18 +56,9 @@ export function getRandomColor(): ColorTypes {
 }
 
 export async function getRandomProfilePicUrl() {
-    const response = await fetch("https://picsum.photos/150/150", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-        .then((response) => response.url)
-        .catch((error) => console.error("Error:", error));
-    // void check for response
-    if (!response) {
-        throw new Error("Error fetching profile pic url");
-    }
+    const response = await fetch("https://random.imagecdn.app/150/150/", {
+        redirect: "follow",
+    });
 
-    return response;
+    return response.url;
 }
