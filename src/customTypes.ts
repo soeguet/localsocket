@@ -11,6 +11,7 @@ export type Websocket = {
  */
 export type UsernameObject = {
     username: string;
+    id: string;
 };
 
 export type AuthPayload = {
@@ -104,6 +105,11 @@ export type RegisteredUser = {
     clientColor: string;
     profilePhotoUrl: string;
 };
+
+export type UserDatabaseRow = {
+    id:string;
+    user: RegisteredUser;
+}
 
 export type ColorTypes =
     | "red"

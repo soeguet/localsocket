@@ -1,6 +1,5 @@
 import type { RegisteredUser } from "./customTypes";
 import {
-    generateSimpleId,
     getRandomColor,
     getRandomProfilePicUrl,
 } from "./helper";
@@ -26,11 +25,11 @@ let userDb: Database;
 createDatabase();
 createTable();
 
-export function checkIfUsernameExists(username: string): boolean {
-    const searchQuery = `%${username}%`;
+export function checkIfUsernameExists(clientId: string): boolean {
+    const searchQuery = `%${clientId}%`;
 
     const user = userDb.query(
-        "SELECT * FROM registered_users WHERE user LIKE ?;"
+        "SELECT * FROM registered_users WHERE id = ?;"
     );
     const result = user.all(searchQuery);
     if (result.length > 0) {
@@ -50,17 +49,17 @@ async function checkIfDbInUse(): Promise<void> {
 }
 
 /**
- * Registers a user with the given username.
+ * checks if client id already registered.
  *
- * @param username - The username of the user to register.
+ * @param clientId - The client id of the user to register.
  * @returns A Promise that resolves when the user is successfully registered.
  */
-export async function registerUser(username: string): Promise<void> {
+export async function registerUser(clientId: string, clientUserName:string): Promise<void> {
     // trying to prevent race conditions manually
     await checkIfDbInUse();
 
     // after waiting, check if the username exists in the database
-    const doesUsernameExist = checkIfUsernameExists(username);
+    const doesUsernameExist = checkIfUsernameExists(clientId);
     if (doesUsernameExist) {
         return;
     }
@@ -68,7 +67,6 @@ export async function registerUser(username: string): Promise<void> {
     // block the database for other requests
     dbInUseFlag = true;
 
-    const userId = generateSimpleId();
     let randomPhotoUrl = "";
     try {
         randomPhotoUrl = await getRandomProfilePicUrl();
@@ -79,10 +77,10 @@ export async function registerUser(username: string): Promise<void> {
         "INSERT INTO registered_users (id, user) VALUES (?, ?);"
     );
     addUserStatement.all(
-        userId,
+        clientId,
         JSON.stringify({
-            id: userId,
-            username: username,
+            id: clientId,
+            username: clientUserName,
             clientColor: getRandomColor(),
             profilePhotoUrl: randomPhotoUrl,
         })
@@ -114,9 +112,9 @@ export function deleteUser(clientId: string): void {
     user.run(clientId);
 }
 
-export function getAllUsers() {
+export function getAllUsers(): RegisteredUser[]{
     const allUserStatement = userDb.query("SELECT * FROM registered_users;");
-    return allUserStatement.all();
+    return allUserStatement.all() as RegisteredUser[];
 }
 
 export function clearAllUsers(): void {

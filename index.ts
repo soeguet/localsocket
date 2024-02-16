@@ -1,20 +1,16 @@
-import type {
-    UsernameObject,
-    Websocket,
-} from "./src/customTypes";
+import { handleRegisterUserPostRequest } from "./src/api/post";
+import type { Websocket } from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
-import { getAllUsers, registerUser } from "./src/userRegister";
 
 console.log("Hello via Bun!");
+const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+} as Bun.HeadersInit;
 
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
-        const headers = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        };
-
         // preflight request for CORS
         if (req.method === "OPTIONS") {
             return new Response(null, {
@@ -22,54 +18,21 @@ const server = Bun.serve<Websocket>({
             });
         }
 
+        // handle POST request for user registration
         if (
             req.method === "POST" &&
             new URL(req.url).pathname === "/register-user"
         ) {
-            return req
-                .json()
-                .then(async (data: UsernameObject) => {
-                    console.log(data);
-                    const dataAsObject: UsernameObject = data;
-
-                    await registerUser(dataAsObject.username);
-
-                    const arrayOfAllRegisteredUsers = getAllUsers();
-                    const responseToSend = JSON.stringify(
-                        arrayOfAllRegisteredUsers
-                    );
-
-                    console.log(responseToSend);
-
-                    return new Response(responseToSend, {
-                        status: 200,
-                        headers,
-                    });
-                })
-                .catch((error) => {
-                    return new Response(
-                        JSON.stringify({
-                            status: "error",
-                            message: error.message,
-                        }),
-                        {
-                            status: 400,
-                            headers,
-                        }
-                    );
-                });
+            handleRegisterUserPostRequest(req, headers);
         }
 
-        const usernameFromHeader = req.headers.get("username");
-        const success = server.upgrade(req, {
-            data: {
-                socketId: Math.random(),
-                username: usernameFromHeader,
-            },
-        });
-        if (success) return undefined;
+        // handle websocket upgrade
+        if (new URL(req.url).pathname === "/chat") {
+            const success = server.upgrade(req);
+            if (success) return undefined;
+        }
 
-        // handle HTTP request normally
+        // handle HTTP request normally -> if nothing matches -> 404
         return new Response("who are you and what do you want?", {
             status: 404,
         });
