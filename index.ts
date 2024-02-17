@@ -1,12 +1,12 @@
-import { handleRegisterUserPostRequest } from "./src/api/post";
 import type { Websocket } from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
 
 console.log("Hello via Bun!");
-const headers:HeadersInit = {
+const headers: HeadersInit = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+    "Access-Control-Allow-Headers":
+        "Origin, X-Requested-With, Content-Type, Accept",
 };
 
 const server = Bun.serve<Websocket>({
@@ -19,12 +19,12 @@ const server = Bun.serve<Websocket>({
         }
 
         // handle POST request for user registration
-        if (
-            req.method === "POST" &&
-            new URL(req.url).pathname === "/register-user"
-        ) {
-            return handleRegisterUserPostRequest(req, headers);
-        }
+        // if (
+        //     req.method === "POST" &&
+        //     new URL(req.url).pathname === "/register-user"
+        // ) {
+        //     return handleRegisterUserPostRequest(req, headers);
+        // }
 
         // handle websocket upgrade
         if (new URL(req.url).pathname === "/chat") {
@@ -44,7 +44,7 @@ const server = Bun.serve<Websocket>({
         },
         // this is called when a message is received
         async message(ws, message) {
-            processIncomingMessage(server, message);
+            processIncomingMessage(ws, server, message);
         },
     },
     port: 5555,

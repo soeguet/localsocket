@@ -51,6 +51,7 @@ export type MessageBackToClients = {
 export enum PayloadSubType {
     auth,
     message,
+    clientList,
 }
 
 /**
@@ -108,9 +109,14 @@ export type RegisteredUser = {
 };
 
 export type UserDatabaseRow = {
-    id:string;
+    id: string;
     user: RegisteredUser;
-}
+};
+
+export type ClientListPayload = {
+    type: PayloadSubType.clientList;
+    clients: string;
+};
 
 export type ColorTypes =
     | "red"

@@ -1,20 +1,26 @@
-import type { Server } from "bun";
+import type { Server, ServerWebSocket } from "bun";
 import { checkIfMessageIsString, generateSimpleId } from "./helper";
-import { type MessagePayload, PayloadSubType } from "./customTypes";
+import {
+    PayloadSubType,
+    type UsernameObject,
+    type Websocket,
+} from "./customTypes";
+import { deliverArrayOfUsersToNewClient, registerUserv2 } from "./userRegister";
 
 export function processIncomingMessage(
+    ws: ServerWebSocket<Websocket>,
     server: Server,
     message: string | Buffer
 ) {
     let messageAsString: string = checkIfMessageIsString(message);
-    console.log("messageAsString: " + messageAsString);
-    const messageAsObject: MessagePayload = JSON.parse(messageAsString);
+
+    // at this point we dont know the actual type of the message
+    const messageAsObject = JSON.parse(messageAsString);
 
     switch (messageAsObject.type) {
         case PayloadSubType.auth: {
-            // ws.data.username = messageAsObject.;
-            console.log("auth message");
-            console.log(message);
+            registerUserv2(messageAsObject as UsernameObject);
+            deliverArrayOfUsersToNewClient(ws);
             break;
         }
         case PayloadSubType.message: {
