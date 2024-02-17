@@ -1,11 +1,13 @@
 import type { UsernameObject, RegisteredUser } from "../customTypes";
 import { registerUser, getAllUsers } from "../userRegister";
 
-export async function handleRegisterUserPostRequest(req:Request, headers:Bun.HeadersInit): Promise<Response> {
+export async function handleRegisterUserPostRequest(
+    req: Request,
+    headers: HeadersInit
+): Promise<Response> {
     return req
         .json()
         .then(async (data) => {
-            console.log("data: " + data);
             const dataAsObject: UsernameObject = data as UsernameObject;
 
             await registerUser(dataAsObject.id, dataAsObject.username);
@@ -23,8 +25,14 @@ export async function handleRegisterUserPostRequest(req:Request, headers:Bun.Hea
             });
         })
         .catch((error) => {
-            const body = JSON.stringify({ status: "error", message: error.message, });
-            const init = { status: 400, headers };
-            return new Response( body, init);
+            const arrayOfAllRegisteredUsers: RegisteredUser[] = getAllUsers();
+            const allRegisteredUsersArrayAsString = JSON.stringify(
+                arrayOfAllRegisteredUsers
+            );
+            const body = allRegisteredUsersArrayAsString;
+            console.log("error: " + error.message);
+            console.log(body);
+            const init = { status: 202, headers };
+            return new Response(body, init);
         });
 }

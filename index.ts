@@ -3,11 +3,11 @@ import type { Websocket } from "./src/customTypes";
 import { processIncomingMessage } from "./src/messages";
 
 console.log("Hello via Bun!");
-const headers = {
+const headers:HeadersInit = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
-} as Bun.HeadersInit;
+};
 
 const server = Bun.serve<Websocket>({
     fetch(req, server) {
@@ -23,7 +23,7 @@ const server = Bun.serve<Websocket>({
             req.method === "POST" &&
             new URL(req.url).pathname === "/register-user"
         ) {
-            handleRegisterUserPostRequest(req, headers);
+            return handleRegisterUserPostRequest(req, headers);
         }
 
         // handle websocket upgrade

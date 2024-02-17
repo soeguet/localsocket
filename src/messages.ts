@@ -13,6 +13,8 @@ export function processIncomingMessage(
     switch (messageAsObject.type) {
         case PayloadSubType.auth: {
             // ws.data.username = messageAsObject.;
+            console.log("auth message");
+            console.log(message);
             break;
         }
         case PayloadSubType.message: {

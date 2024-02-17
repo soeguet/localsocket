@@ -10,6 +10,7 @@ export type Websocket = {
  * Represents an object containing a username. This one comes from the client as a POST request onOpen.
  */
 export type UsernameObject = {
+    type: PayloadSubType;
     username: string;
     id: string;
 };
