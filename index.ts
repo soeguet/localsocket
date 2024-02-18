@@ -18,14 +18,6 @@ const server = Bun.serve<Websocket>({
             });
         }
 
-        // handle POST request for user registration
-        // if (
-        //     req.method === "POST" &&
-        //     new URL(req.url).pathname === "/register-user"
-        // ) {
-        //     return handleRegisterUserPostRequest(req, headers);
-        // }
-
         // handle websocket upgrade
         if (new URL(req.url).pathname === "/chat") {
             const success = server.upgrade(req);

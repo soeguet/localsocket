@@ -64,51 +64,6 @@ async function checkIfDbInUse(): Promise<void> {
     }
 }
 
-/**
- * Registers a user in the database.
- * @param clientId The client ID of the user.
- * @param clientUserName The username of the user.
- * @returns {Promise<void>} A promise that resolves when the user is registered.
- */
-export async function registerUser(
-    clientId: string,
-    clientUserName: string
-): Promise<void> {
-    // trying to prevent race conditions manually
-    await checkIfDbInUse();
-
-    // after waiting, check if the username exists in the database
-    const doesUsernameExist = checkIfUsernameExists(clientId);
-    if (doesUsernameExist) {
-        return;
-    }
-
-    // block the database for other requests
-    dbInUseFlag = true;
-
-    let randomPhotoUrl = "";
-    try {
-        randomPhotoUrl = await getRandomProfilePicUrl();
-    } catch (error) {
-        console.error(error + " - no photo url found!");
-    }
-    const addUserStatement = userDb.query(
-        "INSERT INTO registered_users (id, user) VALUES (?, ?);"
-    );
-    addUserStatement.all(
-        clientId,
-        JSON.stringify({
-            id: clientId,
-            username: clientUserName,
-            clientColor: getRandomColor(),
-            profilePhotoUrl: randomPhotoUrl,
-        })
-    );
-
-    // release the database
-    dbInUseFlag = false;
-}
-
 export async function registerUserv2(
     usernameObject: UsernameObject
 ): Promise<void> {
