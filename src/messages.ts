@@ -2,10 +2,16 @@ import type { Server, ServerWebSocket } from "bun";
 import { checkIfMessageIsString, generateSimpleId } from "./helper";
 import {
     PayloadSubType,
+    type ProfileUpdatePayload,
     type UsernameObject,
     type Websocket,
 } from "./customTypes";
-import { deliverArrayOfUsersToNewClient, registerUserv2 } from "./userRegister";
+import {
+    deliverArrayOfUsersToNewClient,
+    getAllUsers,
+    registerUserv2,
+    updateUser,
+} from "./userRegister";
 
 export function processIncomingMessage(
     ws: ServerWebSocket<Websocket>,
@@ -23,6 +29,7 @@ export function processIncomingMessage(
             deliverArrayOfUsersToNewClient(ws);
             break;
         }
+
         case PayloadSubType.message: {
             // assign a unique id to the message if it does not have one
             if (messageAsObject.id === undefined) {
@@ -33,11 +40,26 @@ export function processIncomingMessage(
             }
 
             server.publish("the-group-chat", messageAsString);
-            console.log("publish!" + messageAsString);
             break;
         }
-        default:
-            console.log("unknown message type");
+
+        case PayloadSubType.profileUpdate: {
+            const { clientId, pictureUrl } =
+                messageAsObject as ProfileUpdatePayload;
+            updateUser(clientId, pictureUrl);
+            getAllUsers();
+
             break;
+        }
+
+        case PayloadSubType.clientList: {
+            console.log("clientList");
+            break;
+        }
+
+        default: {
+            console.log("default");
+            break;
+        }
     }
 }

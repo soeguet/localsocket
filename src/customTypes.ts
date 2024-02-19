@@ -52,7 +52,14 @@ export enum PayloadSubType {
     auth,
     message,
     clientList,
+    profileUpdate,
 }
+
+export type ProfileUpdatePayload = {
+    type: PayloadSubType.profileUpdate;
+    clientId: string;
+    pictureUrl: string;
+};
 
 /**
  * Represents a user.

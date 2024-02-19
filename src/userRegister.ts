@@ -1,4 +1,4 @@
-import type { ServerWebSocket } from "bun";
+import type { Server, ServerWebSocket } from "bun";
 import { Database } from "bun:sqlite";
 import {
     PayloadSubType,
@@ -7,7 +7,7 @@ import {
     type UsernameObject,
     type Websocket,
 } from "./customTypes";
-import { getRandomColor, getRandomProfilePicUrl } from "./helper";
+import { getRandomColor } from "./helper";
 
 let dbInUseFlag = false;
 
@@ -120,8 +120,18 @@ export function deliverArrayOfUsersToNewClient(
         type: PayloadSubType.clientList,
         clients: JSON.stringify(allUsers),
     };
-    console.log("send!{}" + JSON.stringify(allUsersString));
+    console.log("send list of all user to new Client!{}");
     ws.send(JSON.stringify(allUsersString));
+}
+
+export function deliverUpdatedArrayOfUsersToAllClients(server: Server): void {
+    const allUsers: RegisteredUser[] = getAllUsers();
+    const allUsersString: ClientListPayload = {
+        type: PayloadSubType.clientList,
+        clients: JSON.stringify(allUsers),
+    };
+    console.log("send list of all user to All!{}");
+    server.publish("the-group-chat", JSON.stringify(allUsersString));
 }
 
 /**
@@ -129,12 +139,20 @@ export function deliverArrayOfUsersToNewClient(
  * @param clientId The client ID of the user.
  * @returns The registered user object, or undefined if not found.
  */
-export function getUser(clientId: string): RegisteredUser | undefined {
-    // .get() gets the first result only! no need to check for more results
-    const user = userDb.query("SELECT * FROM registered_users WHERE id = ?;");
-    const result = user.get(clientId);
-
-    return JSON.parse(result as string);
+export function getUser(clientId: string): RegisteredUser | null {
+    try {
+        // .get() gets the first result only! no need to check for more results
+        const user = userDb.query(
+            "SELECT * FROM registered_users WHERE id = ?;"
+        );
+        const result: RegisteredUser | null = user.get(
+            clientId
+        ) as RegisteredUser | null;
+        return result;
+    } catch (error) {
+        console.error(error);
+    }
+    return null;
 }
 
 /**
@@ -190,9 +208,9 @@ export function updateUser(
     clientColor?: string,
     profilePhotoUrl?: string
 ): boolean {
-    const user = getUser(id);
+    const user: RegisteredUser | null = getUser(id);
 
-    if (user === undefined) {
+    if (user === null) {
         throw new Error("User not found");
     }
 
