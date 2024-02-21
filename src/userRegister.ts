@@ -6,6 +6,8 @@ import {
     type RegisteredUser,
     type UsernameObject,
     type Websocket,
+    type UserDatabaseRowPre,
+    type UserDatabaseRow,
 } from "./customTypes";
 import { getRandomColor } from "./helper";
 
@@ -81,24 +83,20 @@ export async function registerUserv2(
     dbInUseFlag = true;
 
     const randomPhotoUrl = "";
-    // try {
-    //     randomPhotoUrl = await getRandomProfilePicUrl();
-    // } catch (error) {
-    //     console.error(error + " - no photo url found!");
-    // }
+    const client: RegisteredUser = {
+        id: usernameObject.id,
+        username: usernameObject.username,
+        clientColor: getRandomColor(),
+        profilePhotoUrl: randomPhotoUrl,
+    };
+    const clientString = JSON.stringify(client);
+
     const addUserStatement = userDb.query(
         "INSERT INTO registered_users (id, user) VALUES (?, ?);"
     );
     try {
-        addUserStatement.run(
-            usernameObject.id,
-            JSON.stringify({
-                id: usernameObject.id,
-                username: usernameObject.username,
-                clientColor: getRandomColor(),
-                profilePhotoUrl: randomPhotoUrl,
-            })
-        );
+        // insert values into the database
+        addUserStatement.run(usernameObject.id, clientString);
     } catch (error) {
         console.error(error);
     }
@@ -115,23 +113,35 @@ export async function registerUserv2(
 export function deliverArrayOfUsersToNewClient(
     ws: ServerWebSocket<Websocket>
 ): void {
-    const allUsers: RegisteredUser[] = getAllUsers();
-    const allUsersString: ClientListPayload = {
+    const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
+    const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
+        return {
+            id: user.id,
+            user: JSON.parse(user.user) as RegisteredUser,
+        };
+    });
+    const allUsersObject: ClientListPayload = {
         type: PayloadSubType.clientList,
-        clients: JSON.stringify(allUsers),
+        clients: allUsers,
     };
     console.log("send list of all user to new Client!{}");
-    ws.send(JSON.stringify(allUsersString));
+    ws.send(JSON.stringify(allUsersObject));
 }
 
 export function deliverUpdatedArrayOfUsersToAllClients(server: Server): void {
-    const allUsers: RegisteredUser[] = getAllUsers();
-    const allUsersString: ClientListPayload = {
+    const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
+    const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
+        return {
+            id: user.id,
+            user: JSON.parse(user.user) as RegisteredUser,
+        };
+    });
+    const allUsersObject: ClientListPayload = {
         type: PayloadSubType.clientList,
-        clients: JSON.stringify(allUsers),
+        clients: allUsers,
     };
     console.log("send list of all user to All!{}");
-    server.publish("the-group-chat", JSON.stringify(allUsersString));
+    server.publish("the-group-chat", JSON.stringify(allUsersObject));
 }
 
 /**
@@ -169,9 +179,9 @@ export function deleteUser(clientId: string): void {
  * @returns An array of all registered users.
  * @type {RegisteredUser[]}
  */
-export function getAllUsers(): RegisteredUser[] {
+export function getAllUsers(): UserDatabaseRowPre[] {
     const allUserStatement = userDb.query("SELECT * FROM registered_users;");
-    return allUserStatement.all() as RegisteredUser[];
+    return allUserStatement.all() as UserDatabaseRowPre[];
 }
 
 /**

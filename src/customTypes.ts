@@ -115,14 +115,18 @@ export type RegisteredUser = {
     profilePhotoUrl: string;
 };
 
+export type UserDatabaseRowPre = {
+    id: string;
+    user: string;
+};
 export type UserDatabaseRow = {
     id: string;
     user: RegisteredUser;
 };
 
 export type ClientListPayload = {
-    type: PayloadSubType.clientList;
-    clients: string;
+    type: PayloadSubType;
+    clients: UserDatabaseRow[];
 };
 
 export type ColorTypes =
