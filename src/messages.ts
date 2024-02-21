@@ -8,7 +8,6 @@ import {
 } from "./customTypes";
 import {
     deliverArrayOfUsersToNewClient,
-    getAllUsers,
     registerUserv2,
     updateUser,
 } from "./userRegister";
@@ -47,8 +46,7 @@ export function processIncomingMessage(
             const { clientId, pictureUrl } =
                 messageAsObject as ProfileUpdatePayload;
             updateUser(clientId, pictureUrl);
-            getAllUsers();
-
+            deliverArrayOfUsersToNewClient(ws);
             break;
         }
 
