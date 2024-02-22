@@ -113,13 +113,18 @@ export async function registerUserv2(
 export function deliverArrayOfUsersToNewClient(
     ws: ServerWebSocket<Websocket>
 ): void {
+    // returns [{string, string}, {string, string}, ...]
     const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
+
+    // returns [{string, RegisteredUser}, {string, RegisteredUser}, ...]
     const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
         return {
             id: user.id,
             user: JSON.parse(user.user) as RegisteredUser,
         };
     });
+
+    // type: PayloadSubType; clients: UserDatabaseRow[];
     const allUsersObject: ClientListPayload = {
         type: PayloadSubType.clientList,
         clients: allUsers,
@@ -181,6 +186,7 @@ export function deleteUser(clientId: string): void {
  */
 export function getAllUsers(): UserDatabaseRowPre[] {
     const allUserStatement = userDb.query("SELECT * FROM registered_users;");
+    // returns [{string, string}, {string, string}, ...]
     return allUserStatement.all() as UserDatabaseRowPre[];
 }
 
