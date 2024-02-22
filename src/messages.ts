@@ -3,7 +3,6 @@ import { checkIfMessageIsString, generateSimpleId } from "./helper";
 import {
     PayloadSubType,
     type ProfileUpdatePayload,
-    type UsernameObject,
     type Websocket,
 } from "./customTypes";
 import {
@@ -24,7 +23,7 @@ export function processIncomingMessage(
 
     switch (messageAsObject.type) {
         case PayloadSubType.auth: {
-            registerUserv2(messageAsObject as UsernameObject);
+            registerUserv2(messageAsString);
             deliverArrayOfUsersToNewClient(ws);
             break;
         }
@@ -45,7 +44,7 @@ export function processIncomingMessage(
         case PayloadSubType.profileUpdate: {
             const { clientId, pictureUrl } =
                 messageAsObject as ProfileUpdatePayload;
-            updateUser(clientId, pictureUrl);
+            updateUser(clientId, undefined, undefined, pictureUrl);
             deliverArrayOfUsersToNewClient(ws);
             break;
         }

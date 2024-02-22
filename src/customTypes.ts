@@ -6,6 +6,11 @@ export type Websocket = {
     username: string;
 };
 
+export type AuthenticationPayload = {
+    type: PayloadSubType.auth;
+    username: string;
+    clientId: string;
+};
 /**
  * Represents an object containing a username. This one comes from the client as a POST request onOpen.
  */

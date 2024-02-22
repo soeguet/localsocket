@@ -1,13 +1,11 @@
 import type { Server, ServerWebSocket } from "bun";
 import { Database } from "bun:sqlite";
 import {
-    PayloadSubType,
-    type ClientListPayload,
     type RegisteredUser,
-    type UsernameObject,
     type Websocket,
     type UserDatabaseRowPre,
-    type UserDatabaseRow,
+    type AuthenticationPayload,
+    PayloadSubType,
 } from "./customTypes";
 import { getRandomColor } from "./helper";
 
@@ -29,7 +27,9 @@ function createTable(): void {
     const createTableSQL = `
         CREATE TABLE IF NOT EXISTS registered_users (
             id TEXT PRIMARY KEY,
-            user TEXT NOT NULL
+            username TEXT NOT NULL,
+            clientColor TEXT,
+            profilePhotoUrl TEXT
         );`;
 
     const statement = userDb.query(createTableSQL);
@@ -45,7 +45,7 @@ createTable();
  * @param clientId The client ID of the user.
  * @returns True if the username exists, false otherwise.
  */
-export function checkIfUsernameExists(clientId: string): boolean {
+export function checkIfUserExists(clientId: string): boolean {
     const searchQuery = `%${clientId}%`;
 
     const user = userDb.query("SELECT * FROM registered_users WHERE id = ?;");
@@ -66,15 +66,15 @@ async function checkIfDbInUse(): Promise<void> {
     }
 }
 
-export async function registerUserv2(
-    usernameObject: UsernameObject
-): Promise<void> {
+export async function registerUserv2(payload: string): Promise<void> {
     // trying to prevent race conditions manually
     await checkIfDbInUse();
 
+    const authenticationPayload: AuthenticationPayload = JSON.parse(payload);
+
     // after waiting, check if the username exists in the database
-    // const doesUsernameExist = checkIfUsernameExists(clientId);
-    const doesUserIdExist = checkIfIdExists(usernameObject.id);
+    // const doesUsernameExist = checkIfUserExists(clientId);
+    const doesUserIdExist = checkIfIdExists(authenticationPayload.clientId);
     if (doesUserIdExist) {
         return;
     }
@@ -82,21 +82,17 @@ export async function registerUserv2(
     // block the database for other requests
     dbInUseFlag = true;
 
-    const randomPhotoUrl = "";
-    const client: RegisteredUser = {
-        id: usernameObject.id,
-        username: usernameObject.username,
-        clientColor: getRandomColor(),
-        profilePhotoUrl: randomPhotoUrl,
-    };
-    const clientString = JSON.stringify(client);
-
     const addUserStatement = userDb.query(
-        "INSERT INTO registered_users (id, user) VALUES (?, ?);"
+        "INSERT INTO registered_users (id, username, clientColor, profilePhotoUrl) VALUES (?, ?, ?, ?);"
     );
     try {
         // insert values into the database
-        addUserStatement.run(usernameObject.id, clientString);
+        addUserStatement.run(
+            authenticationPayload.clientId,
+            authenticationPayload.username,
+            "",
+            ""
+        );
     } catch (error) {
         console.error(error);
     }
@@ -114,39 +110,34 @@ export function deliverArrayOfUsersToNewClient(
     ws: ServerWebSocket<Websocket>
 ): void {
     // returns [{string, string}, {string, string}, ...]
-    const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
+    const allUsersPre: RegisteredUser[] = getAllUsers();
 
-    // returns [{string, RegisteredUser}, {string, RegisteredUser}, ...]
-    const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
-        return {
-            id: user.id,
-            user: JSON.parse(user.user) as RegisteredUser,
-        };
-    });
+    if (allUsersPre === undefined) {
+        throw new Error("No users found");
+    }
 
-    // type: PayloadSubType; clients: UserDatabaseRow[];
-    const allUsersObject: ClientListPayload = {
-        type: PayloadSubType.clientList,
-        clients: allUsers,
-    };
-    console.log("send list of all user to new Client!{}");
-    ws.send(JSON.stringify(allUsersObject));
+    ws.send(
+        JSON.stringify({
+            type: PayloadSubType.clientList,
+            clients: allUsersPre,
+        })
+    );
 }
 
 export function deliverUpdatedArrayOfUsersToAllClients(server: Server): void {
     const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
-    const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
-        return {
-            id: user.id,
-            user: JSON.parse(user.user) as RegisteredUser,
-        };
-    });
-    const allUsersObject: ClientListPayload = {
-        type: PayloadSubType.clientList,
-        clients: allUsers,
-    };
-    console.log("send list of all user to All!{}");
-    server.publish("the-group-chat", JSON.stringify(allUsersObject));
+    // const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
+    //     return {
+    //         id: user.id,
+    //         user: JSON.parse(user.user) as RegisteredUser,
+    //     };
+    // });
+    // const allUsersObject: ClientListPayload = {
+    //     type: PayloadSubType.clientList,
+    //     clients: allUsers,
+    // };
+    // console.log("send list of all user to All!{}");
+    // server.publish("the-group-chat", JSON.stringify(allUsersObject));
 }
 
 /**
@@ -179,15 +170,26 @@ export function deleteUser(clientId: string): void {
     user.run(clientId);
 }
 
-/**
- * Retrieves all registered users from the database.
- * @returns An array of all registered users.
- * @type {RegisteredUser[]}
- */
-export function getAllUsers(): UserDatabaseRowPre[] {
-    const allUserStatement = userDb.query("SELECT * FROM registered_users;");
-    // returns [{string, string}, {string, string}, ...]
-    return allUserStatement.all() as UserDatabaseRowPre[];
+export function getAllUsers() {
+    try {
+        const statement = userDb.query("SELECT * FROM registered_users;");
+        const allUsers = statement.all();
+
+        const allRegisteredUsers: RegisteredUser[] = allUsers.map((user) => {
+            const registeredUser: RegisteredUser = {
+                id: (user as RegisteredUser).id,
+                username: (user as RegisteredUser).username,
+                clientColor: (user as RegisteredUser).clientColor,
+                profilePhotoUrl: (user as RegisteredUser).profilePhotoUrl,
+            };
+
+            return registeredUser;
+        });
+        console.log("getAllUsers", allRegisteredUsers);
+        return allRegisteredUsers as RegisteredUser[];
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 /**
@@ -238,10 +240,16 @@ export function updateUser(
         return false;
     }
 
+    // "INSERT INTO registered_users (id, username, clientColor, profilePhotoUrl) VALUES (?, ?, ?, ?);"
     const updateUserStatement = userDb.query(
-        "UPDATE registered_users SET user = ? WHERE id = ?;"
+        "UPDATE registered_users SET username = ?, clientColor = ?, profilePhotoUrl = ? WHERE id = ?;"
     );
-    updateUserStatement.run(JSON.stringify(user), id);
+    updateUserStatement.run(
+        user.username,
+        user.clientColor,
+        user.profilePhotoUrl,
+        id
+    );
 
     return true;
 }
