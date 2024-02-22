@@ -63,6 +63,8 @@ export enum PayloadSubType {
 export type ProfileUpdatePayload = {
     type: PayloadSubType.profileUpdate;
     clientId: string;
+    username: string;
+    color: string;
     pictureUrl: string;
 };
 

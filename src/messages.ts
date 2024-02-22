@@ -42,9 +42,9 @@ export function processIncomingMessage(
         }
 
         case PayloadSubType.profileUpdate: {
-            const { clientId, pictureUrl } =
+            const { clientId, username, color, pictureUrl } =
                 messageAsObject as ProfileUpdatePayload;
-            updateUser(clientId, undefined, undefined, pictureUrl);
+            updateUser(clientId, username, color, pictureUrl);
             deliverArrayOfUsersToNewClient(ws);
             break;
         }
