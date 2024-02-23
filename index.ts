@@ -1,4 +1,10 @@
-import type { Websocket } from "./src/customTypes";
+import type { ServerWebSocket } from "bun";
+import {
+    PayloadSubType,
+    type MessagePayload,
+    type Websocket,
+} from "./src/customTypes";
+import { retrieveLast100Messages } from "./src/messageRegister";
 import { processIncomingMessage } from "./src/messages";
 
 console.log("Hello via Bun!");
@@ -31,11 +37,24 @@ const server = Bun.serve<Websocket>({
     },
     websocket: {
         perMessageDeflate: true,
-        open(ws) {
+        open(ws: ServerWebSocket<Websocket>) {
             ws.subscribe("the-group-chat");
+
+            const lastMessages: MessagePayload[] = retrieveLast100Messages();
+            const last100Reversed = lastMessages.slice(-100).reverse();
+
+            const messageListPayload = {
+                payloadType: PayloadSubType.messageList,
+                messageList: last100Reversed,
+            };
+
+            ws.send(JSON.stringify(messageListPayload));
         },
         // this is called when a message is received
-        async message(ws, message) {
+        async message(
+            ws: ServerWebSocket<Websocket>,
+            message: string | Buffer
+        ) {
             processIncomingMessage(ws, server, message);
         },
     },

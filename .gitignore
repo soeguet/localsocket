@@ -177,3 +177,4 @@ package-lock.json
 bun.lockb
 .vscode
 users.sqlite
+messages.sqlite

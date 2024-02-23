@@ -7,21 +7,21 @@ export type Websocket = {
 };
 
 export type AuthenticationPayload = {
-    type: PayloadSubType.auth;
-    username: string;
+    payloadType: PayloadSubType.auth;
+    clientUsername: string;
     clientId: string;
 };
 /**
  * Represents an object containing a username. This one comes from the client as a POST request onOpen.
  */
 export type UsernameObject = {
-    type: PayloadSubType;
+    payloadType: PayloadSubType;
     username: string;
     id: string;
 };
 
 export type AuthPayload = {
-    type: PayloadSubType.auth;
+    payloadType: PayloadSubType.auth;
     username: string;
 };
 
@@ -29,7 +29,7 @@ export type AuthPayload = {
  * Represents an authentication object.
  */
 export type Auth = {
-    type: "auth";
+    payloadType: "auth";
     username: string;
 };
 
@@ -37,7 +37,7 @@ export type Auth = {
  * Represents a message object.
  */
 export type Message = {
-    type: "message";
+    payloadType: "message";
     message: string;
 };
 
@@ -50,18 +50,8 @@ export type MessageBackToClients = {
     message: string;
 };
 
-/**
- * Represents the subtypes of a payload.
- */
-export enum PayloadSubType {
-    auth,
-    message,
-    clientList,
-    profileUpdate,
-}
-
 export type ProfileUpdatePayload = {
-    type: PayloadSubType.profileUpdate;
+    payloadType: PayloadSubType.profileUpdate;
     clientId: string;
     username: string;
     color: string;
@@ -69,47 +59,41 @@ export type ProfileUpdatePayload = {
 };
 
 /**
- * Represents a user.
- */
-export type UserType = {
-    username: string;
-    isUser: boolean;
-    profilePhoto: string;
-};
-
-/**
  * Represents the payload type.
  */
 export type PayloadType = {
-    type: PayloadSubType;
+    payloadType: PayloadSubType;
 };
 
-/**
- * Represents a message with its content and timestamp.
- */
+export enum PayloadSubType {
+    auth,
+    message,
+    clientList,
+    profileUpdate,
+    messageList,
+}
+export type UserType = {
+    clientId: string;
+    clientUsername: string;
+    clientProfilePhoto: string;
+};
 export type MessageType = {
-    message: string;
+    messageId: string;
+    messageSenderId: string;
     time: string;
+    message: string;
 };
-
-/**
- * Represents a quote with its message, time, and sender.
- */
 export type QuoteType = {
-    message: string;
-    time: string;
-    sender: string;
+    quoteId: string;
+    quoteSenderId: string;
+    quoteMessage: string;
+    quoteTime: string;
 };
-
-/**
- * Represents the payload of a message.
- */
 export type MessagePayload = {
-    id?: string;
-    type: PayloadSubType;
-    user: UserType;
-    message: MessageType;
-    quote?: QuoteType;
+    payloadType: PayloadSubType;
+    userType: UserType;
+    messageType: MessageType;
+    quoteType?: QuoteType;
 };
 
 /**
@@ -132,7 +116,7 @@ export type UserDatabaseRow = {
 };
 
 export type ClientListPayload = {
-    type: PayloadSubType;
+    payloadType: PayloadSubType;
     clients: UserDatabaseRow[];
 };
 

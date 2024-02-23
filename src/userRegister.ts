@@ -7,7 +7,6 @@ import {
     type AuthenticationPayload,
     PayloadSubType,
 } from "./customTypes";
-import { getRandomColor } from "./helper";
 
 let dbInUseFlag = false;
 
@@ -89,7 +88,7 @@ export async function registerUserv2(payload: string): Promise<void> {
         // insert values into the database
         addUserStatement.run(
             authenticationPayload.clientId,
-            authenticationPayload.username,
+            authenticationPayload.clientUsername,
             "",
             ""
         );
@@ -118,7 +117,7 @@ export function deliverArrayOfUsersToNewClient(
 
     ws.send(
         JSON.stringify({
-            type: PayloadSubType.clientList,
+            payloadType: PayloadSubType.clientList,
             clients: allUsersPre,
         })
     );
@@ -185,7 +184,7 @@ export function getAllUsers() {
 
             return registeredUser;
         });
-        console.log("getAllUsers", allRegisteredUsers);
+        // console.log("getAllUsers", allRegisteredUsers);
         return allRegisteredUsers as RegisteredUser[];
     } catch (error) {
         console.error(error);

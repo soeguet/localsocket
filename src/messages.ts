@@ -2,6 +2,7 @@ import type { Server, ServerWebSocket } from "bun";
 import { checkIfMessageIsString, generateSimpleId } from "./helper";
 import {
     PayloadSubType,
+    type MessagePayload,
     type ProfileUpdatePayload,
     type Websocket,
 } from "./customTypes";
@@ -10,18 +11,21 @@ import {
     registerUserv2,
     updateUser,
 } from "./userRegister";
+import { persistIncomingMessage } from "./messageRegister";
 
 export function processIncomingMessage(
     ws: ServerWebSocket<Websocket>,
     server: Server,
     message: string | Buffer
 ) {
-    let messageAsString: string = checkIfMessageIsString(message);
+    const messageAsString: string = checkIfMessageIsString(message);
 
     // at this point we dont know the actual type of the message
-    const messageAsObject = JSON.parse(messageAsString);
+    const messageAsObject = JSON.parse(messageAsString) as MessagePayload;
 
-    switch (messageAsObject.type) {
+    console.log("messageAsObject TYPE", messageAsObject.payloadType);
+
+    switch (messageAsObject.payloadType) {
         case PayloadSubType.auth: {
             registerUserv2(messageAsString);
             deliverArrayOfUsersToNewClient(ws);
@@ -29,21 +33,18 @@ export function processIncomingMessage(
         }
 
         case PayloadSubType.message: {
-            // assign a unique id to the message if it does not have one
-            if (messageAsObject.id === undefined) {
-                messageAsObject.id = generateSimpleId();
-                messageAsString = JSON.stringify(messageAsObject);
-            } else {
-                throw new Error("where did this message get its id from?");
-            }
+            // type: MessagePayload
+            // TODO persist the message to the database
+            persistIncomingMessage(messageAsObject as MessagePayload);
 
             server.publish("the-group-chat", messageAsString);
             break;
         }
 
         case PayloadSubType.profileUpdate: {
-            const { clientId, username, color, pictureUrl } =
-                messageAsObject as ProfileUpdatePayload;
+            const { clientId, username, color, pictureUrl } = JSON.parse(
+                messageAsString
+            ) as ProfileUpdatePayload;
             updateUser(clientId, username, color, pictureUrl);
             deliverArrayOfUsersToNewClient(ws);
             break;
@@ -55,7 +56,7 @@ export function processIncomingMessage(
         }
 
         default: {
-            console.log("default");
+            console.log("switch messageType default");
             break;
         }
     }
