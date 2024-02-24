@@ -55,6 +55,10 @@ export function processIncomingMessage(
             break;
         }
 
+        case PayloadSubType.typing:
+            server.publish("the-group-chat", messageAsString);
+            break;
+
         default: {
             console.log("switch messageType default");
             break;

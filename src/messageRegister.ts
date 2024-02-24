@@ -44,7 +44,8 @@ function createMessageTypeTable(): void {
 function createQuoteTypeTable(): void {
     const createTableSQL = `
         CREATE TABLE IF NOT EXISTS QuoteType (
-            quoteId TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            quoteId TEXT KEY,
             quoteSenderId TEXT NOT NULL,
             quoteMessage TEXT NOT NULL,
             quoteTime TEXT NOT NULL,
@@ -64,7 +65,7 @@ function createMessagePayloadTable(): void {
             quoteId TEXT,
             FOREIGN KEY (clientId) REFERENCES UserType(clientId),
             FOREIGN KEY (messageId) REFERENCES MessageType(messageId),
-            FOREIGN KEY (quoteId) REFERENCES QuoteType(quoteId)
+            FOREIGN KEY (quoteId) REFERENCES QuoteType(id)
         );`;
 
     const statement = messageDb.query(createTableSQL);
