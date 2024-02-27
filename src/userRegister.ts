@@ -3,7 +3,6 @@ import { Database } from "bun:sqlite";
 import {
     type RegisteredUser,
     type Websocket,
-    type UserDatabaseRowPre,
     type AuthenticationPayload,
     PayloadSubType,
 } from "./customTypes";
@@ -105,38 +104,20 @@ export async function registerUserv2(payload: string): Promise<void> {
  * @param ws The WebSocket of the new client.
  * @returns {void}
  */
-export function deliverArrayOfUsersToNewClient(
-    ws: ServerWebSocket<Websocket>
-): void {
-    // returns [{string, string}, {string, string}, ...]
-    const allUsersPre: RegisteredUser[] = getAllUsers();
+export function deliverArrayOfUsersToNewClient(server: Server): void {
+    const allUsersPre: RegisteredUser[] | undefined = getAllUsers();
 
     if (allUsersPre === undefined) {
         throw new Error("No users found");
     }
 
-    ws.send(
+    server.publish(
+        "the-group-chat",
         JSON.stringify({
             payloadType: PayloadSubType.clientList,
             clients: allUsersPre,
         })
     );
-}
-
-export function deliverUpdatedArrayOfUsersToAllClients(server: Server): void {
-    const allUsersPre: UserDatabaseRowPre[] = getAllUsers();
-    // const allUsers: UserDatabaseRow[] = allUsersPre.map((user) => {
-    //     return {
-    //         id: user.id,
-    //         user: JSON.parse(user.user) as RegisteredUser,
-    //     };
-    // });
-    // const allUsersObject: ClientListPayload = {
-    //     type: PayloadSubType.clientList,
-    //     clients: allUsers,
-    // };
-    // console.log("send list of all user to All!{}");
-    // server.publish("the-group-chat", JSON.stringify(allUsersObject));
 }
 
 /**

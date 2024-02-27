@@ -1,17 +1,17 @@
 import type { Server, ServerWebSocket } from "bun";
-import { checkIfMessageIsString, generateSimpleId } from "./helper";
 import {
     PayloadSubType,
     type MessagePayload,
     type ProfileUpdatePayload,
     type Websocket,
 } from "./customTypes";
+import { checkIfMessageIsString } from "./helper";
+import { persistIncomingMessage } from "./messageRegister";
 import {
     deliverArrayOfUsersToNewClient,
     registerUserv2,
     updateUser,
 } from "./userRegister";
-import { persistIncomingMessage } from "./messageRegister";
 
 export function processIncomingMessage(
     ws: ServerWebSocket<Websocket>,
@@ -28,7 +28,7 @@ export function processIncomingMessage(
     switch (messageAsObject.payloadType) {
         case PayloadSubType.auth: {
             registerUserv2(messageAsString);
-            deliverArrayOfUsersToNewClient(ws);
+            deliverArrayOfUsersToNewClient(server);
             break;
         }
 
@@ -36,7 +36,6 @@ export function processIncomingMessage(
             // type: MessagePayload
             // TODO persist the message to the database
             persistIncomingMessage(messageAsObject as MessagePayload);
-
             server.publish("the-group-chat", messageAsString);
             break;
         }
@@ -46,19 +45,16 @@ export function processIncomingMessage(
                 messageAsString
             ) as ProfileUpdatePayload;
             updateUser(clientId, username, color, pictureUrl);
-            deliverArrayOfUsersToNewClient(ws);
+            deliverArrayOfUsersToNewClient(server);
             break;
         }
 
         case PayloadSubType.clientList: {
-            console.log("clientList");
+            deliverArrayOfUsersToNewClient(server);
             break;
         }
 
         case PayloadSubType.typing:
-            server.publish("the-group-chat", messageAsString);
-            break;
-
         case PayloadSubType.force:
             server.publish("the-group-chat", messageAsString);
             break;

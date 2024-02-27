@@ -54,7 +54,7 @@ const server = Bun.serve<Websocket>({
         async message(
             ws: ServerWebSocket<Websocket>,
             message: string | Buffer
-        ) {
+        ): Promise<void> {
             processIncomingMessage(ws, server, message);
         },
     },
