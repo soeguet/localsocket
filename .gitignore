@@ -178,3 +178,4 @@ bun.lockb
 .vscode
 users.sqlite
 messages.sqlite
+users.db
