@@ -14,3 +14,33 @@ export type AuthenticatedPayload = {
     clientId: string;
 };
 
+export type MessagePayload = {
+    payloadType: PayloadSubType;
+    userType: UserType;
+    messageType: MessageType;
+    quoteType?: QuoteType;
+    reactionType?: ReactionType;
+};
+
+export type ReactionType = {
+    messageId: string;
+    emojiName: string;
+    userId: string;
+};
+export type UserType = {
+    clientId: string;
+    clientUsername: string;
+    clientProfilePhoto: string;
+};
+export type MessageType = {
+    messageId: string;
+    messageSenderId: string;
+    time: string;
+    message: string;
+};
+export type QuoteType = {
+    quoteId: string;
+    quoteSenderId: string;
+    quoteMessage: string;
+    quoteTime: string;
+};

@@ -6,6 +6,7 @@ import {
     type AuthenticatedPayload,
 } from "./types/payloadTypes";
 import type { RegisteredUser } from "./types/userTypes";
+import { persistMessageInDatabase } from "./databaseRequests";
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
@@ -60,10 +61,31 @@ export async function processIncomingMessage(
         ////
         case PayloadSubType.message:
             console.log("message received", message);
+            // PERSIST MESSAGE
+            await persistMessageInDatabase(message);
+            server.publish("the-group-chat", message);
             break;
 
         ////
-        default:
-            console.error("Unknown payload type");
+        case PayloadSubType.profileUpdate:
+            console.log("profileUpdate received", message);
+            break;
+
+        ////
+        case PayloadSubType.clientList:
+            console.log("clientList received", message);
+            break;
+
+        ////
+        case PayloadSubType.typing:
+        case PayloadSubType.force:
+            server.publish("the-group-chat", message);
+            break;
+
+        default: {
+            console.log("switch messageType default");
+            console.log("messageAsString", message);
+            break;
+        }
     }
 }

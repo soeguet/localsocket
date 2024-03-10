@@ -1,9 +1,7 @@
+import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
 import {
-    getAllUsersFromsDatabase,
     processIncomingMessage,
 } from "./src/incomingMessages";
-import { PayloadSubType } from "./src/types/payloadTypes";
-import type { RegisteredUser } from "./src/types/userTypes";
 
 console.log("Hello via Bun!");
 
@@ -36,18 +34,9 @@ const server = Bun.serve<WebSocket>({
     },
     websocket: {
         perMessageDeflate: true,
-        open(ws) {
+        async open(ws) {
             ws.subscribe("the-group-chat");
-
-            // const lastMessages: MessagePayload[] = retrieveLast100Messages();
-            // const last100Reversed = lastMessages.slice(-100).reverse();
-
-            // const messageListPayload = {
-            //     payloadType: PayloadSubType.messageList,
-            //     messageList: last100Reversed,
-            // };
-            //
-            // ws.send(JSON.stringify(messageListPayload));
+            await sendLast100MessagesToNewClient(ws);
         },
         // this is called when a message is received
         async message(ws, message): Promise<void> {
