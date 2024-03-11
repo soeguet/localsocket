@@ -1,17 +1,44 @@
 import type { ServerWebSocket } from "bun";
 import { PayloadSubType, type MessagePayload } from "./types/payloadTypes";
 import { messagesDb } from "./schema/messagesDatabase";
-import { messagesPayloadSchema } from "./schema/messages_schema";
-import { desc } from "drizzle-orm";
+import {
+    messageType,
+    messagesPayloadSchema,
+    quoteType,
+    userType,
+} from "./schema/messages_schema";
+import { eq } from "drizzle-orm";
 
 export async function sendLast100MessagesToNewClient(
     ws: ServerWebSocket<WebSocket>
 ) {
     const lastMessages = await messagesDb
-        .select()
+        .select({
+
+            userType: {
+                userId: userType.userId,
+                userName: userType.userName,
+                userProfilePhoto: userType.userProfilePhoto,
+            },
+            messageType: {
+                messageId: messageType.messageId,
+                message: messageType.message,
+                time: messageType.time,
+            },
+            quoteType: {
+                quoteId: quoteType.quoteId,
+                quoteSenderId: quoteType.quoteSenderId,
+                quoteMessage: quoteType.quoteMessage,
+                quoteTime: quoteType.quoteTime,
+            },
+
+        })
         .from(messagesPayloadSchema)
-        .limit(100)
-        .orderBy(desc(messagesPayloadSchema.id));
+        .leftJoin(userType, eq(messagesPayloadSchema.userId, userType.userId))
+        .leftJoin(messageType, eq(messagesPayloadSchema.messageId, messageType.messageId))
+        .leftJoin(quoteType, eq(messagesPayloadSchema.quoteId, quoteType.quoteId))
+        .limit(100);
+        // .orderBy(desc(messagesPayloadSchema.id));
     const messageListPayload = {
         payloadType: PayloadSubType.messageList,
         messageList: lastMessages,
@@ -20,18 +47,41 @@ export async function sendLast100MessagesToNewClient(
     ws.send(JSON.stringify(messageListPayload));
 }
 
-export async function persistMessageInDatabase(
-    message: string | Buffer
-) {
+export async function persistMessageInDatabase(message: string | Buffer) {
     if (typeof message !== "string") {
         console.error("Invalid message type");
         return;
     }
     const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
+
     await messagesDb.insert(messagesPayloadSchema).values({
-        clientId: payloadFromClientAsObject.userType.clientId,
+        userId: payloadFromClientAsObject.userType.userId,
         messageId: payloadFromClientAsObject.messageType.messageId,
-        payloadType: payloadFromClientAsObject.payloadType,
         quoteId: payloadFromClientAsObject.quoteType?.quoteId,
+        reactionId: null,
+    });
+
+    await messagesDb.insert(userType).values({
+        userId: payloadFromClientAsObject.userType.userId,
+        userName: payloadFromClientAsObject.userType.userName,
+        userProfilePhoto: payloadFromClientAsObject.userType.userProfilePhoto,
+    });
+
+    await messagesDb.insert(messageType).values({
+        messageId: payloadFromClientAsObject.messageType.messageId,
+        message: payloadFromClientAsObject.messageType.message,
+        time: payloadFromClientAsObject.messageType.time,
+    });
+
+    // if no quote or reaction, return
+    if (payloadFromClientAsObject.quoteType === undefined) {
+        return;
+    }
+
+    await messagesDb.insert(quoteType).values({
+        quoteId: payloadFromClientAsObject.quoteType?.quoteId,
+        quoteSenderId: payloadFromClientAsObject.quoteType?.quoteSenderId,
+        quoteMessage: payloadFromClientAsObject.quoteType?.quoteMessage,
+        quoteTime: payloadFromClientAsObject.quoteType?.quoteTime,
     });
 }

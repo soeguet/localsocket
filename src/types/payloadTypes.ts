@@ -28,9 +28,9 @@ export type ReactionType = {
     userId: string;
 };
 export type UserType = {
-    clientId: string;
-    clientUsername: string;
-    clientProfilePhoto: string;
+    userId: string;
+    userName: string;
+    userProfilePhoto: string;
 };
 export type MessageType = {
     messageId: string;
