@@ -4,16 +4,19 @@ import { usersSchema } from "./schema/users_schema";
 import {
     PayloadSubType,
     type AuthenticatedPayload,
+    type ReactionPayload,
 } from "./types/payloadTypes";
 import type { RegisteredUser } from "./types/userTypes";
 import { persistMessageInDatabase } from "./databaseRequests";
+import { messagesDb } from "./schema/messagesDatabase";
+import { reactionType } from "./schema/messages_schema";
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
     server: Server,
     message: string | Buffer
 ) {
-    console.log("message received", message);
+    // console.log("message received", message);
     // check for null values
     if (usersDatabase === undefined || usersDatabase === null) {
         console.error("Database not found");
@@ -48,7 +51,7 @@ export async function processIncomingMessage(
             const allUsers: RegisteredUser[] = await usersDatabase
                 .select()
                 .from(usersSchema);
-            console.log("allUsers", allUsers);
+            // console.log("allUsers", allUsers);
             ws.publish(
                 "the-group-chat",
                 JSON.stringify({
@@ -82,10 +85,31 @@ export async function processIncomingMessage(
             server.publish("the-group-chat", message);
             break;
 
+        ////
+        case PayloadSubType.reaction:
+            console.log("reaction received", message);
+            await persistReactionToDatabase(message);
+            break;
+
         default: {
             console.log("switch messageType default");
             console.log("messageAsString", message);
             break;
         }
     }
+}
+
+export async function persistReactionToDatabase(message: string | Buffer) {
+    if (typeof message !== "string") {
+        console.error("Invalid message type");
+        return;
+    }
+    const payloadFromClientAsObject: ReactionPayload = JSON.parse(message);
+
+    await messagesDb.insert(reactionType).values({
+        messageId: payloadFromClientAsObject.messageId,
+        emojiName: payloadFromClientAsObject.emoji,
+        userId: payloadFromClientAsObject.userId,
+    });
+    console.log("persistReactionToDatabase", payloadFromClientAsObject);
 }

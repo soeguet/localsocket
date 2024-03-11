@@ -27,7 +27,7 @@ export const reactionType = sqliteTable("reaction_type", {
     id: integer("id").primaryKey({ autoIncrement: true }),
     messageId: text("message_id")
         .notNull()
-        .references(() => messageType.messageId),
+        .references(() => messagesPayloadSchema.id),
     emojiName: text("emoji_name").notNull(),
     userId: text("user_id")
         .notNull()
@@ -43,5 +43,4 @@ export const messagesPayloadSchema = sqliteTable("message_payload", {
         .notNull()
         .references(() => messageType.id),
     quoteId: text("quote_id").references(() => quoteType.id),
-    reactionId: integer("reaction_id").references(() => reactionType.id),
 });

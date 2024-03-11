@@ -6,6 +6,7 @@ export enum PayloadSubType {
     messageList,
     typing,
     force,
+    reaction,
 }
 
 export type AuthenticatedPayload = {
@@ -15,11 +16,12 @@ export type AuthenticatedPayload = {
 };
 
 export type MessagePayload = {
+    payloadId?: number;
     payloadType: PayloadSubType;
     userType: UserType;
     messageType: MessageType;
     quoteType?: QuoteType;
-    reactionType?: ReactionType;
+    reactionType?: ReactionType[];
 };
 
 export type ReactionType = {
@@ -43,4 +45,11 @@ export type QuoteType = {
     quoteSenderId: string;
     quoteMessage: string;
     quoteTime: string;
+};
+
+export type ReactionPayload = {
+    payloadType: PayloadSubType.reaction;
+    messageId: string;
+    emoji: string;
+    userId: string;
 };
