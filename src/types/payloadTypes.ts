@@ -48,6 +48,7 @@ export type QuoteType = {
 };
 
 export type ReactionPayload = {
+    messagePayloadId: number;
     payloadType: PayloadSubType.reaction;
     messageId: string;
     emoji: string;

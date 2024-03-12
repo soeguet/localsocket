@@ -1,5 +1,6 @@
 import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
 import {
+    checkForDatabaseErrors,
     processIncomingMessage,
 } from "./src/incomingMessages";
 
@@ -40,6 +41,7 @@ const server = Bun.serve<WebSocket>({
         },
         // this is called when a message is received
         async message(ws, message): Promise<void> {
+            checkForDatabaseErrors(message);
             processIncomingMessage(ws,server, message);
         },
     },

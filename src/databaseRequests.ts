@@ -1,67 +1,76 @@
 import type { ServerWebSocket } from "bun";
+
 import { PayloadSubType, type MessagePayload } from "./types/payloadTypes";
-import { messagesDb } from "./schema/messagesDatabase";
+import { desc, eq } from "drizzle-orm";
+import { postgresDb } from "./db/db";
 import {
-    messageType,
+    messageTypeSchema,
     messagesPayloadSchema,
-    quoteType,
-    reactionType,
-    userType,
-} from "./schema/messages_schema";
-import { eq } from "drizzle-orm";
+    quoteTypeSchema,
+    reactionTypeSchema,
+    usersSchema,
+} from "./db/schema/schema";
 
 export async function sendLast100MessagesToNewClient(
     ws: ServerWebSocket<WebSocket>
 ) {
-    const lastMessages: MessagePayload[] = await messagesDb
-        .select({
-            userType: {
-                userId: userType.userId,
-                userName: userType.userName,
-                userProfilePhoto: userType.userProfilePhoto,
-            },
-            messageType: {
-                messageId: messageType.messageId,
-                message: messageType.message,
-                time: messageType.time,
-            },
-            quoteType: {
-                quoteId: quoteType.quoteId,
-                quoteSenderId: quoteType.quoteSenderId,
-                quoteMessage: quoteType.quoteMessage,
-                quoteTime: quoteType.quoteTime,
-            },
-            reactionType: [
-                messageId: reactionType.messageId,
-                emojiName: reactionType.emojiName,
-                userId: reactionType.userId,
-            ],
-        })
+    // grab all messages
+    const messages = await postgresDb
+        .select()
         .from(messagesPayloadSchema)
-        .leftJoin(userType, eq(messagesPayloadSchema.userId, userType.userId))
+        .leftJoin(usersSchema, eq(messagesPayloadSchema.userId, usersSchema.id))
         .leftJoin(
-            messageType,
-            eq(messagesPayloadSchema.messageId, messageType.messageId)
+            messageTypeSchema,
+            eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
         )
         .leftJoin(
-            quoteType,
-            eq(messagesPayloadSchema.quoteId, quoteType.quoteId)
+            quoteTypeSchema,
+            eq(messagesPayloadSchema.id, quoteTypeSchema.payloadId)
         )
-        .leftJoin(
-            reactionType,
-            eq(messagesPayloadSchema.messageId, reactionType.messageId)
-        )
-        .limit(100);
+        .execute();
+
+    // grab all reactions and add them to result
+    for (const message of messages) {
+        const reactions = await postgresDb
+            .select()
+            .from(reactionTypeSchema)
+            .where(eq(reactionTypeSchema.payloadId, message.messagePayload.id))
+            .execute();
+
+        //@ts-ignore
+        message.reactions = reactions;
+    }
+
+    console.log("lastMessages", messages);
+
     // .orderBy(desc(messagesPayloadSchema.id));
-    const messageListPayload: {
-        payloadType: PayloadSubType.messageList;
-        messageList: MessagePayload[];
-    } = {
+    const messageListPayload = {
         payloadType: PayloadSubType.messageList,
-        messageList: lastMessages,
+        messageList: messages,
     };
-    console.log("messageListPayload", messageListPayload);
+    // console.log("messageListPayload", messageListPayload);
     ws.send(JSON.stringify(messageListPayload));
+}
+
+export async function retrieveLastMessageFromDatabase() {
+
+    const lastMessage = await postgresDb
+        .select()
+        .from(messagesPayloadSchema)
+        .leftJoin(usersSchema, eq(messagesPayloadSchema.userId, usersSchema.id))
+        .leftJoin(
+            messageTypeSchema,
+            eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
+        )
+        .leftJoin(
+            quoteTypeSchema,
+            eq(messagesPayloadSchema.id, quoteTypeSchema.payloadId)
+        )
+        .orderBy(desc(messagesPayloadSchema.id))
+        .limit(1)
+        .execute();
+
+    return lastMessage;
 }
 
 export async function persistMessageInDatabase(message: string | Buffer) {
@@ -71,32 +80,42 @@ export async function persistMessageInDatabase(message: string | Buffer) {
     }
     const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
 
-    await messagesDb.insert(messagesPayloadSchema).values({
-        userId: payloadFromClientAsObject.userType.userId,
-        messageId: payloadFromClientAsObject.messageType.messageId,
-        quoteId: payloadFromClientAsObject.quoteType?.quoteId,
-    });
+    await postgresDb
+        .insert(usersSchema)
+        .values({
+            id: payloadFromClientAsObject.userType.userId,
+            username: payloadFromClientAsObject.userType.userName,
+        })
+        .onConflictDoNothing();
 
-    await messagesDb.insert(userType).values({
-        userId: payloadFromClientAsObject.userType.userId,
-        userName: payloadFromClientAsObject.userType.userName,
-        userProfilePhoto: payloadFromClientAsObject.userType.userProfilePhoto,
-    });
+    const messageId = await postgresDb
+        .insert(messageTypeSchema)
+        .values({
+            messageId: payloadFromClientAsObject.messageType.messageId,
+            message: payloadFromClientAsObject.messageType.message,
+            time: payloadFromClientAsObject.messageType.time,
+        })
+        .returning();
 
-    await messagesDb.insert(messageType).values({
-        messageId: payloadFromClientAsObject.messageType.messageId,
-        message: payloadFromClientAsObject.messageType.message,
-        time: payloadFromClientAsObject.messageType.time,
-    });
+    const messagePayloadFromDatabase = await postgresDb
+        .insert(messagesPayloadSchema)
+        .values({
+            userId: payloadFromClientAsObject.userType.userId,
+            messageId: messageId[0].id,
+        })
+        .returning();
 
     // if no quote, skip
     // a new message cannot have a reaction yet
     if (payloadFromClientAsObject.quoteType !== undefined) {
-        await messagesDb.insert(quoteType).values({
+        await postgresDb.insert(quoteTypeSchema).values({
             quoteId: payloadFromClientAsObject.quoteType?.quoteId,
             quoteSenderId: payloadFromClientAsObject.quoteType?.quoteSenderId,
             quoteMessage: payloadFromClientAsObject.quoteType?.quoteMessage,
             quoteTime: payloadFromClientAsObject.quoteType?.quoteTime,
+            payloadId: messagePayloadFromDatabase[0].id,
         });
     }
+
+    return messagePayloadFromDatabase[0].id;
 }

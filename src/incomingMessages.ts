@@ -1,34 +1,43 @@
 import type { Server, ServerWebSocket } from "bun";
-import { usersDatabase } from "./schema/usersDatabase";
-import { usersSchema } from "./schema/users_schema";
 import {
     PayloadSubType,
     type AuthenticatedPayload,
     type ReactionPayload,
 } from "./types/payloadTypes";
 import type { RegisteredUser } from "./types/userTypes";
-import { persistMessageInDatabase } from "./databaseRequests";
-import { messagesDb } from "./schema/messagesDatabase";
-import { reactionType } from "./schema/messages_schema";
+import {
+    persistMessageInDatabase,
+    retrieveLastMessageFromDatabase,
+} from "./databaseRequests";
+import { postgresDb } from "./db/db";
+import { reactionTypeSchema, usersSchema } from "./db/schema/schema";
+
+export function checkForDatabaseErrors(message: string | Buffer) {
+    // console.log("message received", message);
+    // check for null values
+    if (postgresDb === undefined || postgresDb === null) {
+        console.error("Database not found");
+        return;
+    }
+    if (
+        typeof message !== "string" ||
+        message === "" ||
+        message === undefined
+    ) {
+        console.error("Invalid message type");
+        return;
+    }
+    return message;
+}
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
     server: Server,
     message: string | Buffer
 ) {
-    // console.log("message received", message);
-    // check for null values
-    if (usersDatabase === undefined || usersDatabase === null) {
-        console.error("Database not found");
-        return;
-    }
-    if (typeof message !== "string") {
-        console.error("Invalid message type");
-        return;
-    }
-
+    const messageAsString = checkForDatabaseErrors(message) as string;
     // switch part
-    const payloadFromClientAsObject = JSON.parse(message);
+    const payloadFromClientAsObject = JSON.parse(messageAsString);
     switch (payloadFromClientAsObject.payloadType) {
         ////
         case PayloadSubType.auth:
@@ -36,8 +45,8 @@ export async function processIncomingMessage(
             // register the user in the database
             // eslint-disable-next-line no-case-declarations
             const authenticationPayload: AuthenticatedPayload =
-                JSON.parse(message);
-            await usersDatabase
+                JSON.parse(messageAsString);
+            await postgresDb
                 .insert(usersSchema)
                 .values({
                     id: authenticationPayload.clientId,
@@ -48,7 +57,7 @@ export async function processIncomingMessage(
             // second part
             // send the list of all users to the client
             // eslint-disable-next-line no-case-declarations
-            const allUsers: RegisteredUser[] = await usersDatabase
+            const allUsers: RegisteredUser[] = await postgresDb
                 .select()
                 .from(usersSchema);
             // console.log("allUsers", allUsers);
@@ -63,37 +72,50 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
-            console.log("message received", message);
+            console.log("messageAsString received", messageAsString);
+
             // PERSIST MESSAGE
-            await persistMessageInDatabase(message);
-            server.publish("the-group-chat", message);
+            const payloadId = await persistMessageInDatabase(messageAsString);
+
+            // retrieve just persisted message
+            const lastMessagesFromDatabase =
+                await retrieveLastMessageFromDatabase();
+
+            //@ts-ignore
+            lastMessagesFromDatabase[0].payloadType = PayloadSubType.message;
+
+            server.publish(
+                "the-group-chat",
+                JSON.stringify(lastMessagesFromDatabase)
+            );
             break;
 
         ////
         case PayloadSubType.profileUpdate:
-            console.log("profileUpdate received", message);
+            console.log("profileUpdate received", messageAsString);
             break;
 
         ////
         case PayloadSubType.clientList:
-            console.log("clientList received", message);
+            console.log("clientList received", messageAsString);
             break;
 
         ////
         case PayloadSubType.typing:
         case PayloadSubType.force:
-            server.publish("the-group-chat", message);
+            server.publish("the-group-chat", messageAsString);
             break;
 
         ////
         case PayloadSubType.reaction:
-            console.log("reaction received", message);
-            await persistReactionToDatabase(message);
+            console.log("reaction received", messageAsString);
+            await persistReactionToDatabase(messageAsString);
             break;
 
+        ////
         default: {
             console.log("switch messageType default");
-            console.log("messageAsString", message);
+            console.log("messageAsString", messageAsString);
             break;
         }
     }
@@ -106,7 +128,8 @@ export async function persistReactionToDatabase(message: string | Buffer) {
     }
     const payloadFromClientAsObject: ReactionPayload = JSON.parse(message);
 
-    await messagesDb.insert(reactionType).values({
+    await postgresDb.insert(reactionTypeSchema).values({
+        payloadId: payloadFromClientAsObject.messagePayloadId,
         messageId: payloadFromClientAsObject.messageId,
         emojiName: payloadFromClientAsObject.emoji,
         userId: payloadFromClientAsObject.userId,
