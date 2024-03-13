@@ -15,13 +15,23 @@ export type AuthenticatedPayload = {
     clientId: string;
 };
 
+export type MessageListPayload = {
+    payloadType: PayloadSubType.messageList;
+    messageList: MessagePayload[];
+};
+
 export type MessagePayload = {
-    payloadId?: number;
-    payloadType: PayloadSubType;
-    userId: string;
-    messageType: MessageType;
-    quoteType?: QuoteType;
+    paylaodType?: PayloadSubType.message;
+    messagePayloadType: MessagePayloadType;
+    messageType?: MessageType | null;
+    quoteType?: QuoteType | null;
     reactionType?: ReactionType[];
+};
+
+export type MessagePayloadType = {
+    id: number;
+    userId: string;
+    messageId: number;
 };
 
 export type ReactionType = {
@@ -30,15 +40,18 @@ export type ReactionType = {
     userId: string;
 };
 export type MessageType = {
+    id?: number;
     messageId: string;
     time: string;
     message: string;
 };
 export type QuoteType = {
-    quoteId: string;
-    quoteSenderId: string;
-    quoteMessage: string;
-    quoteTime: string;
+    id?: number;
+    quoteId: string | null;
+    quoteSenderId: string | null;
+    quoteMessage: string | null;
+    quoteTime: string | null;
+    payloadId?: number;
 };
 
 export type ReactionPayload = {

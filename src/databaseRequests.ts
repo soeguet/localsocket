@@ -1,30 +1,33 @@
 import type { ServerWebSocket } from "bun";
 
-import { PayloadSubType, type MessagePayload } from "./types/payloadTypes";
+import {
+    PayloadSubType,
+    type MessageListPayload,
+    type MessagePayload,
+} from "./types/payloadTypes";
 import { desc, eq } from "drizzle-orm";
 import { postgresDb } from "./db/db";
 import {
+    messagePayloadTypeSchema,
     messageTypeSchema,
-    messagesPayloadSchema,
     quoteTypeSchema,
     reactionTypeSchema,
-    usersSchema,
 } from "./db/schema/schema";
 
 export async function sendLast100MessagesToNewClient(
     ws: ServerWebSocket<WebSocket>
 ) {
     // grab all messages
-    const messages = await postgresDb
+    const messages: MessagePayload[] = await postgresDb
         .select()
-        .from(messagesPayloadSchema)
+        .from(messagePayloadTypeSchema)
         .leftJoin(
             messageTypeSchema,
-            eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
+            eq(messagePayloadTypeSchema.messageId, messageTypeSchema.id)
         )
         .leftJoin(
             quoteTypeSchema,
-            eq(messagesPayloadSchema.id, quoteTypeSchema.payloadId)
+            eq(messagePayloadTypeSchema.id, quoteTypeSchema.payloadId)
         )
         .execute();
 
@@ -33,7 +36,9 @@ export async function sendLast100MessagesToNewClient(
         const reactions = await postgresDb
             .select()
             .from(reactionTypeSchema)
-            .where(eq(reactionTypeSchema.payloadId, message.messagePayload.id))
+            .where(
+                eq(reactionTypeSchema.payloadId, message.messagePayloadType.id)
+            )
             .execute();
 
         //@ts-ignore
@@ -43,7 +48,7 @@ export async function sendLast100MessagesToNewClient(
     console.log("lastMessages", messages);
 
     // .orderBy(desc(messagesPayloadSchema.id));
-    const messageListPayload = {
+    const messageListPayload: MessageListPayload = {
         payloadType: PayloadSubType.messageList,
         messageList: messages,
     };
@@ -52,19 +57,18 @@ export async function sendLast100MessagesToNewClient(
 }
 
 export async function retrieveLastMessageFromDatabase() {
-
     const lastMessage = await postgresDb
         .select()
-        .from(messagesPayloadSchema)
+        .from(messagePayloadTypeSchema)
         .leftJoin(
             messageTypeSchema,
-            eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
+            eq(messagePayloadTypeSchema.messageId, messageTypeSchema.id)
         )
         .leftJoin(
             quoteTypeSchema,
-            eq(messagesPayloadSchema.id, quoteTypeSchema.payloadId)
+            eq(messagePayloadTypeSchema.id, quoteTypeSchema.payloadId)
         )
-        .orderBy(desc(messagesPayloadSchema.id))
+        .orderBy(desc(messagePayloadTypeSchema.id))
         .limit(1)
         .execute();
 
@@ -88,7 +92,7 @@ export async function persistMessageInDatabase(message: string | Buffer) {
         .returning();
 
     const messagePayloadFromDatabase = await postgresDb
-        .insert(messagesPayloadSchema)
+        .insert(messagePayloadTypeSchema)
         .values({
             userId: payloadFromClientAsObject.userId,
             messageId: messageId[0].id,

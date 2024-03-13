@@ -22,7 +22,7 @@ export const quoteTypeSchema = pgTable("quoteType", {
     quoteTime: varchar("quoteTime"),
     payloadId: bigserial("payloadId", { mode: "number" })
         .notNull()
-        .references(() => messagesPayloadSchema.id),
+        .references(() => messagePayloadTypeSchema.id),
 });
 
 export const reactionTypeSchema = pgTable("reactionType", {
@@ -32,12 +32,12 @@ export const reactionTypeSchema = pgTable("reactionType", {
     userId: varchar("userId").notNull(),
     payloadId: bigserial("payloadId", { mode: "number" })
         .notNull()
-        .references(() => messagesPayloadSchema.id),
+        .references(() => messagePayloadTypeSchema.id),
 });
 
-export const messagesPayloadSchema = pgTable("messagePayload", {
+export const messagePayloadTypeSchema = pgTable("messagePayloadType", {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    userId: varchar("userId"),
+    userId: varchar("userId").notNull(),
     messageId: bigserial("messageId", { mode: "number" })
         .notNull()
         .references(() => messageTypeSchema.id),
