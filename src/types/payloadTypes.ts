@@ -18,7 +18,7 @@ export type AuthenticatedPayload = {
 export type MessagePayload = {
     payloadId?: number;
     payloadType: PayloadSubType;
-    userType: UserType;
+    userId: string;
     messageType: MessageType;
     quoteType?: QuoteType;
     reactionType?: ReactionType[];
@@ -29,14 +29,8 @@ export type ReactionType = {
     emojiName: string;
     userId: string;
 };
-export type UserType = {
-    userId: string;
-    userName: string;
-    userProfilePhoto: string;
-};
 export type MessageType = {
     messageId: string;
-    messageSenderId: string;
     time: string;
     message: string;
 };

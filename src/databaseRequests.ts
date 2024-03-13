@@ -18,7 +18,6 @@ export async function sendLast100MessagesToNewClient(
     const messages = await postgresDb
         .select()
         .from(messagesPayloadSchema)
-        .leftJoin(usersSchema, eq(messagesPayloadSchema.userId, usersSchema.id))
         .leftJoin(
             messageTypeSchema,
             eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
@@ -57,7 +56,6 @@ export async function retrieveLastMessageFromDatabase() {
     const lastMessage = await postgresDb
         .select()
         .from(messagesPayloadSchema)
-        .leftJoin(usersSchema, eq(messagesPayloadSchema.userId, usersSchema.id))
         .leftJoin(
             messageTypeSchema,
             eq(messagesPayloadSchema.messageId, messageTypeSchema.id)
@@ -80,14 +78,6 @@ export async function persistMessageInDatabase(message: string | Buffer) {
     }
     const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
 
-    await postgresDb
-        .insert(usersSchema)
-        .values({
-            id: payloadFromClientAsObject.userType.userId,
-            username: payloadFromClientAsObject.userType.userName,
-        })
-        .onConflictDoNothing();
-
     const messageId = await postgresDb
         .insert(messageTypeSchema)
         .values({
@@ -100,7 +90,7 @@ export async function persistMessageInDatabase(message: string | Buffer) {
     const messagePayloadFromDatabase = await postgresDb
         .insert(messagesPayloadSchema)
         .values({
-            userId: payloadFromClientAsObject.userType.userId,
+            userId: payloadFromClientAsObject.userId,
             messageId: messageId[0].id,
         })
         .returning();

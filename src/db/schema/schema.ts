@@ -1,5 +1,4 @@
 import { bigserial, pgTable, varchar } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 
 export const usersSchema = pgTable("users", {
     id: varchar("id").notNull().primaryKey(),
@@ -10,7 +9,7 @@ export const usersSchema = pgTable("users", {
 
 export const messageTypeSchema = pgTable("messageType", {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    messageId: varchar("messageIdd").notNull(),
+    messageId: varchar("messageId").notNull(),
     time: varchar("time").notNull(),
     message: varchar("message").notNull(),
 });
@@ -38,26 +37,24 @@ export const reactionTypeSchema = pgTable("reactionType", {
 
 export const messagesPayloadSchema = pgTable("messagePayload", {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    userId: varchar("userId")
-        .notNull()
-        .references(() => usersSchema.id),
+    userId: varchar("userId"),
     messageId: bigserial("messageId", { mode: "number" })
         .notNull()
         .references(() => messageTypeSchema.id),
 });
 
-export const messagePayloadRelations = relations(
-    messagesPayloadSchema,
-    ({ one, many }) => ({
-        quoteTypeSchema: one(quoteTypeSchema),
-        reactionTypeSchema: many(reactionTypeSchema),
-    })
-);
-
-export const usersRelations = relations(reactionTypeSchema, ({ one }) => ({
-    messagesPayloadSchema: one(messagesPayloadSchema),
-}));
-
-export const quoteRelations = relations(quoteTypeSchema, ({ one }) => ({
-    messagesPayloadSchema: one(messagesPayloadSchema),
-}));
+// export const messagePayloadRelations = relations(
+//     messagesPayloadSchema,
+//     ({ one, many }) => ({
+//         quoteTypeSchema: one(quoteTypeSchema),
+//         reactionTypeSchema: many(reactionTypeSchema),
+//     })
+// );
+//
+// export const usersRelations = relations(reactionTypeSchema, ({ one }) => ({
+//     messagesPayloadSchema: one(messagesPayloadSchema),
+// }));
+//
+// export const quoteRelations = relations(quoteTypeSchema, ({ one }) => ({
+//     messagesPayloadSchema: one(messagesPayloadSchema),
+// }));

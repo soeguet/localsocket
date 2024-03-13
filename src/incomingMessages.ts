@@ -1,4 +1,4 @@
-import type { Server, ServerWebSocket } from "bun";
+import { serve, type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticatedPayload,
@@ -61,7 +61,7 @@ export async function processIncomingMessage(
                 .select()
                 .from(usersSchema);
             // console.log("allUsers", allUsers);
-            ws.publish(
+            server.publish(
                 "the-group-chat",
                 JSON.stringify({
                     payloadType: PayloadSubType.clientList,
@@ -75,7 +75,7 @@ export async function processIncomingMessage(
             console.log("messageAsString received", messageAsString);
 
             // PERSIST MESSAGE
-            const payloadId = await persistMessageInDatabase(messageAsString);
+            await persistMessageInDatabase(messageAsString);
 
             // retrieve just persisted message
             const lastMessagesFromDatabase =
@@ -86,7 +86,7 @@ export async function processIncomingMessage(
 
             server.publish(
                 "the-group-chat",
-                JSON.stringify(lastMessagesFromDatabase)
+                JSON.stringify(lastMessagesFromDatabase[0])
             );
             break;
 
