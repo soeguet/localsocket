@@ -21,7 +21,7 @@ export type MessageListPayload = {
 };
 
 export type MessagePayload = {
-    paylaodType?: PayloadSubType.message;
+    payloadType?: PayloadSubType.message;
     messagePayloadType: MessagePayloadType;
     messageType?: MessageType | null;
     quoteType?: QuoteType | null;

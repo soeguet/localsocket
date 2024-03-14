@@ -2,6 +2,7 @@ import { serve, type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticatedPayload,
+    type MessagePayload,
     type ReactionPayload,
 } from "./types/payloadTypes";
 import type { RegisteredUser } from "./types/userTypes";
@@ -78,15 +79,13 @@ export async function processIncomingMessage(
             await persistMessageInDatabase(messageAsString);
 
             // retrieve just persisted message
-            const lastMessagesFromDatabase =
-                await retrieveLastMessageFromDatabase();
+            const lastMessagesFromDatabase:MessagePayload = await retrieveLastMessageFromDatabase() as MessagePayload;
 
-            //@ts-ignore
-            lastMessagesFromDatabase[0].payloadType = PayloadSubType.message;
+            lastMessagesFromDatabase.payloadType = PayloadSubType.message;
 
             server.publish(
                 "the-group-chat",
-                JSON.stringify(lastMessagesFromDatabase[0])
+                JSON.stringify(lastMessagesFromDatabase)
             );
             break;
 
