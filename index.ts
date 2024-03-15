@@ -13,6 +13,7 @@ const headers = {
 };
 
 const server = Bun.serve<WebSocket>({
+    //
     fetch(req, server) {
         // preflight request for CORS
         if (req.method === "OPTIONS") {
@@ -32,17 +33,23 @@ const server = Bun.serve<WebSocket>({
             status: 404,
         });
     },
+    //
     websocket: {
+        //
         perMessageDeflate: true,
+
+        //
         async open(ws) {
             ws.subscribe("the-group-chat");
             await sendLast100MessagesToNewClient(ws);
         },
+
         // this is called when a message is received
         async message(ws, message): Promise<void> {
             processIncomingMessage(ws,server, message);
         },
     },
+    //
     port: 5588,
 });
 

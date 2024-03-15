@@ -1,4 +1,4 @@
-import { serve, type Server, type ServerWebSocket } from "bun";
+import { type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticatedPayload,
@@ -32,7 +32,7 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 }
 
 export async function processIncomingMessage(
-    ws: ServerWebSocket<WebSocket>,
+    _ws: ServerWebSocket<WebSocket>,
     server: Server,
     message: string | Buffer
 ) {
@@ -47,28 +47,42 @@ export async function processIncomingMessage(
             // eslint-disable-next-line no-case-declarations
             const authenticationPayload: AuthenticatedPayload =
                 JSON.parse(messageAsString);
-            await postgresDb
-                .insert(usersSchema)
-                .values({
-                    id: authenticationPayload.clientId,
-                    username: authenticationPayload.clientUsername,
-                })
-                .onConflictDoNothing();
+
+            try {
+                //
+                await postgresDb
+                    .insert(usersSchema)
+                    .values({
+                        id: authenticationPayload.clientId,
+                        username: authenticationPayload.clientUsername,
+                    })
+                    .onConflictDoNothing();
+                //
+            } catch (error) {
+                console.error("Error while registering user", error);
+            }
 
             // second part
             // send the list of all users to the client
             // eslint-disable-next-line no-case-declarations
-            const allUsers: RegisteredUser[] = await postgresDb
-                .select()
-                .from(usersSchema);
+            try {
+                //
+                const allUsers: RegisteredUser[] = await postgresDb
+                    .select()
+                    .from(usersSchema);
+
+                server.publish(
+                    "the-group-chat",
+                    JSON.stringify({
+                        payloadType: PayloadSubType.clientList,
+                        clients: allUsers,
+                    })
+                );
+                //
+            } catch (error) {
+                console.error("Error while retrieving all users", error);
+            }
             // console.log("allUsers", allUsers);
-            server.publish(
-                "the-group-chat",
-                JSON.stringify({
-                    payloadType: PayloadSubType.clientList,
-                    clients: allUsers,
-                })
-            );
             break;
 
         ////
@@ -79,7 +93,8 @@ export async function processIncomingMessage(
             await persistMessageInDatabase(messageAsString);
 
             // retrieve just persisted message
-            const lastMessagesFromDatabase:MessagePayload = await retrieveLastMessageFromDatabase() as MessagePayload;
+            const lastMessagesFromDatabase: MessagePayload =
+                (await retrieveLastMessageFromDatabase()) as MessagePayload;
 
             lastMessagesFromDatabase.payloadType = PayloadSubType.message;
 

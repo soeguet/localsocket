@@ -4,6 +4,7 @@ import {
     PayloadSubType,
     type MessageListPayload,
     type MessagePayload,
+    type MessagePayloadType,
 } from "./types/payloadTypes";
 import { desc, eq } from "drizzle-orm";
 import { postgresDb } from "./db/db";
@@ -71,8 +72,15 @@ export async function retrieveLastMessageFromDatabase() {
         .limit(1)
         .execute();
 
-    if (lastMessage.length > 1 || lastMessage === undefined || lastMessage === null) {
-        console.error("More than one message retrieved from database, expected 1, got: ", lastMessage.length);
+    if (
+        lastMessage.length > 1 ||
+        lastMessage === undefined ||
+        lastMessage === null
+    ) {
+        console.error(
+            "More than one message retrieved from database, expected 1, got: ",
+            lastMessage.length
+        );
         console.error("lastMessage", lastMessage);
         return;
     }
@@ -81,14 +89,25 @@ export async function retrieveLastMessageFromDatabase() {
 }
 
 export async function persistMessageInDatabase(message: string | Buffer) {
+    //
     if (typeof message !== "string") {
-        console.error("Invalid message type, expected string, got: ", typeof message);
+        console.error(
+            "Invalid message type, expected string, got: ",
+            typeof message
+        );
         return;
     }
     const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
 
-    if (payloadFromClientAsObject.messageType?.time === undefined || payloadFromClientAsObject.messageType?.message === undefined || payloadFromClientAsObject.messageType?.messageId === undefined) {
-        console.error("Invalid message type, messageType is undefined or missing properties", payloadFromClientAsObject.messageType);
+    if (
+        payloadFromClientAsObject.messageType?.time === undefined ||
+        payloadFromClientAsObject.messageType?.message === undefined ||
+        payloadFromClientAsObject.messageType?.messageId === undefined
+    ) {
+        console.error(
+            "Invalid message type, messageType is undefined or missing properties",
+            payloadFromClientAsObject.messageType
+        );
         return;
     }
 
@@ -101,7 +120,7 @@ export async function persistMessageInDatabase(message: string | Buffer) {
         })
         .returning();
 
-    const messagePayloadFromDatabase = await postgresDb
+    const messagePayloadFromDatabase: MessagePayloadType[] = await postgresDb
         .insert(messagePayloadTypeSchema)
         .values({
             userId: payloadFromClientAsObject.messagePayloadType.userId,
