@@ -9,9 +9,15 @@ import type { RegisteredUser } from "./types/userTypes";
 import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
+    sendLast100MessagesToNewClient,
 } from "./databaseRequests";
 import { postgresDb } from "./db/db";
 import { reactionTypeSchema, usersSchema } from "./db/schema/schema";
+import {
+    registerUserInDatabse,
+    retrieveAllRegisteredUsersFromDatabase,
+    sendAllRegisteredUsersListToClient as sendAllRegisteredUsersListToClient,
+} from "./handlers/authHandler";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
     // console.log("message received", message);
@@ -36,53 +42,24 @@ export async function processIncomingMessage(
     server: Server,
     message: string | Buffer
 ) {
+    //
     const messageAsString = checkForDatabaseErrors(message) as string;
-    // switch part
     const payloadFromClientAsObject = JSON.parse(messageAsString);
+    // switch part
     switch (payloadFromClientAsObject.payloadType) {
         ////
         case PayloadSubType.auth:
-            // first part
-            // register the user in the database
-            // eslint-disable-next-line no-case-declarations
+            //
             const authenticationPayload: AuthenticatedPayload =
                 JSON.parse(messageAsString);
 
-            try {
-                //
-                await postgresDb
-                    .insert(usersSchema)
-                    .values({
-                        id: authenticationPayload.clientId,
-                        username: authenticationPayload.clientUsername,
-                    })
-                    .onConflictDoNothing();
-                //
-            } catch (error) {
-                console.error("Error while registering user", error);
-            }
+            registerUserInDatabse(authenticationPayload);
 
-            // second part
-            // send the list of all users to the client
-            // eslint-disable-next-line no-case-declarations
-            try {
-                //
-                const allUsers: RegisteredUser[] = await postgresDb
-                    .select()
-                    .from(usersSchema);
+            retrieveAllRegisteredUsersFromDatabase().then(
+                (allUsers: RegisteredUser | unknown) =>
+                    sendAllRegisteredUsersListToClient(server, allUsers)
+            );
 
-                server.publish(
-                    "the-group-chat",
-                    JSON.stringify({
-                        payloadType: PayloadSubType.clientList,
-                        clients: allUsers,
-                    })
-                );
-                //
-            } catch (error) {
-                console.error("Error while retrieving all users", error);
-            }
-            // console.log("allUsers", allUsers);
             break;
 
         ////
