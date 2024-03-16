@@ -9,7 +9,7 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { postgresDb } from "./db/db";
 import {
-    messagePayloadTypeSchema,
+    messagePayloadSchema,
     messageTypeSchema,
     quoteTypeSchema,
     reactionTypeSchema,
@@ -21,14 +21,14 @@ export async function sendLast100MessagesToNewClient(
     // grab all messages
     const messages: MessagePayload[] = await postgresDb
         .select()
-        .from(messagePayloadTypeSchema)
+        .from(messagePayloadSchema)
         .leftJoin(
             messageTypeSchema,
-            eq(messagePayloadTypeSchema.messageId, messageTypeSchema.id)
+            eq(messagePayloadSchema.messageId, messageTypeSchema.id)
         )
         .leftJoin(
             quoteTypeSchema,
-            eq(messagePayloadTypeSchema.id, quoteTypeSchema.payloadId)
+            eq(messagePayloadSchema.id, quoteTypeSchema.payloadId)
         )
         .execute();
 
@@ -59,16 +59,16 @@ export async function sendLast100MessagesToNewClient(
 export async function retrieveLastMessageFromDatabase() {
     const lastMessage = await postgresDb
         .select()
-        .from(messagePayloadTypeSchema)
+        .from(messagePayloadSchema)
         .leftJoin(
             messageTypeSchema,
-            eq(messagePayloadTypeSchema.messageId, messageTypeSchema.id)
+            eq(messagePayloadSchema.messageId, messageTypeSchema.id)
         )
         .leftJoin(
             quoteTypeSchema,
-            eq(messagePayloadTypeSchema.id, quoteTypeSchema.payloadId)
+            eq(messagePayloadSchema.id, quoteTypeSchema.payloadId)
         )
-        .orderBy(desc(messagePayloadTypeSchema.id))
+        .orderBy(desc(messagePayloadSchema.id))
         .limit(1)
         .execute();
 
@@ -99,31 +99,20 @@ export async function persistMessageInDatabase(message: string | Buffer) {
     }
     const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
 
-    if (
-        payloadFromClientAsObject.messageType?.time === undefined ||
-        payloadFromClientAsObject.messageType?.message === undefined ||
-        payloadFromClientAsObject.messageType?.messageId === undefined
-    ) {
-        console.error(
-            "Invalid message type, messageType is undefined or missing properties",
-            payloadFromClientAsObject.messageType
-        );
-        return;
-    }
-
     const messageId = await postgresDb
         .insert(messageTypeSchema)
         .values({
             messageId: payloadFromClientAsObject.messageType.messageId,
-            message: payloadFromClientAsObject.messageType.message,
-            time: payloadFromClientAsObject.messageType.time,
+            message: payloadFromClientAsObject.messageType.messageConext,
+            time: payloadFromClientAsObject.messageType.messageTime,
+            date: payloadFromClientAsObject.messageType.messageDate,
         })
         .returning();
 
     const messagePayloadFromDatabase: MessagePayloadType[] = await postgresDb
-        .insert(messagePayloadTypeSchema)
+        .insert(messagePayloadSchema)
         .values({
-            userId: payloadFromClientAsObject.messagePayloadType.userId,
+            userId: payloadFromClientAsObject.userId,
             messageId: messageId[0].id,
         })
         .returning();
@@ -142,3 +131,7 @@ export async function persistMessageInDatabase(message: string | Buffer) {
 
     return messagePayloadFromDatabase[0].id;
 }
+function checkIfPayloadTypeFulfillsAllCriteria(payloadFromClientAsObject: MessagePayload) {
+    throw new Error("Function not implemented.");
+}
+

@@ -7,8 +7,15 @@ export const usersSchema = pgTable("users", {
     profilePhotoUrl: varchar("profilePhotoUrl"),
 });
 
+export const clientTypeSchema = pgTable("clientType", {
+    clientId: varchar("clientId").notNull(),
+    messagePayloadId: bigserial("messagePayloadId", { mode: "number" })
+        .notNull()
+        .references(() => messagePayloadSchema.id),
+});
+
 export const messageTypeSchema = pgTable("messageType", {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
+    messageDbId: bigserial("id", { mode: "number" }).primaryKey(),
     messageId: varchar("messageId").notNull(),
     time: varchar("time").notNull(),
     message: varchar("message").notNull(),
@@ -22,7 +29,7 @@ export const quoteTypeSchema = pgTable("quoteType", {
     quoteTime: varchar("quoteTime"),
     payloadId: bigserial("payloadId", { mode: "number" })
         .notNull()
-        .references(() => messagePayloadTypeSchema.id),
+        .references(() => messagePayloadSchema.id),
 });
 
 export const reactionTypeSchema = pgTable("reactionType", {
@@ -32,10 +39,10 @@ export const reactionTypeSchema = pgTable("reactionType", {
     userId: varchar("userId").notNull(),
     payloadId: bigserial("payloadId", { mode: "number" })
         .notNull()
-        .references(() => messagePayloadTypeSchema.id),
+        .references(() => messagePayloadSchema.id),
 });
 
-export const messagePayloadTypeSchema = pgTable("messagePayloadType", {
+export const messagePayloadSchema = pgTable("messagePayloadType", {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     userId: varchar("userId").notNull(),
     messageId: bigserial("messageId", { mode: "number" })

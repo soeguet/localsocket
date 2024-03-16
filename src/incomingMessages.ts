@@ -8,11 +8,10 @@ import {
 import type { RegisteredUser } from "./types/userTypes";
 import {
     persistMessageInDatabase,
-    retrieveLastMessageFromDatabase,
-    sendLast100MessagesToNewClient,
+    retrieveLastMessageFromDatabase
 } from "./databaseRequests";
 import { postgresDb } from "./db/db";
-import { reactionTypeSchema, usersSchema } from "./db/schema/schema";
+import { reactionTypeSchema } from "./db/schema/schema";
 import {
     registerUserInDatabse,
     retrieveAllRegisteredUsersFromDatabase,
