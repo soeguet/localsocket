@@ -1,5 +1,3 @@
-import type { ServerWebSocket } from "bun";
-
 import {
     PayloadSubType,
     type MessageListPayload,
@@ -8,15 +6,14 @@ import {
 import { desc, eq } from "drizzle-orm";
 import { postgresDb } from "./db/db";
 import {
+    clientEntitySchema,
     messagePayloadSchema,
     messageTypeSchema,
     quoteTypeSchema,
     reactionTypeSchema,
 } from "./db/schema/schema";
 
-export async function sendLast100MessagesToNewClient(
-    ws: ServerWebSocket<WebSocket>
-) {
+export async function sendLast100MessagesToNewClient() {
     // grab all messages
     const messages: MessagePayload[] = await postgresDb
         .select()
@@ -52,7 +49,7 @@ export async function sendLast100MessagesToNewClient(
         messageList: messages,
     };
     // console.log("messageListPayload", messageListPayload);
-    ws.send(JSON.stringify(messageListPayload));
+    return messageListPayload;
 }
 
 export async function retrieveLastMessageFromDatabase() {
@@ -87,50 +84,33 @@ export async function retrieveLastMessageFromDatabase() {
     return lastMessage[0];
 }
 
-export async function persistMessageInDatabase(message: string | Buffer) {
-    //
-    if (typeof message !== "string") {
-        console.error(
-            "Invalid message type, expected string, got: ",
-            typeof message
-        );
-        return;
-    }
-    const payloadFromClientAsObject: MessagePayload = JSON.parse(message);
-
+export async function persistMessageInDatabase(payload: MessagePayload) {
     const messageId = await postgresDb
         .insert(messageTypeSchema)
         .values({
-            messageId: payloadFromClientAsObject.messageType.messageId,
-            message: payloadFromClientAsObject.messageType.messageConext,
-            time: payloadFromClientAsObject.messageType.messageTime,
-            date: payloadFromClientAsObject.messageType.messageDate,
-        })
-        .returning();
-
-    const messagePayloadFromDatabase: MessagePayloadType[] = await postgresDb
-        .insert(messagePayloadSchema)
-        .values({
-            userId: payloadFromClientAsObject.userId,
-            messageId: messageId[0].id,
+            messageId: payload.messageType.messageId,
+            messageContext: payload.messageType.messageConext,
+            messageTime: payload.messageType.messageTime,
+            messageDate: payload.messageType.messageDate,
         })
         .returning();
 
     // if no quote, skip
     // a new message cannot have a reaction yet
-    if (payloadFromClientAsObject.quoteType !== undefined) {
+    if (payload.quoteType !== undefined) {
         await postgresDb.insert(quoteTypeSchema).values({
-            quoteId: payloadFromClientAsObject.quoteType?.quoteId,
-            quoteSenderId: payloadFromClientAsObject.quoteType?.quoteSenderId,
-            quoteMessage: payloadFromClientAsObject.quoteType?.quoteMessage,
-            quoteTime: payloadFromClientAsObject.quoteType?.quoteTime,
-            payloadId: messagePayloadFromDatabase[0].id,
+            quoteMessageId: payload.quoteType.quoteMessageId,
+            quoteClientId: payload.quoteType.quoteClientId,
+            quoteMessageContext: payload.quoteType.quoteMessageContext,
+            quoteTime: payload.quoteType.quoteTime,
+            payloadId: messageId[0].messageId,
         });
     }
 
     return messagePayloadFromDatabase[0].id;
 }
-function checkIfPayloadTypeFulfillsAllCriteria(payloadFromClientAsObject: MessagePayload) {
+function checkIfPayloadTypeFulfillsAllCriteria(
+    payloadFromClientAsObject: MessagePayload
+) {
     throw new Error("Function not implemented.");
 }
-

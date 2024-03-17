@@ -32,7 +32,7 @@ export type MessageEntity = {
     messageId: string;
     messageConext: string;
     messageTime: string;
-    messageDate: Date;
+    messageDate: string;
 };
 
 export type QuoteEntity = {
@@ -41,7 +41,7 @@ export type QuoteEntity = {
     quoteClientId: string;
     quoteMessageContext: string;
     quoteTime: string;
-    quoteDate: Date;
+    quoteDate: string;
 };
 
 /**

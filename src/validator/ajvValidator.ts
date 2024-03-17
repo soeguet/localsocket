@@ -21,6 +21,26 @@ ajvValidator.addSchema(
     "testValidator"
 );
 
+ajvValidator.addSchema(
+    {
+        type: "object",
+        properties: {
+            payloadType: {
+                type: "number",
+            },
+            clientUsername: {
+                type: "string",
+            },
+            clientId: {
+                type: "string",
+            },
+        },
+        required: ["payloadType", "clientUsername", "clientId"],
+        additionalProperties: false,
+    },
+    "authPayloadValidator"
+);
+
 /**
  * export type MessagePayload = {
  *      payloadType: PayloadSubType.message;

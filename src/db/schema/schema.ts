@@ -1,53 +1,51 @@
-import { bigserial, pgTable, varchar } from "drizzle-orm/pg-core";
+import { bigserial, date, pgTable, varchar } from "drizzle-orm/pg-core";
 
-export const usersSchema = pgTable("users", {
-    id: varchar("id").notNull().primaryKey(),
-    username: varchar("username").notNull(),
+// may God have mercy on my soul
+export const clientEntitySchema = pgTable("client", {
+    clientDbId: varchar("clientDbId").notNull().primaryKey(),
+    clientUsername: varchar("clientUsername").notNull(),
     clientColor: varchar("clientColor"),
-    profilePhotoUrl: varchar("profilePhotoUrl"),
-});
-
-export const clientTypeSchema = pgTable("clientType", {
-    clientId: varchar("clientId").notNull(),
-    messagePayloadId: bigserial("messagePayloadId", { mode: "number" })
-        .notNull()
-        .references(() => messagePayloadSchema.id),
+    clientProfileImage: varchar("clientProfileImage"),
 });
 
 export const messageTypeSchema = pgTable("messageType", {
-    messageDbId: bigserial("id", { mode: "number" }).primaryKey(),
+    messageDbId: bigserial("messageDbId", { mode: "number" }).primaryKey(),
     messageId: varchar("messageId").notNull(),
-    time: varchar("time").notNull(),
-    message: varchar("message").notNull(),
+    messageContext: varchar("messageContext").notNull(),
+    messageTime: varchar("messageTime").notNull(),
+    messageDate: varchar("messageDate").notNull(),
 });
 
 export const quoteTypeSchema = pgTable("quoteType", {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    quoteId: varchar("quoteId"),
-    quoteSenderId: varchar("quoteSenderId"),
-    quoteMessage: varchar("quoteMessage"),
+    quoteDbId: bigserial("quoteDbId", { mode: "number" }).primaryKey(),
+    quoteMessageId: varchar("quoteMessageId"),
+    quoteClientId: varchar("quoteClientId"),
+    quoteMessageContext: varchar("quoteMessageContext"),
     quoteTime: varchar("quoteTime"),
-    payloadId: bigserial("payloadId", { mode: "number" })
+    quoteDate: varchar("quoteDate"),
+    payloadId: varchar("payloadId")
         .notNull()
-        .references(() => messagePayloadSchema.id),
+        .references(() => messagePayloadSchema.messagePayloadDbId),
 });
 
 export const reactionTypeSchema = pgTable("reactionType", {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    messageId: varchar("messageId").notNull(),
-    emojiName: varchar("emojiName").notNull(),
-    userId: varchar("userId").notNull(),
+    reactionDbId: bigserial("reactionDbId", { mode: "number" }).primaryKey(),
+    reactionMessageId: varchar("reactionMessageId").notNull(),
+    reactionContext: varchar("reactionContext").notNull(),
+    reactionClientId: varchar("reactionClientId").notNull(),
     payloadId: bigserial("payloadId", { mode: "number" })
         .notNull()
-        .references(() => messagePayloadSchema.id),
+        .references(() => messagePayloadSchema.messagePayloadDbId),
 });
 
 export const messagePayloadSchema = pgTable("messagePayloadType", {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    userId: varchar("userId").notNull(),
-    messageId: bigserial("messageId", { mode: "number" })
+    messagePayloadDbId: bigserial("messagePayloadDbId", { mode: "number" }).primaryKey(),
+    clientDbId: varchar("clientDbId")
         .notNull()
-        .references(() => messageTypeSchema.id),
+        .references(() => clientEntitySchema.clientDbId),
+    messageDbId: bigserial("messageDbId", { mode: "number" })
+        .notNull()
+        .references(() => messageTypeSchema.messageDbId),
 });
 
 // export const messagePayloadRelations = relations(

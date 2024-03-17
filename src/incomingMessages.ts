@@ -8,28 +8,24 @@ import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
 } from "./databaseRequests";
-import { checkIfMessageFitsDbSchema } from "./handlers/authHandler";
 import {
     checkForDatabaseErrors,
     persistReactionToDatabase,
+    registerUserInDatabse,
+    retrieveAllRegisteredUsersFromDatabase,
 } from "./handlers/databaseHandler";
 import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
-import { validateMessagePayloadTyping } from "./handlers/typeHandler";
+import { validateAuthPayloadTyping, validateMessagePayloadTyping } from "./handlers/typeHandler";
 
 export async function processIncomingMessage(
     _ws: ServerWebSocket<WebSocket>,
     server: Server,
     message: string | Buffer
 ) {
-    //
+    // some random checks on message & database
     const messageAsString = checkForDatabaseErrors(message) as string;
-    const payloadFromClientAsObject = JSON.parse(messageAsString);
 
-    // first payload check
-    if (payloadFromClientAsObject.payloadType === undefined) {
-        console.error("Invalid payload type");
-        return;
-    }
+    const payloadFromClientAsObject = JSON.parse(messageAsString);
 
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
@@ -39,7 +35,17 @@ export async function processIncomingMessage(
             const authenticationPayload: AuthenticationPayload =
                 JSON.parse(messageAsString);
 
-            registerUserInDatabse(authenticationPayload);
+            const validAuthPayload = validateAuthPayloadTyping(
+                authenticationPayload
+            );
+
+            if (!validAuthPayload) {
+                throw new Error(
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+            }
+
+            await registerUserInDatabse(authenticationPayload);
 
             retrieveAllRegisteredUsersFromDatabase().then(
                 (allUsers: ClientEntity | unknown) =>
@@ -50,6 +56,7 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
+            // VALIDATION
             const validPayload = validateMessagePayloadTyping(
                 payloadFromClientAsObject
             );
@@ -61,7 +68,7 @@ export async function processIncomingMessage(
             }
 
             // PERSIST MESSAGE
-            await persistMessageInDatabase(messageAsString);
+            await persistMessageInDatabase(payloadFromClientAsObject);
 
             // retrieve just persisted message
             const lastMessagesFromDatabase =

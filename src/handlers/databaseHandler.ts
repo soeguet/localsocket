@@ -1,5 +1,6 @@
 import { postgresDb } from "../db/db";
-import type { ReactionEntity } from "../types/payloadTypes";
+import { clientEntitySchema } from "../db/schema/schema";
+import type { AuthenticationPayload, ReactionEntity } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
     // console.log("message received", message);
@@ -23,10 +24,10 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
     try {
         //
         await postgresDb
-            .insert(usersSchema)
+            .insert(clientEntitySchema)
             .values({
-                id: payload.clientId,
-                username: payload.clientUsername,
+                clientDbId: payload.clientId,
+                clientUsername: payload.clientUsername,
             })
             .onConflictDoNothing();
         //
@@ -34,13 +35,15 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
         console.error("Error while registering user", error);
     }
 }
+
 export async function retrieveAllRegisteredUsersFromDatabase() {
     try {
-        return await postgresDb.select().from(usersSchema);
+        return await postgresDb.select().from(clientEntitySchema);
     } catch (error) {
         return error;
     }
 }
+
 export async function persistReactionToDatabase(message: string | Buffer) {
     if (typeof message !== "string") {
         console.error("Invalid message type");

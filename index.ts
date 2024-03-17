@@ -1,7 +1,9 @@
 import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
-import {
-    processIncomingMessage
-} from "./src/incomingMessages";
+import { processIncomingMessage } from "./src/incomingMessages";
+import type {
+    MessageListPayload,
+    MessagePayload,
+} from "./src/types/payloadTypes";
 
 console.log("Hello via Bun!");
 
@@ -35,18 +37,19 @@ const server = Bun.serve<WebSocket>({
     },
     //
     websocket: {
-        //
-        perMessageDeflate: true,
-
-        //
+        // WEBSOCKET - OPEN
         async open(ws) {
             ws.subscribe("the-group-chat");
-            await sendLast100MessagesToNewClient(ws);
+            // const messageListPayload: MessageListPayload =
+            //     await sendLast100MessagesToNewClient();
+            //
+            // ws.send(JSON.stringify(messageListPayload));
         },
-
+        //
+        // WEBSOCKET - NEW MESSAGE
         // this is called when a message is received
         async message(ws, message): Promise<void> {
-            processIncomingMessage(ws,server, message);
+            processIncomingMessage(ws, server, message);
         },
     },
     //
