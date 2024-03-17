@@ -1,14 +1,14 @@
 import { type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
-    type AuthenticatedPayload,
+    type AuthenticationPayload,
     type MessagePayload,
-    type ReactionPayload,
+    type ReactionEntity,
 } from "./types/payloadTypes";
 import type { RegisteredUser } from "./types/userTypes";
 import {
     persistMessageInDatabase,
-    retrieveLastMessageFromDatabase
+    retrieveLastMessageFromDatabase,
 } from "./databaseRequests";
 import { postgresDb } from "./db/db";
 import { reactionTypeSchema } from "./db/schema/schema";
@@ -44,12 +44,19 @@ export async function processIncomingMessage(
     //
     const messageAsString = checkForDatabaseErrors(message) as string;
     const payloadFromClientAsObject = JSON.parse(messageAsString);
+
+    // first payload check
+    if (payloadFromClientAsObject.payloadType === undefined) {
+        console.error("Invalid payload type");
+        return;
+    }
+
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
         ////
         case PayloadSubType.auth:
             //
-            const authenticationPayload: AuthenticatedPayload =
+            const authenticationPayload: AuthenticationPayload =
                 JSON.parse(messageAsString);
 
             registerUserInDatabse(authenticationPayload);
@@ -63,7 +70,8 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
-            console.log("messageAsString received", messageAsString);
+
+            checkIfMessageFitsDbSchema(messageAsString);
 
             // PERSIST MESSAGE
             await persistMessageInDatabase(messageAsString);
@@ -116,7 +124,7 @@ export async function persistReactionToDatabase(message: string | Buffer) {
         console.error("Invalid message type");
         return;
     }
-    const payloadFromClientAsObject: ReactionPayload = JSON.parse(message);
+    const payloadFromClientAsObject: ReactionEntity = JSON.parse(message);
 
     await postgresDb.insert(reactionTypeSchema).values({
         payloadId: payloadFromClientAsObject.messagePayloadId,

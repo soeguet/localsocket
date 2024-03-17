@@ -1,10 +1,14 @@
 import type { Server } from "bun";
 import { postgresDb } from "../db/db";
 import { usersSchema } from "../db/schema/schema";
-import { PayloadSubType, type AuthenticatedPayload } from "../types/payloadTypes";
 import type { RegisteredUser } from "../types/userTypes";
+import {
+    PayloadSubType,
+    type AuthenticationPayload,
+    type MessagePayload,
+} from "../types/payloadTypes";
 
-export async function registerUserInDatabse(payload: AuthenticatedPayload) {
+export async function registerUserInDatabse(payload: AuthenticationPayload) {
     try {
         //
         await postgresDb
@@ -28,7 +32,10 @@ export async function retrieveAllRegisteredUsersFromDatabase() {
     }
 }
 
-export async function sendAllRegisteredUsersListToClient(server: Server, allUsers:RegisteredUser[] | unknown) {
+export async function sendAllRegisteredUsersListToClient(
+    server: Server,
+    allUsers: RegisteredUser[] | unknown
+) {
     console.log("allUsers", allUsers);
 
     if (allUsers === undefined || allUsers === null) {
@@ -42,4 +49,8 @@ export async function sendAllRegisteredUsersListToClient(server: Server, allUser
             clients: allUsers,
         })
     );
+}
+
+export function checkIfMessageFitsDbSchema(message: string) {
+    const abc = JSON.parse(message) as MessagePayload;
 }

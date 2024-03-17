@@ -9,80 +9,97 @@ export enum PayloadSubType {
     reaction,
 }
 
-// export type AuthenticatedPayload = {
-//     payloadType: PayloadSubType.auth;
-//     clientUsername: string;
-//     clientId: string;
-// };
-//
-// export type MessageListPayload = {
-//     payloadType: PayloadSubType.messageList;
-//     messageList: MessagePayload[];
-// };
-//
-// export type MessagePayload = {
-//     payloadType?: PayloadSubType.message;
-//     messagePayloadType: MessagePayloadType;
-//     messageType?: MessageType | null;
-//     quoteType?: QuoteType | null;
-//     reactionType?: ReactionType[];
-// };
-//
-// export type MessagePayloadType = {
-//     id: number;
-//     userId: string;
-//     messageId: number;
-// };
-//
-// export type ReactionType = {
-//     messageId: string;
-//     emojiName: string;
-//     userId: string;
-// };
-// export type MessageType = {
-//     id?: number;
-//     messageId: string;
-//     time: string;
-//     message: string;
-// };
-// export type QuoteType = {
-//     id?: number;
-//     quoteId: string | null;
-//     quoteSenderId: string | null;
-//     quoteMessage: string | null;
-//     quoteTime: string | null;
-//     payloadId?: number;
-// };
-//
-// export type ReactionPayload = {
-//     messagePayloadId: number;
-//     payloadType: PayloadSubType.reaction;
-//     messageId: string;
-//     emoji: string;
-//     userId: string;
-// };
+/**
+ * [[ RESULTING TYPE ]]
+ *  export type AuthenticationPayload = {
+ *     payloadType: PayloadSubType.auth;
+ *     clientUsername: string;
+ *     clientId: string;
+ *  };
+ */
+export type AuthenticationPayload = PayloadSubType.auth &
+    Pick<ClientEntity, "clientId" | "clientUsername">;
 
+export type ClientEntity = {
+    clientId: string;
+    clientUsername: string;
+    clientColor?: string;
+    clientProfileImage?: string;
+};
+
+export type MessageEntity = {
+    messageDbId: number;
+    messageId: string;
+    messageConext: string;
+    messageTime: string;
+    messageDate: Date;
+};
+
+export type QuoteEntity = {
+    quoteDbId: number;
+    quoteMessageId: string;
+    quoteClientId: string;
+    quoteMessageContext: string;
+    quoteTime: string;
+    quoteDate: Date;
+};
+
+/**
+ * [[ RESULTING TYPE ]]
+ *  export type ReactionEntity = {
+ *     payloadType: PayloadSubType.reaction;
+ *     reactionMessageId: string;
+ *     reactionContext: string;
+ *     reactionClientId: string;
+ *  };
+ */
+export type ReactionPayload = Omit<ReactionEntity, "reactionDbId"> & {
+    payloadType: PayloadSubType.reaction;
+};
+
+export type ReactionEntity = {
+    reactionDbId: number;
+    reactionMessageId: string;
+    reactionContext: string;
+    reactionClientId: string;
+};
+
+/**
+ * [[ RESULTING TYPE ]]
+ * export type MessagePayload = {
+ *      payloadType: PayloadSubType.message;
+ *      messageType: {
+ *          messageId: string;
+ *          messageConext: string;
+ *          messageTime: string;
+ *          messageDate: Date;
+ *      };
+ *      clientType: {
+ *          clientId: string;
+ *      };
+ *      quoteType?: {
+ *          quoteMessageId: string;
+ *          quoteClientId: string;
+ *          quoteMessageContext: string;
+ *          quoteTime: string;
+ *          quoteDate: Date;
+ *      };
+ *      reactionType?: {
+ *          reactionMessageId: string;
+ *          reactionContext: string;
+ *          reactionClientId: string;
+ *      }[];
+ *    };
+ */
 export type MessagePayload = {
     payloadType: PayloadSubType.message;
-    messageType: {
-        messageId: string;
-        messageConext: string;
-        messageTime: string;
-        messageDate: Date;
-    };
-    clientType: {
-        clientId: string;
-    };
-    quoteType?: {
-        quoteDbId?: number;
-        quoteMessageId: string;
-        quoteClientId: string;
-        quoteMessageContext: string;
-        quoteTime: string;
-        quoteDate: Date;
-    };
-    ReactionType?: {
-        emojiContext: string;
-        emojiClientId: string;
-    }[];
+    messageType: Omit<MessageEntity, "messageDbId">;
+    clientType: Pick<ClientEntity, "clientId">;
+    quoteType?: Omit<QuoteEntity, "quoteDbId">;
+    reactionType?: Omit<ReactionEntity, "reactionDbId">[];
+};
+
+export type MessageListPayload = {
+    payloadType: PayloadSubType.messageList;
+    messageList: Omit<MessagePayload, "payloadType">[];
 };
