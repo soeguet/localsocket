@@ -2,39 +2,23 @@ import { type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticationPayload,
+    type ClientEntity,
     type MessagePayload,
-    type ReactionEntity,
 } from "./types/payloadTypes";
-import type { RegisteredUser } from "./types/userTypes";
 import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
 } from "./databaseRequests";
-import { postgresDb } from "./db/db";
-import { reactionTypeSchema } from "./db/schema/schema";
 import {
+    checkIfMessageFitsDbSchema,
     registerUserInDatabse,
     retrieveAllRegisteredUsersFromDatabase,
-    sendAllRegisteredUsersListToClient as sendAllRegisteredUsersListToClient,
 } from "./handlers/authHandler";
-
-export function checkForDatabaseErrors(message: string | Buffer) {
-    // console.log("message received", message);
-    // check for null values
-    if (postgresDb === undefined || postgresDb === null) {
-        console.error("Database not found");
-        return;
-    }
-    if (
-        typeof message !== "string" ||
-        message === "" ||
-        message === undefined
-    ) {
-        console.error("Invalid message type");
-        return;
-    }
-    return message;
-}
+import {
+    checkForDatabaseErrors,
+    persistReactionToDatabase,
+} from "./handlers/databaseHandler";
+import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
 
 export async function processIncomingMessage(
     _ws: ServerWebSocket<WebSocket>,
@@ -62,7 +46,7 @@ export async function processIncomingMessage(
             registerUserInDatabse(authenticationPayload);
 
             retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: RegisteredUser | unknown) =>
+                (allUsers: ClientEntity | unknown) =>
                     sendAllRegisteredUsersListToClient(server, allUsers)
             );
 
@@ -70,15 +54,13 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
-
-            checkIfMessageFitsDbSchema(messageAsString);
+            checkIfMessageFitsDbSchema(payloadFromClientAsObject);
 
             // PERSIST MESSAGE
             await persistMessageInDatabase(messageAsString);
 
             // retrieve just persisted message
-            const lastMessagesFromDatabase: MessagePayload =
-                (await retrieveLastMessageFromDatabase()) as MessagePayload;
+            const lastMessagesFromDatabase = await retrieveLastMessageFromDatabase();
 
             lastMessagesFromDatabase.payloadType = PayloadSubType.message;
 
@@ -117,20 +99,4 @@ export async function processIncomingMessage(
             break;
         }
     }
-}
-
-export async function persistReactionToDatabase(message: string | Buffer) {
-    if (typeof message !== "string") {
-        console.error("Invalid message type");
-        return;
-    }
-    const payloadFromClientAsObject: ReactionEntity = JSON.parse(message);
-
-    await postgresDb.insert(reactionTypeSchema).values({
-        payloadId: payloadFromClientAsObject.messagePayloadId,
-        messageId: payloadFromClientAsObject.messageId,
-        emojiName: payloadFromClientAsObject.emoji,
-        userId: payloadFromClientAsObject.userId,
-    });
-    console.log("persistReactionToDatabase", payloadFromClientAsObject);
 }

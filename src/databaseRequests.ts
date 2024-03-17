@@ -4,7 +4,6 @@ import {
     PayloadSubType,
     type MessageListPayload,
     type MessagePayload,
-    type MessagePayloadType,
 } from "./types/payloadTypes";
 import { desc, eq } from "drizzle-orm";
 import { postgresDb } from "./db/db";
