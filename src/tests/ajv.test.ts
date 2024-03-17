@@ -1,8 +1,8 @@
-import ajv from "../validator/ajvValidator";
+import ajvValidator from "../validator/ajvValidator";
 import { expect, test, describe } from "bun:test";
 
 describe("validator tests just to be sure everything is fine", () => {
-    const validate = ajv.getSchema("testValidator");
+    const validate = ajvValidator.getSchema("testValidator");
 
     if (validate === undefined) {
         throw new Error("Schema not found");

@@ -3,22 +3,18 @@ import {
     PayloadSubType,
     type AuthenticationPayload,
     type ClientEntity,
-    type MessagePayload,
 } from "./types/payloadTypes";
 import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
 } from "./databaseRequests";
-import {
-    checkIfMessageFitsDbSchema,
-    registerUserInDatabse,
-    retrieveAllRegisteredUsersFromDatabase,
-} from "./handlers/authHandler";
+import { checkIfMessageFitsDbSchema } from "./handlers/authHandler";
 import {
     checkForDatabaseErrors,
     persistReactionToDatabase,
 } from "./handlers/databaseHandler";
 import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
+import { validateMessagePayloadTyping } from "./handlers/typeHandler";
 
 export async function processIncomingMessage(
     _ws: ServerWebSocket<WebSocket>,
@@ -54,13 +50,22 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
-            checkIfMessageFitsDbSchema(payloadFromClientAsObject);
+            const validPayload = validateMessagePayloadTyping(
+                payloadFromClientAsObject
+            );
+
+            if (!validPayload) {
+                throw new Error(
+                    "Invalid message payload type. Type check not successful!"
+                );
+            }
 
             // PERSIST MESSAGE
             await persistMessageInDatabase(messageAsString);
 
             // retrieve just persisted message
-            const lastMessagesFromDatabase = await retrieveLastMessageFromDatabase();
+            const lastMessagesFromDatabase =
+                await retrieveLastMessageFromDatabase();
 
             lastMessagesFromDatabase.payloadType = PayloadSubType.message;
 
