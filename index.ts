@@ -1,9 +1,6 @@
 import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
 import { processIncomingMessage } from "./src/incomingMessages";
-import type {
-    MessageListPayload,
-    MessagePayload,
-} from "./src/types/payloadTypes";
+import type { MessageListPayload } from "./src/types/payloadTypes";
 
 console.log("Hello via Bun!");
 
@@ -40,10 +37,10 @@ const server = Bun.serve<WebSocket>({
         // WEBSOCKET - OPEN
         async open(ws) {
             ws.subscribe("the-group-chat");
-            // const messageListPayload: MessageListPayload =
-            //     await sendLast100MessagesToNewClient();
-            //
-            // ws.send(JSON.stringify(messageListPayload));
+            const messageListPayload=
+                await sendLast100MessagesToNewClient();
+
+            ws.send(JSON.stringify(messageListPayload));
         },
         //
         // WEBSOCKET - NEW MESSAGE

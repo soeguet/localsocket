@@ -20,6 +20,9 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                clientType: {
+                    clientId: "test",
+                },
                 messageType: {
                     messageId: "test",
                     messageConext: "test",
@@ -34,6 +37,9 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                clientType: {
+                    clientId: "test",
+                },
                 messageType: {
                     messageId: "test",
                     messageConext: "test",
@@ -55,6 +61,9 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                clientType: {
+                    clientId: "test",
+                },
                 messageType: {
                     messageId: "test",
                     messageConext: "test",
@@ -83,6 +92,9 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                clientType: {
+                    clientId: "test",
+                },
                 messageType: {
                     messageId: "test",
                     messageConext: 5,

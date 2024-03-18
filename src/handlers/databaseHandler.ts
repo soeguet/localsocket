@@ -1,11 +1,10 @@
-import { postgresDb } from "../db/db";
-import { clientEntitySchema } from "../db/schema/schema";
-import type { AuthenticationPayload, ReactionEntity } from "../types/payloadTypes";
+import prisma from "../db/db";
+import type { AuthenticationPayload } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
     // console.log("message received", message);
     // check for null values
-    if (postgresDb === undefined || postgresDb === null) {
+    if (prisma === undefined || prisma === null) {
         console.error("Database not found");
         return;
     }
@@ -21,42 +20,34 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 }
 
 export async function registerUserInDatabse(payload: AuthenticationPayload) {
-    try {
-        //
-        await postgresDb
-            .insert(clientEntitySchema)
-            .values({
-                clientDbId: payload.clientId,
-                clientUsername: payload.clientUsername,
-            })
-            .onConflictDoNothing();
-        //
-    } catch (error) {
-        console.error("Error while registering user", error);
-    }
+    await prisma.client.upsert({
+        create: {
+            clientDbId: payload.clientId,
+            clientUsername: payload.clientUsername,
+        },
+        update: {},
+        where: {
+            clientDbId: payload.clientId,
+        },
+    });
 }
 
 export async function retrieveAllRegisteredUsersFromDatabase() {
-    try {
-        return await postgresDb.select().from(clientEntitySchema);
-    } catch (error) {
-        return error;
-    }
+    return await prisma.client.findMany();
 }
 
 export async function persistReactionToDatabase(message: string | Buffer) {
-    if (typeof message !== "string") {
-        console.error("Invalid message type");
-        return;
-    }
-    const payloadFromClientAsObject: ReactionEntity = JSON.parse(message);
-
-    await postgresDb.insert(reactionTypeSchema).values({
-        payloadId: payloadFromClientAsObject.messagePayloadId,
-        messageId: payloadFromClientAsObject.messageId,
-        emojiName: payloadFromClientAsObject.emoji,
-        userId: payloadFromClientAsObject.userId,
-    });
-    console.log("persistReactionToDatabase", payloadFromClientAsObject);
+    // if (typeof message !== "string") {
+    //     console.error("Invalid message type");
+    //     return;
+    // }
+    // const payloadFromClientAsObject: ReactionEntity = JSON.parse(message);
+    //
+    // await postgresDb.insert(reactionTypeSchema).values({
+    //     payloadId: payloadFromClientAsObject.messagePayloadId,
+    //     messageId: payloadFromClientAsObject.messageId,
+    //     emojiName: payloadFromClientAsObject.emoji,
+    //     userId: payloadFromClientAsObject.userId,
+    // });
+    // console.log("persistReactionToDatabase", payloadFromClientAsObject);
 }
-

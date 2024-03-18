@@ -15,7 +15,10 @@ import {
     retrieveAllRegisteredUsersFromDatabase,
 } from "./handlers/databaseHandler";
 import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
-import { validateAuthPayloadTyping, validateMessagePayloadTyping } from "./handlers/typeHandler";
+import {
+    validateAuthPayloadTyping,
+    validateMessagePayloadTyping,
+} from "./handlers/typeHandler";
 
 export async function processIncomingMessage(
     _ws: ServerWebSocket<WebSocket>,
@@ -32,11 +35,9 @@ export async function processIncomingMessage(
         ////
         case PayloadSubType.auth:
             //
-            const authenticationPayload: AuthenticationPayload =
-                JSON.parse(messageAsString);
 
             const validAuthPayload = validateAuthPayloadTyping(
-                authenticationPayload
+                payloadFromClientAsObject
             );
 
             if (!validAuthPayload) {
@@ -45,7 +46,7 @@ export async function processIncomingMessage(
                 );
             }
 
-            await registerUserInDatabse(authenticationPayload);
+            await registerUserInDatabse(payloadFromClientAsObject as AuthenticationPayload);
 
             retrieveAllRegisteredUsersFromDatabase().then(
                 (allUsers: ClientEntity | unknown) =>
@@ -56,6 +57,7 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
+            console.log("message received", payloadFromClientAsObject);
             // VALIDATION
             const validPayload = validateMessagePayloadTyping(
                 payloadFromClientAsObject
@@ -74,6 +76,7 @@ export async function processIncomingMessage(
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 
+            //@ts-ignore
             lastMessagesFromDatabase.payloadType = PayloadSubType.message;
 
             server.publish(

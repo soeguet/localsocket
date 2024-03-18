@@ -98,6 +98,16 @@ ajvValidator.addSchema(
                 ],
                 additionalProperties: false,
             },
+            clientType: {
+                type: "object",
+                properties: {
+                    clientId: {
+                        type: "string",
+                    },
+                },
+                required: ["clientId"],
+                additionalProperties: false,
+            },
             quoteType: {
                 type: "object",
                 properties: {
@@ -151,7 +161,7 @@ ajvValidator.addSchema(
             },
         },
         // required: ["message", "payloadType"],
-        required: ["payloadType", "messageType"],
+        required: ["payloadType", "clientType", "messageType"],
         additionalProperties: false,
     },
     "messagePayloadValidator"

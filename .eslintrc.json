@@ -6,7 +6,6 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:drizzle/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -14,13 +13,11 @@
         "sourceType": "module"
     },
     "root": true,
-    "plugins": ["@typescript-eslint", "drizzle"],
+    "plugins": ["@typescript-eslint", "prisma"],
     "rules": {
         "indent": ["error", 4, { "SwitchCase": 1 }],
         "linebreak-style": ["error", "unix"],
         "quotes": ["error", "double"],
         "semi": ["error", "always"],
-        "drizzle/enforce-delete-with-where": "error",
-        "drizzle/enforce-update-with-where": "error"
     }
 }
