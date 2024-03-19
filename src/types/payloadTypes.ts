@@ -21,7 +21,24 @@ export type AuthenticationPayload = {
     payloadType: PayloadSubType.auth;
 } & Pick<ClientEntity, "clientId" | "clientUsername">;
 
-export type ClientUpdatePayload = PayloadSubType.profileUpdate & ClientEntity;
+/**
+ * [[ RESULTING TYPE ]]
+ *  export type ClientUpdatePayload = {
+ *     payloadType: PayloadSubType.auth;
+ *     clientId: string;
+ *     clientUsername: string;
+ *     clientColor?: string;
+ *     clientProfileImage?: string;
+ *  };
+ */
+export type ClientUpdatePayload = {
+    payloadType: PayloadSubType.profileUpdate;
+} & ClientEntity;
+
+export type ClientListPayload = {
+    payloadType: PayloadSubType.clientList;
+    clients: ClientEntity[];
+};
 
 export type ClientEntity = {
     clientId: string;

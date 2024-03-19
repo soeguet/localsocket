@@ -47,12 +47,17 @@ export async function processIncomingMessage(
                 );
             }
 
-            await registerUserInDatabse(payloadFromClientAsObject as AuthenticationPayload);
-
-            await retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: ClientEntity | unknown) =>
-                    sendAllRegisteredUsersListToClient(server, allUsers)
+            await registerUserInDatabse(
+                payloadFromClientAsObject as AuthenticationPayload
             );
+
+            await retrieveAllRegisteredUsersFromDatabase().then((allUsers) => {
+                if (typeof allUsers === "undefined" || allUsers === null) {
+                    throw new Error("No users found");
+                }
+                
+                sendAllRegisteredUsersListToClient(server, allUsers);
+            });
 
             break;
 

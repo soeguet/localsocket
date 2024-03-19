@@ -1,9 +1,13 @@
 import type { Server } from "bun";
-import { PayloadSubType, type ClientEntity } from "../types/payloadTypes";
+import {
+    PayloadSubType,
+    type ClientEntity,
+    type ClientListPayload,
+} from "../types/payloadTypes";
 
 export async function sendAllRegisteredUsersListToClient(
     server: Server,
-    allUsers: ClientEntity[] | unknown
+    allUsers: unknown | ClientEntity[]
 ) {
     console.log("allUsers", allUsers);
 
@@ -11,11 +15,11 @@ export async function sendAllRegisteredUsersListToClient(
         throw new Error("No users found");
     }
 
-    server.publish(
-        "the-group-chat",
-        JSON.stringify({
-            payloadType: PayloadSubType.clientList,
-            clients: allUsers,
-        })
-    );
+    const clientListPayload: ClientListPayload = {
+        payloadType: PayloadSubType.clientList,
+        // TODO validate this
+        clients: allUsers as ClientEntity[],
+    };
+
+    server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
