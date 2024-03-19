@@ -17,11 +17,11 @@ export enum PayloadSubType {
  *     clientId: string;
  *  };
  */
-export type AuthenticationPayload = PayloadSubType.auth &
-    Pick<ClientEntity, "clientId" | "clientUsername">;
+export type AuthenticationPayload = {
+    payloadType: PayloadSubType.auth;
+} & Pick<ClientEntity, "clientId" | "clientUsername">;
 
-export type ClientUpdatePayload = PayloadSubType.profileUpdate &
-    ClientEntity;
+export type ClientUpdatePayload = PayloadSubType.profileUpdate & ClientEntity;
 
 export type ClientEntity = {
     clientId: string;
