@@ -1,6 +1,5 @@
 import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
 import { processIncomingMessage } from "./src/incomingMessages";
-import type { MessageListPayload } from "./src/types/payloadTypes";
 
 console.log("Hello via Bun!");
 

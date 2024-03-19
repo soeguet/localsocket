@@ -32,14 +32,6 @@ model QuoteType {
   MessagePayload      MessagePayload @relation(fields: [payloadId], references: [messagePayloadDbId])
 }
 
-model ReactionType {
-  reactionDbId      Int            @id @default(autoincrement())
-  reactionMessageId String
-  reactionContext   String
-  reactionClientId  String
-  payloadId         Int
-  MessagePayload    MessagePayload @relation(fields: [payloadId], references: [messagePayloadDbId])
-}
 
 model MessageType {
   messageDbId      Int            @id @default(autoincrement())
@@ -51,6 +43,13 @@ model MessageType {
   MessagePayload   MessagePayload @relation(fields: [messagePayloadId], references: [messagePayloadDbId])
 }
 
+model ReactionType {
+  reactionDbId      Int            @id @default(autoincrement())
+  reactionMessageId String
+  reactionContext   String
+  reactionClientId  String
+  MessagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messageId])
+}
 model MessagePayload {
   messagePayloadDbId Int            @id @default(autoincrement())
   clientDbId         String

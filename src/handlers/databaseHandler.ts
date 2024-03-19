@@ -1,5 +1,8 @@
 import prisma from "../db/db";
-import type { AuthenticationPayload } from "../types/payloadTypes";
+import type {
+    AuthenticationPayload,
+    ReactionPayload,
+} from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
     // console.log("message received", message);
@@ -36,18 +39,12 @@ export async function retrieveAllRegisteredUsersFromDatabase() {
     return await prisma.client.findMany();
 }
 
-export async function persistReactionToDatabase(message: string | Buffer) {
-    // if (typeof message !== "string") {
-    //     console.error("Invalid message type");
-    //     return;
-    // }
-    // const payloadFromClientAsObject: ReactionEntity = JSON.parse(message);
-    //
-    // await postgresDb.insert(reactionTypeSchema).values({
-    //     payloadId: payloadFromClientAsObject.messagePayloadId,
-    //     messageId: payloadFromClientAsObject.messageId,
-    //     emojiName: payloadFromClientAsObject.emoji,
-    //     userId: payloadFromClientAsObject.userId,
-    // });
-    // console.log("persistReactionToDatabase", payloadFromClientAsObject);
+export async function persistReactionToDatabase(payload: ReactionPayload) {
+    await prisma.reactionType.create({
+        data: {
+            reactionMessageId: payload.reactionMessageId,
+            reactionContext: payload.reactionContext,
+            reactionClientId: payload.reactionClientId,
+        },
+    });
 }

@@ -7,6 +7,7 @@ import {
 import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
+    updateClientProfileInformation,
 } from "./databaseRequests";
 import {
     checkForDatabaseErrors,
@@ -48,7 +49,7 @@ export async function processIncomingMessage(
 
             await registerUserInDatabse(payloadFromClientAsObject as AuthenticationPayload);
 
-            retrieveAllRegisteredUsersFromDatabase().then(
+            await retrieveAllRegisteredUsersFromDatabase().then(
                 (allUsers: ClientEntity | unknown) =>
                     sendAllRegisteredUsersListToClient(server, allUsers)
             );
@@ -88,11 +89,22 @@ export async function processIncomingMessage(
         ////
         case PayloadSubType.profileUpdate:
             console.log("profileUpdate received", messageAsString);
+
+            await updateClientProfileInformation(payloadFromClientAsObject);
+
+            await retrieveAllRegisteredUsersFromDatabase().then(
+                (allUsers: ClientEntity | unknown) =>
+                    sendAllRegisteredUsersListToClient(server, allUsers)
+            );
             break;
 
         ////
         case PayloadSubType.clientList:
             console.log("clientList received", messageAsString);
+            await retrieveAllRegisteredUsersFromDatabase().then(
+                (allUsers: ClientEntity | unknown) =>
+                    sendAllRegisteredUsersListToClient(server, allUsers)
+            );
             break;
 
         ////
@@ -104,7 +116,7 @@ export async function processIncomingMessage(
         ////
         case PayloadSubType.reaction:
             console.log("reaction received", messageAsString);
-            await persistReactionToDatabase(messageAsString);
+            await persistReactionToDatabase(payloadFromClientAsObject);
             break;
 
         ////

@@ -2,6 +2,15 @@
   "name": "localsocket",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "start": "node --loader ts-node/esm.mjs index.ts",
+    "dev": "nodemon --exec 'npm start'",
+    "lint": "eslint . --ext .ts",
+    "prisma": "bunx prisma",
+    "migrate": "bunx prisma migrate dev",
+    "validate": "bunx prisma validate",
+    "generate": "bunx prisma generate"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.11.2",
@@ -9,14 +18,14 @@
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "^8.56.0",
     "eslint_d": "^13.1.2",
-    "prisma": "^5.11.0",
+    "prisma": "5.11.0",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.11.0",
+    "@prisma/client": "5.11.0",
     "ajv": "^8.12.0",
     "pg": "^8.11.3"
   }

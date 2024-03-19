@@ -1,7 +1,7 @@
 import prisma from "./db/db";
 import {
     PayloadSubType,
-    type MessageListPayload,
+    type ClientUpdatePayload,
     type MessagePayload,
 } from "./types/payloadTypes";
 
@@ -10,7 +10,7 @@ export async function sendLast100MessagesToNewClient() {
     const messageList = await prisma.messagePayload.findMany({
         take: 100,
         orderBy: {
-            messagePayloadDbId: "desc",
+            messagePayloadDbId: "asc",
         },
         include: {
             Client: true,
@@ -23,6 +23,24 @@ export async function sendLast100MessagesToNewClient() {
         payloadType: PayloadSubType.messageList,
         messageList: messageList,
     };
+}
+
+export async function updateClientProfileInformation(payload:ClientUpdatePayload){
+
+    await prisma.client.upsert({
+        where: { clientDbId: payload.clientId },
+        update: {
+            clientUsername: payload.clientUsername,
+            clientProfileImage: payload.clientProfileImage,
+            clientColor: payload.clientColor,
+        },
+        create: {
+            clientDbId: payload.clientId,
+            clientUsername: payload.clientUsername,
+            clientProfileImage: payload.clientProfileImage,
+            clientColor: payload.clientColor,
+        },
+    });
 }
 
 export async function retrieveLastMessageFromDatabase() {
