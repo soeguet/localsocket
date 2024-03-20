@@ -23,16 +23,20 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 }
 
 export async function registerUserInDatabse(payload: AuthenticationPayload) {
-    await prisma.client.upsert({
-        create: {
-            clientDbId: payload.clientId,
-            clientUsername: payload.clientUsername,
-        },
-        update: {},
-        where: {
-            clientDbId: payload.clientId,
-        },
-    });
+    try {
+        await prisma.client.upsert({
+            where: {
+                clientDbId: payload.clientId,
+            },
+            create: {
+                clientDbId: payload.clientId,
+                clientUsername: payload.clientUsername,
+            },
+            update: {},
+        });
+    } catch (error) {
+        console.error("Error registering user in database", error);
+    }
 }
 
 export async function retrieveAllRegisteredUsersFromDatabase() {
