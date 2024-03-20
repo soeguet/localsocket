@@ -7,9 +7,10 @@
     "dev": "nodemon --exec 'npm start'",
     "lint": "eslint . --ext .ts",
     "prisma": "bunx prisma",
+    "studio": "bunx prisma studio",
     "migrate": "bunx prisma migrate dev",
     "validate": "bunx prisma validate",
-    "generate": "bunx prisma generate"
+    "generate": "prisma generate"
   },
   "devDependencies": {
     "@types/bun": "latest",

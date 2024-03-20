@@ -112,7 +112,7 @@ export type ReactionEntity = {
  */
 export type MessagePayload = {
     payloadType: PayloadSubType.message;
-    messageType: Omit<MessageEntity, "messageDbId">;
+    messageType: MessageEntity;
     clientType: Pick<ClientEntity, "clientDbId">;
     quoteType?: Omit<QuoteEntity, "quoteDbId">;
     reactionType?: Omit<ReactionEntity, "reactionDbId">[];

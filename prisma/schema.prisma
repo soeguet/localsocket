@@ -18,7 +18,7 @@ model Client {
     clientUsername     String
     clientColor        String?
     clientProfileImage String?
-    MessagePayload     MessagePayload[]
+    messagePayload     MessagePayload[]
 }
 
 model QuoteType {
@@ -29,7 +29,7 @@ model QuoteType {
     quoteTime           String?
     quoteDate           String?
     payloadId           Int
-    MessagePayload      MessagePayload @relation(fields: [payloadId], references: [messagePayloadDbId])
+    messagePayload      MessagePayload @relation(fields: [payloadId], references: [messagePayloadDbId])
 }
 
 model MessageType {
@@ -38,7 +38,7 @@ model MessageType {
     messageContext            String
     messageTime               String
     messageDate               String
-    MessagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
+    messagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
 }
 
 model ReactionType {
@@ -47,16 +47,16 @@ model ReactionType {
     reactionMessageId         String
     reactionContext           String
     reactionClientId          String
-    MessagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
+    messagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
 }
 
 model MessagePayload {
     messagePayloadDbId Int            @id @default(autoincrement())
     clientDbId         String
-    QuoteType          QuoteType[]
-    ReactionType       ReactionType[]
-    Client             Client         @relation(fields: [clientDbId], references: [clientDbId])
-    MessageType        MessageType?
+    quoteType          QuoteType[]
+    reactionType       ReactionType[]
+    clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
+    messageType        MessageType?
 }
 
 // export const clientEntitySchema = pgTable("client", {

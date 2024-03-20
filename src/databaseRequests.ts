@@ -12,12 +12,16 @@ export async function sendLast100MessagesToNewClient() {
         orderBy: {
             messagePayloadDbId: "asc",
         },
-        include: {
-            Client: true,
-            QuoteType: true,
-            ReactionType: true,
-            MessageType: true,
-        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        }
     });
     return {
         payloadType: PayloadSubType.messageList,
@@ -45,81 +49,76 @@ export async function updateClientProfileInformation(
 }
 
 export async function retrieveLastMessageFromDatabase() {
+
     const lastMessage = await prisma.messagePayload.findMany({
         take: -1,
         orderBy: {
             messagePayloadDbId: "desc",
         },
-        include: {
-            Client: true,
-            QuoteType: true,
-            ReactionType: true,
-            MessageType: true,
-        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        }
     });
 
-    const messagePayload: MessagePayload = {
-        clientType: {
-            clientDbId: lastMessage[0].clientDbId,
-        },
-        messageType: {
-            messageDbId: lastMessage[0].MessageType?.messageDbId ?? "",
-            messageConext: lastMessage[0].MessageType?.messageContext ?? "",
-            messageTime: lastMessage[0].MessageType?.messageTime ?? "",
-            messageDate: lastMessage[0].MessageType?.messageDate ?? "",
-        },
-        payloadType: PayloadSubType.message,
-    };
-
-    // if (lastMessage[0].QuoteType !== undefined) {
-    //     messagePayload.quoteType = {
-    //         quoteMessageId: lastMessage[0].QuoteType?.quoteMessageId ?? "",
-    //         quoteClientId: lastMessage[0].QuoteType?.quoteClientId ?? "",
-    //         quoteMessageContext: lastMessage[0].QuoteType?.quoteMessageContext?? "",
-    //         quoteTime: lastMessage[0].QuoteType?.quoteTime ?? "",
-    //         quoteDate: lastMessage[0].QuoteType?.quoteDate ?? "",
-    //     };
-    // }
-    //
-    // if (lastMessage[0].ReactionType !== undefined) {
-    //     messagePayload.reactionType = {
-    //         reactionMessageId: lastMessage[0].reactionMessageId,
-    //         reactionClientId: lastMessage[0].reactionClientId,
-    //         reactionContext: lastMessage[0].reactionContext,
-    //     };
-    // }
-    return messagePayload;
+    return lastMessage;
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
-    const messagePayloadEntry = await prisma.messagePayload.create({
-        data: {
-            
-            // clientDbId: payload.clientType.clientDbId,
-            // messageDbId: payload.messageType.messageDbId,
-        },
-    });
 
-    await prisma.messageType.create({
+    await prisma.messagePayload.create({
         data: {
-            messageDbId: payload.messageType.messageDbId,
-            messageContext: payload.messageType.messageConext,
-            messageTime: payload.messageType.messageTime,
-            messageDate: payload.messageType.messageDate,
-            messagePayloadId: messagePayloadEntry.messagePayloadDbId,
-        },
-    });
-
-    if (payload.quoteType !== undefined && payload.quoteType !== null) {
-        await prisma.quoteType.create({
-            data: {
-                quoteMessageId: payload.quoteType.quoteMessageId,
-                quoteClientId: payload.quoteType.quoteClientId,
-                quoteMessageContext: payload.quoteType.quoteMessageContext,
-                quoteTime: payload.quoteType.quoteTime,
-                quoteDate: payload.quoteType.quoteDate,
-                payloadId: messagePayloadEntry.messagePayloadDbId,
+            clientType: {
+                connect: {
+                    clientDbId: payload.clientType.clientDbId,
+                },
             },
-        });
-    }
+            messageType: {
+                create: {
+                    messageDbId: payload.messageType.messageDbId,
+                    messageContext: payload.messageType.messageConext,
+                    messageTime: payload.messageType.messageTime,
+                    messageDate: payload.messageType.messageDate,
+                },
+            },
+        },
+    });
 }
+
+// const messagePayloadEntry = await prisma.messagePayload.create({
+//     data: {
+//
+//         // clientDbId: payload.clientType.clientDbId,
+//         // messageDbId: payload.messageType.messageDbId,
+//     },
+// });
+//
+// await prisma.messageType.create({
+//     data: {
+//         messageDbId: payload.messageType.messageDbId,
+//         messageContext: payload.messageType.messageConext,
+//         messageTime: payload.messageType.messageTime,
+//         messageDate: payload.messageType.messageDate,
+//         messagePayloadId: messagePayloadEntry.messagePayloadDbId,
+//     },
+// });
+//
+// if (payload.quoteType !== undefined && payload.quoteType !== null) {
+//     await prisma.quoteType.create({
+//         data: {
+//             quoteMessageId: payload.quoteType.quoteMessageId,
+//             quoteClientId: payload.quoteType.quoteClientId,
+//             quoteMessageContext: payload.quoteType.quoteMessageContext,
+//             quoteTime: payload.quoteType.quoteTime,
+//             quoteDate: payload.quoteType.quoteDate,
+//             payloadId: messagePayloadEntry.messagePayloadDbId,
+//         },
+//     });
+// }
+
