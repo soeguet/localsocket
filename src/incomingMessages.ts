@@ -63,7 +63,7 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.message:
-            console.log("message received", payloadFromClientAsObject);
+            //console.log("message received", payloadFromClientAsObject);
             // VALIDATION
             const validPayload = validateMessagePayloadTyping(
                 payloadFromClientAsObject
@@ -82,8 +82,7 @@ export async function processIncomingMessage(
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 
-            //@ts-ignore
-            lastMessagesFromDatabase.payloadType = PayloadSubType.message;
+            console.log("lastMessagesFromDatabase", lastMessagesFromDatabase);
 
             server.publish(
                 "the-group-chat",
@@ -93,7 +92,7 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.profileUpdate:
-            console.log("profileUpdate received", messageAsString);
+            //console.log("profileUpdate received", messageAsString);
 
             await updateClientProfileInformation(payloadFromClientAsObject);
 
@@ -105,7 +104,7 @@ export async function processIncomingMessage(
 
         ////
         case PayloadSubType.clientList:
-            console.log("clientList received", messageAsString);
+            //console.log("clientList received", messageAsString);
             await retrieveAllRegisteredUsersFromDatabase().then(
                 (allUsers: ClientEntity | unknown) =>
                     sendAllRegisteredUsersListToClient(server, allUsers)

@@ -9,7 +9,7 @@ export async function sendAllRegisteredUsersListToClient(
     server: Server,
     allUsers: unknown | ClientEntity[]
 ) {
-    console.log("allUsers", allUsers);
+    //console.log("allUsers", allUsers);
 
     if (allUsers === undefined || allUsers === null) {
         throw new Error("No users found");

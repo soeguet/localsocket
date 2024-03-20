@@ -25,17 +25,18 @@ export async function sendLast100MessagesToNewClient() {
     };
 }
 
-export async function updateClientProfileInformation(payload:ClientUpdatePayload){
-
+export async function updateClientProfileInformation(
+    payload: ClientUpdatePayload
+) {
     await prisma.client.upsert({
-        where: { clientDbId: payload.clientId },
+        where: { clientDbId: payload.clientDbId },
         update: {
             clientUsername: payload.clientUsername,
             clientProfileImage: payload.clientProfileImage,
             clientColor: payload.clientColor,
         },
         create: {
-            clientDbId: payload.clientId,
+            clientDbId: payload.clientDbId,
             clientUsername: payload.clientUsername,
             clientProfileImage: payload.clientProfileImage,
             clientColor: payload.clientColor,
@@ -56,20 +57,52 @@ export async function retrieveLastMessageFromDatabase() {
             MessageType: true,
         },
     });
-    return lastMessage;
+
+    const messagePayload: MessagePayload = {
+        clientType: {
+            clientDbId: lastMessage[0].clientDbId,
+        },
+        messageType: {
+            messageDbId: lastMessage[0].MessageType?.messageDbId ?? "",
+            messageConext: lastMessage[0].MessageType?.messageContext ?? "",
+            messageTime: lastMessage[0].MessageType?.messageTime ?? "",
+            messageDate: lastMessage[0].MessageType?.messageDate ?? "",
+        },
+        payloadType: PayloadSubType.message,
+    };
+
+    // if (lastMessage[0].QuoteType !== undefined) {
+    //     messagePayload.quoteType = {
+    //         quoteMessageId: lastMessage[0].QuoteType?.quoteMessageId ?? "",
+    //         quoteClientId: lastMessage[0].QuoteType?.quoteClientId ?? "",
+    //         quoteMessageContext: lastMessage[0].QuoteType?.quoteMessageContext?? "",
+    //         quoteTime: lastMessage[0].QuoteType?.quoteTime ?? "",
+    //         quoteDate: lastMessage[0].QuoteType?.quoteDate ?? "",
+    //     };
+    // }
+    //
+    // if (lastMessage[0].ReactionType !== undefined) {
+    //     messagePayload.reactionType = {
+    //         reactionMessageId: lastMessage[0].reactionMessageId,
+    //         reactionClientId: lastMessage[0].reactionClientId,
+    //         reactionContext: lastMessage[0].reactionContext,
+    //     };
+    // }
+    return messagePayload;
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
     const messagePayloadEntry = await prisma.messagePayload.create({
         data: {
-            clientDbId: payload.clientType.clientId,
-            messageId: payload.messageType.messageId,
+            
+            // clientDbId: payload.clientType.clientDbId,
+            // messageDbId: payload.messageType.messageDbId,
         },
     });
 
     await prisma.messageType.create({
         data: {
-            messageId: payload.messageType.messageId,
+            messageDbId: payload.messageType.messageDbId,
             messageContext: payload.messageType.messageConext,
             messageTime: payload.messageType.messageTime,
             messageDate: payload.messageType.messageDate,

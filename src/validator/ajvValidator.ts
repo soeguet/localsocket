@@ -31,11 +31,11 @@ ajvValidator.addSchema(
             clientUsername: {
                 type: "string",
             },
-            clientId: {
+            clientDbId: {
                 type: "string",
             },
         },
-        required: ["payloadType", "clientUsername", "clientId"],
+        required: ["payloadType", "clientUsername", "clientDbId"],
         additionalProperties: false,
     },
     "authPayloadValidator"
@@ -45,13 +45,13 @@ ajvValidator.addSchema(
  * export type MessagePayload = {
  *      payloadType: PayloadSubType.message;
  *      messageType: {
- *          messageId: string;
+ *          messageDbId: string;
  *          messageConext: string;
  *          messageTime: string;
  *          messageDate: Date;
  *      };
  *      clientType: {
- *          clientId: string;
+ *          clientDbId: string;
  *      };
  *      quoteType?: {
  *          quoteMessageId: string;
@@ -77,7 +77,7 @@ ajvValidator.addSchema(
             messageType: {
                 type: "object",
                 properties: {
-                    messageId: {
+                    messageDbId: {
                         type: "string",
                     },
                     messageConext: {
@@ -91,7 +91,7 @@ ajvValidator.addSchema(
                     },
                 },
                 required: [
-                    "messageId",
+                    "messageDbId",
                     "messageConext",
                     "messageTime",
                     "messageDate",
@@ -101,11 +101,11 @@ ajvValidator.addSchema(
             clientType: {
                 type: "object",
                 properties: {
-                    clientId: {
+                    clientDbId: {
                         type: "string",
                     },
                 },
-                required: ["clientId"],
+                required: ["clientDbId"],
                 additionalProperties: false,
             },
             quoteType: {

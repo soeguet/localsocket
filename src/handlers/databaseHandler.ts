@@ -26,10 +26,10 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
     try {
         await prisma.client.upsert({
             where: {
-                clientDbId: payload.clientId,
+                clientDbId: payload.clientDbId,
             },
             create: {
-                clientDbId: payload.clientId,
+                clientDbId: payload.clientDbId,
                 clientUsername: payload.clientUsername,
             },
             update: {},

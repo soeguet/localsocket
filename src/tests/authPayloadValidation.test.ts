@@ -21,7 +21,7 @@ describe("validate auth payload from client", () => {
             validate({
                 payloadType: 1,
                 clientUsername: "test",
-                clientId: "test",
+                clientDbId: "test",
             })
         ).toBe(true);
     });
@@ -40,7 +40,7 @@ describe("validate auth payload from client", () => {
             validate({
                 payloadType: 1,
                 clientUsername: "test",
-                clientId: 1,
+                clientDbId: 1,
             })
         ).toBe(false);
     });

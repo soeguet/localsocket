@@ -21,10 +21,10 @@ describe("validate message payload from client", () => {
             validate({
                 payloadType: 1,
                 clientType: {
-                    clientId: "test",
+                    clientDbId: "test",
                 },
                 messageType: {
-                    messageId: "test",
+                    messageDbId: "test",
                     messageConext: "test",
                     messageTime: "test",
                     messageDate: "test",
@@ -38,10 +38,10 @@ describe("validate message payload from client", () => {
             validate({
                 payloadType: 1,
                 clientType: {
-                    clientId: "test",
+                    clientDbId: "test",
                 },
                 messageType: {
-                    messageId: "test",
+                    messageDbId: "test",
                     messageConext: "test",
                     messageTime: "test",
                     messageDate: "test",
@@ -62,10 +62,10 @@ describe("validate message payload from client", () => {
             validate({
                 payloadType: 1,
                 clientType: {
-                    clientId: "test",
+                    clientDbId: "test",
                 },
                 messageType: {
-                    messageId: "test",
+                    messageDbId: "test",
                     messageConext: "test",
                     messageTime: "test",
                     messageDate: "test",
@@ -93,10 +93,10 @@ describe("validate message payload from client", () => {
             validate({
                 payloadType: 1,
                 clientType: {
-                    clientId: "test",
+                    clientDbId: "test",
                 },
                 messageType: {
-                    messageId: "test",
+                    messageDbId: "test",
                     messageConext: 5,
                     messageTime: "test",
                     messageDate: "test",
