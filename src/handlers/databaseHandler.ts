@@ -46,6 +46,8 @@ export async function retrieveAllRegisteredUsersFromDatabase() {
 export async function persistReactionToDatabase(payload: ReactionPayload) {
     await prisma.reactionType.create({
         data: {
+            messagePayloadReferenceId: payload.messagePayloadReferenceId,
+            reactionDbId: payload.reactionDbId,
             reactionMessageId: payload.reactionMessageId,
             reactionContext: payload.reactionContext,
             reactionClientId: payload.reactionClientId,

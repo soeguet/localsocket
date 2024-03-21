@@ -21,42 +21,38 @@ model Client {
     messagePayload     MessagePayload[]
 }
 
-model QuoteType {
-    quoteDbId           Int            @id @default(autoincrement())
-    quoteMessageId      String?
-    quoteClientId       String?
-    quoteMessageContext String?
-    quoteTime           String?
-    quoteDate           String?
-    payloadId           Int
-    messagePayload      MessagePayload @relation(fields: [payloadId], references: [messagePayloadDbId])
-}
-
-model MessageType {
-    messageDbId               String         @id
-    messagePayloadReferenceId Int            @unique
-    messageContext            String
-    messageTime               String
-    messageDate               String
-    messagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
-}
-
-model ReactionType {
-    reactionDbId              String         @id
-    messagePayloadReferenceId Int            @unique
-    reactionMessageId         String
-    reactionContext           String
-    reactionClientId          String
-    messagePayload            MessagePayload @relation(fields: [messagePayloadReferenceId], references: [messagePayloadDbId])
-}
-
 model MessagePayload {
-    messagePayloadDbId Int            @id @default(autoincrement())
+    messagePayloadDbId String         @id
     clientDbId         String
     quoteType          QuoteType[]
     reactionType       ReactionType[]
     clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
     messageType        MessageType?
+}
+
+model QuoteType {
+    quoteDbId           String         @id
+    quoteClientId       String?
+    quoteMessageContext String?
+    quoteTime           String?
+    quoteDate           String?
+    messagePayload      MessagePayload @relation(fields: [quoteDbId], references: [messagePayloadDbId])
+}
+
+model MessageType {
+    messageDbId    String         @id
+    messageContext String
+    messageTime    String
+    messageDate    String
+    messagePayload MessagePayload @relation(fields: [messageDbId], references: [messagePayloadDbId])
+}
+
+model ReactionType {
+    reactionDbId      String         @id
+    reactionMessageId String
+    reactionContext   String
+    reactionClientId  String
+    messagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messagePayloadDbId])
 }
 
 // export const clientEntitySchema = pgTable("client", {

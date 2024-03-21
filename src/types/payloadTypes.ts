@@ -16,6 +16,10 @@ export enum PayloadSubType {
  *     clientUsername: string;
  *     clientDbId: string;
  *  };
+ *
+ *  @param {PayloadSubType} payloadType
+ *  @param {string} clientDbId
+ *  @param {string} clientUsername
  */
 export type AuthenticationPayload = {
     payloadType: PayloadSubType.auth;
@@ -30,16 +34,46 @@ export type AuthenticationPayload = {
  *     clientColor?: string;
  *     clientProfileImage?: string;
  *  };
+ *
+ *  @param {PayloadSubType} payloadType
+ *  @param {string} clientDbId
+ *  @param {string} clientUsername
+ *  @param {string} clientColor
+ *  @param {string} clientProfileImage
  */
 export type ClientUpdatePayload = {
     payloadType: PayloadSubType.profileUpdate;
 } & ClientEntity;
 
+/**
+ * [[ RESULTING TYPE ]]
+ * export type ClientListPayload = {
+ *    payloadType: PayloadSubType.clientList;
+ *    clients: ClientEntity[];
+ * };
+ *
+ * @param {PayloadSubType} payloadType
+ * @param {ClientEntity[]} clients
+ */
 export type ClientListPayload = {
     payloadType: PayloadSubType.clientList;
     clients: ClientEntity[];
 };
 
+/**
+ * [[ RESULTING TYPE ]]
+ * export type ClientEntity = {
+ *    clientDbId: string;
+ *    clientUsername: string;
+ *    clientColor?: string;
+ *    clientProfileImage?: string;
+ * };
+ *
+ * @param {string} clientDbId
+ * @param {string} clientUsername
+ * @param {string} clientColor
+ * @param {string} clientProfileImage
+ */
 export type ClientEntity = {
     clientDbId: string;
     clientUsername: string;
@@ -47,6 +81,20 @@ export type ClientEntity = {
     clientProfileImage?: string;
 };
 
+/**
+ * [[ RESULTING TYPE ]]
+ *  export type MessageEntity = {
+ *     messageDbId: string;
+ *     messageConext: string;
+ *     messageTime: string;
+ *     messageDate: string;
+ *  };
+ *
+ * @param {string} messageDbId
+ * @param {string} messageConext
+ * @param {string} messageTime
+ * @param {string} messageDate
+ */
 export type MessageEntity = {
     messageDbId: string;
     messageConext: string;
@@ -54,9 +102,25 @@ export type MessageEntity = {
     messageDate: string;
 };
 
+/**
+ * [[ RESULTING TYPE ]]
+ * export type QuoteEntity = {
+ *    quoteDbId: number;
+ *    quoteMessageId: string;
+ *    quoteClientId: string;
+ *    quoteMessageContext: string;
+ *    quoteTime: string;
+ *    quoteDate: string;
+ *  };
+ *
+ * @param {string} quoteDbId
+ * @param {string} quoteClientId
+ * @param {string} quoteMessageContext
+ * @param {string} quoteTime
+ * @param {string} quoteDate
+ */
 export type QuoteEntity = {
-    quoteDbId: number;
-    quoteMessageId: string;
+    quoteDbId: string;
     quoteClientId: string;
     quoteMessageContext: string;
     quoteTime: string;
@@ -67,17 +131,30 @@ export type QuoteEntity = {
  * [[ RESULTING TYPE ]]
  *  export type ReactionEntity = {
  *     payloadType: PayloadSubType.reaction;
+ *     reactionDbId: string;
  *     reactionMessageId: string;
  *     reactionContext: string;
  *     reactionClientId: string;
  *  };
+ *
+ * @param {int} payloadType
+ * @param {string} reactionDbId
+ * @param {string} reactionMessageId
+ * @param {string} reactionContext
+ * @param {string} reactionClientId
  */
-export type ReactionPayload = Omit<ReactionEntity, "reactionDbId"> & {
+export type ReactionPayload = ReactionEntity & {
     payloadType: PayloadSubType.reaction;
 };
 
+/**
+ * @param {string} reactionDbId
+ * @param {string} reactionMessageId
+ * @param {string} reactionContext
+ * @param {string} reactionClientId
+ */
 export type ReactionEntity = {
-    reactionDbId: number;
+    reactionDbId: string;
     reactionMessageId: string;
     reactionContext: string;
     reactionClientId: string;
@@ -118,6 +195,35 @@ export type MessagePayload = {
     reactionType?: Omit<ReactionEntity, "reactionDbId">[];
 };
 
+/**
+ * [[ RESULTING TYPE ]]
+ * export type MessageListPayload = {
+ *    payloadType: PayloadSubType.messageList;
+ *    messageList: [
+ * *      messageType: {
+ *          messageDbId: string;
+ *          messageConext: string;
+ *          messageTime: string;
+ *          messageDate: Date;
+ *      };
+ *      clientType: {
+ *          clientDbId: string;
+ *      };
+ *      quoteType?: {
+ *          quoteMessageId: string;
+ *          quoteClientId: string;
+ *          quoteMessageContext: string;
+ *          quoteTime: string;
+ *          quoteDate: Date;
+ *      };
+ *      reactionType?: {
+ *          reactionMessageId: string;
+ *          reactionContext: string;
+ *          reactionClientId: string;
+ *      }[];
+ *    ]
+ *
+ */
 export type MessageListPayload = {
     payloadType: PayloadSubType.messageList;
     messageList: Omit<MessagePayload, "payloadType">[];

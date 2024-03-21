@@ -3,9 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "node --loader ts-node/esm.mjs index.ts",
-    "dev": "nodemon --exec 'npm start'",
-    "lint": "eslint . --ext .ts",
+    "start": "bun .",
+    "dev": "bun --inspect .",
     "prisma": "bunx prisma",
     "studio": "bunx prisma studio",
     "migrate": "bunx prisma migrate dev",

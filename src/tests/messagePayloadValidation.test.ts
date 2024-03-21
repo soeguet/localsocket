@@ -20,6 +20,7 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
@@ -37,6 +38,7 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
@@ -47,7 +49,7 @@ describe("validate message payload from client", () => {
                     messageDate: "test",
                 },
                 quoteType: {
-                    quoteMessageId: "test",
+                    quoteDbId: "test",
                     quoteClientId: "test",
                     quoteMessageContext: "test",
                     quoteTime: "test",
@@ -61,6 +63,7 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
@@ -71,7 +74,7 @@ describe("validate message payload from client", () => {
                     messageDate: "test",
                 },
                 quoteType: {
-                    quoteMessageId: "test",
+                    quoteDbId: "test",
                     quoteClientId: "test",
                     quoteMessageContext: "test",
                     quoteTime: "test",
@@ -79,6 +82,7 @@ describe("validate message payload from client", () => {
                 },
                 reactionType: [
                     {
+                        reactionDbId: "test",
                         reactionMessageId: "test",
                         reactionContext: "test",
                         reactionClientId: "test",
@@ -92,6 +96,7 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
+                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },

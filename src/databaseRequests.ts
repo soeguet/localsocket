@@ -79,12 +79,12 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
                     clientDbId: payload.clientType.clientDbId,
                 },
             },
+            messagePayloadDbId: payload.messageType.messageDbId,
             messageType: {
                 create: {
-                    messageDbId: payload.messageType.messageDbId,
-                    messageContext: payload.messageType.messageConext,
-                    messageTime: payload.messageType.messageTime,
                     messageDate: payload.messageType.messageDate,
+                    messageTime: payload.messageType.messageTime,
+                    messageContext: payload.messageType.messageConext,
                 },
             },
         },

@@ -1,6 +1,4 @@
 import Ajv from "ajv";
-import { PayloadSubType } from "../types/payloadTypes";
-import { which } from "bun";
 
 const ajvValidator = new Ajv();
 
@@ -74,6 +72,9 @@ ajvValidator.addSchema(
             payloadType: {
                 type: "number",
             },
+            messagePayloadDbId: {
+                type: "string",
+            },
             messageType: {
                 type: "object",
                 properties: {
@@ -111,7 +112,7 @@ ajvValidator.addSchema(
             quoteType: {
                 type: "object",
                 properties: {
-                    quoteMessageId: {
+                    quoteDbId: {
                         type: "string",
                     },
                     quoteClientId: {
@@ -128,7 +129,7 @@ ajvValidator.addSchema(
                     },
                 },
                 required: [
-                    "quoteMessageId",
+                    "quoteDbId",
                     "quoteClientId",
                     "quoteMessageContext",
                     "quoteTime",
@@ -141,6 +142,9 @@ ajvValidator.addSchema(
                 items: {
                     type: "object",
                     properties: {
+                        reactionDbId: {
+                            type: "string",
+                        },
                         reactionMessageId: {
                             type: "string",
                         },
@@ -152,6 +156,7 @@ ajvValidator.addSchema(
                         },
                     },
                     required: [
+                        "reactionDbId",
                         "reactionMessageId",
                         "reactionContext",
                         "reactionClientId",
@@ -160,8 +165,12 @@ ajvValidator.addSchema(
                 },
             },
         },
-        // required: ["message", "payloadType"],
-        required: ["payloadType", "clientType", "messageType"],
+        required: [
+            "payloadType",
+            "messagePayloadDbId",
+            "clientType",
+            "messageType",
+        ],
         additionalProperties: false,
     },
     "messagePayloadValidator"
