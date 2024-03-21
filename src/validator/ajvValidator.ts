@@ -44,7 +44,7 @@ ajvValidator.addSchema(
  *      payloadType: PayloadSubType.message;
  *      messageType: {
  *          messageDbId: string;
- *          messageConext: string;
+ *          messageContext: string;
  *          messageTime: string;
  *          messageDate: Date;
  *      };
@@ -72,16 +72,13 @@ ajvValidator.addSchema(
             payloadType: {
                 type: "number",
             },
-            messagePayloadDbId: {
-                type: "string",
-            },
             messageType: {
                 type: "object",
                 properties: {
                     messageDbId: {
                         type: "string",
                     },
-                    messageConext: {
+                    messageContext: {
                         type: "string",
                     },
                     messageTime: {
@@ -93,7 +90,7 @@ ajvValidator.addSchema(
                 },
                 required: [
                     "messageDbId",
-                    "messageConext",
+                    "messageContext",
                     "messageTime",
                     "messageDate",
                 ],
@@ -167,7 +164,6 @@ ajvValidator.addSchema(
         },
         required: [
             "payloadType",
-            "messagePayloadDbId",
             "clientType",
             "messageType",
         ],

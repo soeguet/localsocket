@@ -22,9 +22,10 @@ model Client {
 }
 
 model MessagePayload {
-    messagePayloadDbId String         @id
+    payloadDbId        Int            @id @default(autoincrement())
+    messagePayloadDbId String         @unique
     clientDbId         String
-    quoteType          QuoteType[]
+    quoteType          QuoteType?
     reactionType       ReactionType[]
     clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
     messageType        MessageType?
@@ -36,7 +37,7 @@ model QuoteType {
     quoteMessageContext String?
     quoteTime           String?
     quoteDate           String?
-    messagePayload      MessagePayload @relation(fields: [quoteDbId], references: [messagePayloadDbId])
+    messagePayload      MessagePayload? @relation(fields: [quoteDbId], references: [messagePayloadDbId])
 }
 
 model MessageType {

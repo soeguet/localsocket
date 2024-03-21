@@ -55,7 +55,7 @@ export async function processIncomingMessage(
                 if (typeof allUsers === "undefined" || allUsers === null) {
                     throw new Error("No users found");
                 }
-                
+
                 sendAllRegisteredUsersListToClient(server, allUsers);
             });
 
@@ -82,12 +82,12 @@ export async function processIncomingMessage(
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 
-            console.log("lastMessagesFromDatabase", lastMessagesFromDatabase);
+            const payload = {
+                ...lastMessagesFromDatabase,
+                payloadType: PayloadSubType.message,
+            };
 
-            server.publish(
-                "the-group-chat",
-                JSON.stringify(lastMessagesFromDatabase)
-            );
+            server.publish("the-group-chat", JSON.stringify(payload));
             break;
 
         ////

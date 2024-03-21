@@ -50,10 +50,10 @@ export async function updateClientProfileInformation(
 
 export async function retrieveLastMessageFromDatabase() {
 
-    const lastMessage = await prisma.messagePayload.findMany({
+    const lastMessage = await prisma.messagePayload.findFirst({
         take: -1,
         orderBy: {
-            messagePayloadDbId: "desc",
+            messagePayloadDbId: "asc",
         },
         select: {
             messageType: true,
@@ -84,7 +84,7 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
                 create: {
                     messageDate: payload.messageType.messageDate,
                     messageTime: payload.messageType.messageTime,
-                    messageContext: payload.messageType.messageConext,
+                    messageContext: payload.messageType.messageContext,
                 },
             },
         },
@@ -102,7 +102,7 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
 // await prisma.messageType.create({
 //     data: {
 //         messageDbId: payload.messageType.messageDbId,
-//         messageContext: payload.messageType.messageConext,
+//         messageContext: payload.messageType.messageContext,
 //         messageTime: payload.messageType.messageTime,
 //         messageDate: payload.messageType.messageDate,
 //         messagePayloadId: messagePayloadEntry.messagePayloadDbId,

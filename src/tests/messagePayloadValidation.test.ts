@@ -20,13 +20,12 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
-                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
                 messageType: {
                     messageDbId: "test",
-                    messageConext: "test",
+                    messageContext: "test",
                     messageTime: "test",
                     messageDate: "test",
                 },
@@ -38,13 +37,12 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
-                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
                 messageType: {
                     messageDbId: "test",
-                    messageConext: "test",
+                    messageContext: "test",
                     messageTime: "test",
                     messageDate: "test",
                 },
@@ -63,13 +61,12 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
-                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
                 messageType: {
                     messageDbId: "test",
-                    messageConext: "test",
+                    messageContext: "test",
                     messageTime: "test",
                     messageDate: "test",
                 },
@@ -96,13 +93,12 @@ describe("validate message payload from client", () => {
         expect(
             validate({
                 payloadType: 1,
-                messagePayloadDbId: "test",
                 clientType: {
                     clientDbId: "test",
                 },
                 messageType: {
                     messageDbId: "test",
-                    messageConext: 5,
+                    messageContext: 5,
                     messageTime: "test",
                     messageDate: "test",
                 },
