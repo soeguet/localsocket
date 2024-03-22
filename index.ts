@@ -45,7 +45,7 @@ const server = Bun.serve<WebSocket>({
         // WEBSOCKET - NEW MESSAGE
         // this is called when a message is received
         async message(ws, message): Promise<void> {
-            processIncomingMessage(ws, server, message);
+            await processIncomingMessage(ws, server, message);
         },
     },
     //

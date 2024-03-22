@@ -21,7 +21,7 @@ export async function sendLast100MessagesToNewClient() {
                     clientDbId: true,
                 },
             },
-        }
+        },
     });
     return {
         payloadType: PayloadSubType.messageList,
@@ -49,7 +49,6 @@ export async function updateClientProfileInformation(
 }
 
 export async function retrieveLastMessageFromDatabase() {
-
     const lastMessage = await prisma.messagePayload.findFirst({
         take: -1,
         orderBy: {
@@ -64,31 +63,50 @@ export async function retrieveLastMessageFromDatabase() {
                     clientDbId: true,
                 },
             },
-        }
+        },
     });
 
     return lastMessage;
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
-
-    await prisma.messagePayload.create({
-        data: {
-            clientType: {
-                connect: {
-                    clientDbId: payload.clientType.clientDbId,
-                },
-            },
-            messagePayloadDbId: payload.messageType.messageDbId,
-            messageType: {
-                create: {
-                    messageDate: payload.messageType.messageDate,
-                    messageTime: payload.messageType.messageTime,
-                    messageContext: payload.messageType.messageContext,
-                },
+    const dataObject = {
+        clientType: {
+            connect: {
+                clientDbId: payload.clientType.clientDbId,
             },
         },
-    });
+        messagePayloadDbId: payload.messageType.messageDbId,
+        messageType: {
+            create: {
+                messageDate: payload.messageType.messageDate,
+                messageTime: payload.messageType.messageTime,
+                messageContext: payload.messageType.messageContext,
+            },
+        },
+    };
+
+    if (payload.quoteType !== undefined && payload.quoteType !== null) {
+        const quotedObject = {
+            ...dataObject,
+            quoteType: {
+                create: {
+                    quoteDate: payload.quoteType.quoteDate,
+                    quoteTime: payload.quoteType.quoteTime,
+                    quoteMessageContext: payload.quoteType.quoteMessageContext,
+                    quoteClientId: payload.quoteType.quoteClientId,
+                },
+            },
+        };
+        await prisma.messagePayload.create({
+            data: quotedObject,
+        });
+        //
+    } else {
+        await prisma.messagePayload.create({
+            data: dataObject,
+        });
+    }
 }
 
 // const messagePayloadEntry = await prisma.messagePayload.create({
@@ -121,4 +139,3 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
 //         },
 //     });
 // }
-

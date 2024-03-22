@@ -28,11 +28,11 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
             where: {
                 clientDbId: payload.clientDbId,
             },
+            update: {},
             create: {
                 clientDbId: payload.clientDbId,
                 clientUsername: payload.clientUsername,
             },
-            update: {},
         });
     } catch (error) {
         console.error("Error registering user in database", error);
