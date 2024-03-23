@@ -109,6 +109,26 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
     }
 }
 
+export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
+    const updatedMessage = await prisma.messagePayload.findFirst({
+        where: {
+            messagePayloadDbId: messageDbId,
+        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        },
+    });
+
+    return updatedMessage;
+}
+
 // const messagePayloadEntry = await prisma.messagePayload.create({
 //     data: {
 //

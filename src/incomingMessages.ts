@@ -7,6 +7,7 @@ import {
 import {
     persistMessageInDatabase,
     retrieveLastMessageFromDatabase,
+    retrieveUpdatedMessageFromDatabase,
     updateClientProfileInformation,
 } from "./databaseRequests";
 import {
@@ -121,6 +122,19 @@ export async function processIncomingMessage(
         case PayloadSubType.reaction:
             console.log("reaction received", messageAsString);
             await persistReactionToDatabase(payloadFromClientAsObject);
+            await retrieveUpdatedMessageFromDatabase(
+                payloadFromClientAsObject.reactionMessageId
+            ).then((updatedMessage) => {
+                const updatedMessageWithPayloadType = {
+                    ...updatedMessage,
+                    payloadType: PayloadSubType.reaction,
+                };
+
+                server.publish(
+                    "the-group-chat",
+                    JSON.stringify(updatedMessageWithPayloadType)
+                );
+            });
             break;
 
         ////
