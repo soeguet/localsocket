@@ -178,3 +178,8 @@ bun.lockb
 .vscode
 users.sqlite
 messages.sqlite
+users.db
+drizzle/
+drizzle
+messages.db
+prisma/migrations

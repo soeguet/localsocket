@@ -1,21 +1,17 @@
-import type { ServerWebSocket } from "bun";
-import {
-    PayloadSubType,
-    type MessagePayload,
-    type Websocket,
-} from "./src/customTypes";
-import { retrieveLast100Messages } from "./src/messageRegister";
-import { processIncomingMessage } from "./src/messages";
+import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
+import { processIncomingMessage } from "./src/incomingMessages";
 
 console.log("Hello via Bun!");
-const headers: HeadersInit = {
+
+const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers":
         "Origin, X-Requested-With, Content-Type, Accept",
 };
 
-const server = Bun.serve<Websocket>({
+const server = Bun.serve<WebSocket>({
+    //
     fetch(req, server) {
         // preflight request for CORS
         if (req.method === "OPTIONS") {
@@ -35,30 +31,26 @@ const server = Bun.serve<Websocket>({
             status: 404,
         });
     },
+    //
     websocket: {
-        perMessageDeflate: true,
-        open(ws: ServerWebSocket<Websocket>) {
+        // WEBSOCKET - OPEN
+        async open(ws) {
             ws.subscribe("the-group-chat");
-
-            const lastMessages: MessagePayload[] = retrieveLast100Messages();
-            const last100Reversed = lastMessages.slice(-100).reverse();
-
-            const messageListPayload = {
-                payloadType: PayloadSubType.messageList,
-                messageList: last100Reversed,
-            };
+            const messageListPayload=
+                await sendLast100MessagesToNewClient();
 
             ws.send(JSON.stringify(messageListPayload));
         },
+        //
+        // WEBSOCKET - NEW MESSAGE
         // this is called when a message is received
-        async message(
-            ws: ServerWebSocket<Websocket>,
-            message: string | Buffer
-        ): Promise<void> {
-            processIncomingMessage(ws, server, message);
+        async message(ws, message): Promise<void> {
+            await processIncomingMessage(ws, server, message);
         },
     },
-    port: 5555,
+    //
+    hostname: "127.0.0.1",
+    port: 5588,
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);

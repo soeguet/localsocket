@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Client {
+    clientDbId         String           @id
+    clientUsername     String
+    clientColor        String?
+    clientProfileImage String?
+    messagePayload     MessagePayload[]
+}
+
+model MessagePayload {
+    payloadDbId        Int            @id @default(autoincrement())
+    messagePayloadDbId String         @unique
+    clientDbId         String
+    quoteType          QuoteType?
+    reactionType       ReactionType[]
+    clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
+    messageType        MessageType?
+}
+
+model QuoteType {
+    quoteDbId           String         @id
+    quoteClientId       String?
+    quoteMessageContext String?
+    quoteTime           String?
+    quoteDate           String?
+    messagePayload      MessagePayload? @relation(fields: [quoteDbId], references: [messagePayloadDbId])
+}
+
+model MessageType {
+    messageDbId    String         @id
+    messageContext String
+    messageTime    String
+    messageDate    String
+    messagePayload MessagePayload @relation(fields: [messageDbId], references: [messagePayloadDbId])
+}
+
+model ReactionType {
+    reactionDbId      String         @id
+    reactionMessageId String
+    reactionContext   String
+    reactionClientId  String
+    messagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messagePayloadDbId])
+}
+
+// export const clientEntitySchema = pgTable("client", {
+//     clientDbId: varchar("clientDbId").notNull().primaryKey(),
+//     clientUsername: varchar("clientUsername").notNull(),
+//     clientColor: varchar("clientColor"),
+//     clientProfileImage: varchar("clientProfileImage"),
+// });
+//
+// export const messageTypeSchema = pgTable("messageType", {
+//     messageDbId: bigserial("messageDbId", { mode: "number" }).primaryKey(),
+//     messageDbId: varchar("messageDbId").notNull(),
+//     messageContext: varchar("messageContext").notNull(),
+//     messageTime: varchar("messageTime").notNull(),
+//     messageDate: varchar("messageDate").notNull(),
+// });
+//
+// export const quoteTypeSchema = pgTable("quoteType", {
+//     quoteDbId: bigserial("quoteDbId", { mode: "number" }).primaryKey(),
+//     quoteMessageId: varchar("quoteMessageId"),
+//     quoteClientId: varchar("quoteClientId"),
+//     quoteMessageContext: varchar("quoteMessageContext"),
+//     quoteTime: varchar("quoteTime"),
+//     quoteDate: varchar("quoteDate"),
+//     payloadId: varchar("payloadId")
+//         .notNull()
+//         .references(() => messagePayloadSchema.messagePayloadDbId),
+// });
+//
+// export const reactionTypeSchema = pgTable("reactionType", {
+//     reactionDbId: bigserial("reactionDbId", { mode: "number" }).primaryKey(),
+//     reactionMessageId: varchar("reactionMessageId").notNull(),
+//     reactionContext: varchar("reactionContext").notNull(),
+//     reactionClientId: varchar("reactionClientId").notNull(),
+//     payloadId: bigserial("payloadId", { mode: "number" })
+//         .notNull()
+//         .references(() => messagePayloadSchema.messagePayloadDbId),
+// });
+//
+// export const messagePayloadSchema = pgTable("messagePayloadType", {
+//     messagePayloadDbId: bigserial("messagePayloadDbId", { mode: "number" }).primaryKey(),
+//     clientDbId: varchar("clientDbId")
+//         .notNull()
+//         .references(() => clientEntitySchema.clientDbId),
+//     messageDbId: bigserial("messageDbId", { mode: "number" })
+//         .notNull()
+//         .REFERENCES(() => MESSAGETYPESCHEMA.MESSAGEDBID),
+// });
