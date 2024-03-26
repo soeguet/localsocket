@@ -48,8 +48,6 @@ const server = Bun.serve<WebSocket>({
             await processIncomingMessage(ws, server, message);
         },
     },
-    //
-    hostname: "127.0.0.1",
     port: 5588,
 });
 

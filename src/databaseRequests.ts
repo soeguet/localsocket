@@ -8,7 +8,7 @@ import {
 export async function sendLast100MessagesToNewClient() {
     // grab all messages
     const messageList = await prisma.messagePayload.findMany({
-        take: 100,
+        take: -100,
         orderBy: {
             messagePayloadDbId: "asc",
         },
