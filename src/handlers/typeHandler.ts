@@ -10,7 +10,12 @@ export function validateMessagePayloadTyping(messagePayload: object | null) {
     if (messagePayloadvalidator === undefined) {
         throw new Error("Validator not found");
     }
-    return messagePayloadvalidator(messagePayload);
+
+    try {
+        return messagePayloadvalidator(messagePayload);
+    } catch (error) {
+        return false;
+    }
 }
 
 export function validateAuthPayloadTyping(
@@ -19,5 +24,11 @@ export function validateAuthPayloadTyping(
     if (authPayloadValidator === undefined) {
         throw new Error("Validator not found");
     }
-    return authPayloadValidator(authenticationPayload);
+
+    try {
+        return authPayloadValidator(authenticationPayload);
+    }
+    catch (error) {
+        return false;
+    }
 }
