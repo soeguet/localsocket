@@ -11,6 +11,7 @@ export function validateMessagePayloadTyping(messagePayload: object | null) {
         throw new Error("Validator not found");
     }
 
+    console.log("messagePayload", messagePayload);
     try {
         return messagePayloadvalidator(messagePayload);
     } catch (error) {
@@ -25,6 +26,7 @@ export function validateAuthPayloadTyping(
         throw new Error("Validator not found");
     }
 
+    console.log("authenticationPayload", authenticationPayload);
     try {
         return authPayloadValidator(authenticationPayload);
     }

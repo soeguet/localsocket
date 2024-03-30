@@ -23,7 +23,7 @@ import {
 } from "./handlers/typeHandler";
 
 export async function processIncomingMessage(
-    _ws: ServerWebSocket<WebSocket>,
+    ws: ServerWebSocket<WebSocket>,
     server: Server,
     message: string | Buffer
 ) {
@@ -43,9 +43,10 @@ export async function processIncomingMessage(
             );
 
             if (!validAuthPayload) {
-                throw new Error(
-                    "Invalid authentication payload type. Type check not successful!"
-                );
+                ws.close(1008, "Invalid authentication payload type. Type check not successful!");
+                // throw new Error(
+                //     "Invalid authentication payload type. Type check not successful!"
+                // );
             }
 
             await registerUserInDatabse(
@@ -71,9 +72,10 @@ export async function processIncomingMessage(
             );
 
             if (!validPayload) {
-                throw new Error(
-                    "Invalid message payload type. Type check not successful!"
-                );
+                ws.close(1008, "Invalid message payload type. Type check not successful!");
+                // throw new Error(
+                //     "Invalid message payload type. Type check not successful!"
+                // );
             }
 
             // PERSIST MESSAGE
