@@ -2,7 +2,7 @@
 module.exports = {
     env: {
         browser: true,
-        es2021: true
+        es2021: true,
     },
     extends: [
         "eslint:recommended",
@@ -12,7 +12,7 @@ module.exports = {
     parser: "@typescript-eslint/parser",
     parserOptions: {
         ecmaVersion: "latest",
-        sourceType: "module"
+        sourceType: "module",
     },
     root: true,
     plugins: ["@typescript-eslint"],
@@ -20,6 +20,6 @@ module.exports = {
         indent: ["error", 4, { SwitchCase: 1 }],
         "linebreak-style": ["error", "unix"],
         quotes: ["error", "double"],
-        semi: ["error", "always"]
-    }
+        semi: ["error", "always"],
+    },
 };

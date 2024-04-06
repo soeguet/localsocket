@@ -35,18 +35,18 @@ export async function processIncomingMessage(
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
         ////
-        case PayloadSubType.auth:
+        case PayloadSubType.auth: {
             //
-
             const validAuthPayload = validateAuthPayloadTyping(
                 payloadFromClientAsObject
             );
 
             if (!validAuthPayload) {
-                ws.close(1008, "Invalid authentication payload type. Type check not successful!");
-                // throw new Error(
-                //     "Invalid authentication payload type. Type check not successful!"
-                // );
+                ws.close(
+                    1008,
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+                break;
             }
 
             await registerUserInDatabse(
@@ -62,20 +62,22 @@ export async function processIncomingMessage(
             });
 
             break;
-
-        ////
-        case PayloadSubType.message:
-            //console.log("message received", payloadFromClientAsObject);
-            // VALIDATION
-            const validPayload = validateMessagePayloadTyping(
+        }
+        case PayloadSubType.message: {
+            const validMessagePayload = validateMessagePayloadTyping(
                 payloadFromClientAsObject
             );
 
-            if (!validPayload) {
-                ws.close(1008, "Invalid message payload type. Type check not successful!");
-                // throw new Error(
-                //     "Invalid message payload type. Type check not successful!"
-                // );
+            if (!validMessagePayload) {
+                ws.send(
+                    "Invalid message payload type. Type check not successful!"
+                );
+                ws.send(JSON.stringify(payloadFromClientAsObject));
+                ws.close(
+                    1008,
+                    "Invalid message payload type. Type check not successful!"
+                );
+                break;
             }
 
             // PERSIST MESSAGE
@@ -91,12 +93,11 @@ export async function processIncomingMessage(
             };
 
             server.publish("the-group-chat", JSON.stringify(payload));
+
+            server.publish("the-group-chat", "SUPER");
             break;
-
-        ////
-        case PayloadSubType.profileUpdate:
-            //console.log("profileUpdate received", messageAsString);
-
+        }
+        case PayloadSubType.profileUpdate: {
             await updateClientProfileInformation(payloadFromClientAsObject);
 
             await retrieveAllRegisteredUsersFromDatabase().then(
@@ -104,24 +105,24 @@ export async function processIncomingMessage(
                     sendAllRegisteredUsersListToClient(server, allUsers)
             );
             break;
+        }
 
-        ////
-        case PayloadSubType.clientList:
-            //console.log("clientList received", messageAsString);
+        case PayloadSubType.clientList: {
             await retrieveAllRegisteredUsersFromDatabase().then(
                 (allUsers: ClientEntity | unknown) =>
                     sendAllRegisteredUsersListToClient(server, allUsers)
             );
             break;
+        }
 
-        ////
         case PayloadSubType.typing:
-        case PayloadSubType.force:
+        case PayloadSubType.force: {
             server.publish("the-group-chat", messageAsString);
             break;
+        }
 
         ////
-        case PayloadSubType.reaction:
+        case PayloadSubType.reaction: {
             console.log("reaction received", messageAsString);
             await persistReactionToDatabase(payloadFromClientAsObject);
             await retrieveUpdatedMessageFromDatabase(
@@ -138,11 +139,18 @@ export async function processIncomingMessage(
                 );
             });
             break;
+        }
 
-        ////
+        case null:
+        case undefined:
         default: {
+            ws.send("Invalid message payload type. Type check not successful!");
             console.log("switch messageType default");
             console.log("messageAsString", messageAsString);
+            ws.close(
+                1008,
+                "Invalid message payload type. Type check not successful!"
+            );
             break;
         }
     }
