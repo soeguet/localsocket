@@ -1,8 +1,8 @@
-import { type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticationPayload,
     type ClientEntity,
+    type MessagePayload,
 } from "./types/payloadTypes";
 import {
     persistMessageInDatabase,
@@ -21,6 +21,7 @@ import {
     validateAuthPayloadTyping,
     validateMessagePayloadTyping,
 } from "./handlers/typeHandler";
+import type { Server, ServerWebSocket } from "bun";
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
@@ -41,7 +42,10 @@ export async function processIncomingMessage(
                 payloadFromClientAsObject
             );
 
-            if (!validAuthPayload) {
+            if (
+                !validAuthPayload ||
+                payloadFromClientAsObject.clientDbId === ""
+            ) {
                 ws.close(
                     1008,
                     "Invalid authentication payload type. Type check not successful!"
@@ -68,11 +72,18 @@ export async function processIncomingMessage(
                 payloadFromClientAsObject
             );
 
-            if (!validMessagePayload) {
+            // redefine for LSP compliance
+            const messagePayload: MessagePayload = payloadFromClientAsObject;
+
+            if (
+                !validMessagePayload ||
+                messagePayload.messageType.messageDbId === "" ||
+                messagePayload.clientType.clientDbId === ""
+            ) {
                 ws.send(
                     "Invalid message payload type. Type check not successful!"
                 );
-                ws.send(JSON.stringify(payloadFromClientAsObject));
+                ws.send(JSON.stringify(messagePayload));
                 ws.close(
                     1008,
                     "Invalid message payload type. Type check not successful!"
@@ -81,20 +92,18 @@ export async function processIncomingMessage(
             }
 
             // PERSIST MESSAGE
-            await persistMessageInDatabase(payloadFromClientAsObject);
+            await persistMessageInDatabase(messagePayload);
 
             // retrieve just persisted message
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 
-            const payload = {
+            const finalPayload = {
                 ...lastMessagesFromDatabase,
                 payloadType: PayloadSubType.message,
             };
 
-            server.publish("the-group-chat", JSON.stringify(payload));
-
-            server.publish("the-group-chat", "SUPER");
+            server.publish("the-group-chat", JSON.stringify(finalPayload));
             break;
         }
         case PayloadSubType.profileUpdate: {

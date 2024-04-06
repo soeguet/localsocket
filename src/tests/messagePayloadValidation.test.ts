@@ -1,5 +1,5 @@
 import ajvValidator from "../validator/ajvValidator";
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe } from "vitest";
 
 describe("validate message payload from client", () => {
     const validate = ajvValidator.getSchema("messagePayloadValidator");

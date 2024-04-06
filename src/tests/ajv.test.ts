@@ -1,5 +1,5 @@
 import ajvValidator from "../validator/ajvValidator";
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe } from "vitest";
 
 describe("validator tests just to be sure everything is fine", () => {
     const validate = ajvValidator.getSchema("testValidator");
