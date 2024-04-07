@@ -14,7 +14,8 @@
         "generate": "prisma generate",
         "test": "vitest",
         "test:watch": "vitest watch",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --coverage.enabled=true --ui"
     },
     "keywords": [],
     "author": "",
@@ -33,6 +34,8 @@
         "@eslint/js": "^8.57.0",
         "@types/bun": "latest",
         "@typescript-eslint/eslint-plugin": "^6.4.0",
+        "@vitest/coverage-v8": "^1.4.0",
+        "@vitest/ui": "^1.4.0",
         "eslint": "^8.57.0",
         "eslint-config-standard-with-typescript": "^43.0.1",
         "eslint-plugin-import": "^2.25.2",

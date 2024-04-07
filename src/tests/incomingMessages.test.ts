@@ -17,6 +17,8 @@ vi.mock("../databaseRequests", () => ({
     persistMessageInDatabase: vi.fn(),
     retrieveUpdatedMessageFromDatabase: vi.fn(),
     retrieveLastMessageFromDatabase: vi.fn(() => ({})),
+    retrieveAllRegisteredUsersFromDatabase: vi.fn(() => []),
+    sendAllRegisteredUsersListToClient: vi.fn(),
     updateClientProfileInformation: vi.fn(),
 }));
 
@@ -1253,5 +1255,64 @@ describe("incomingMessages - typing and force payloadType", () => {
         );
 
         expect(mockServer.publish).toBeCalledTimes(1);
+    });
+});
+
+describe("incomingMessages - clientListPayload", () => {
+    test("valid clientListPayload", async () => {
+        const payload = JSON.stringify({
+            payloadType: PayloadSubType.clientList,
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+});
+
+describe("incomingMessages - profileUpdatePayload", () => {
+    test("valid profileUpdatePayload", async () => {
+        const payload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientType: {
+                clientDbId: "asdasd",
+                clientUsername: "Test",
+                clientColor: "red",
+                clientProfileImage: "image",
+            },
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - null value clientDbId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientType: {
+                clientDbId: null,
+                clientUsername: "Test",
+                clientColor: "red",
+                clientProfileImage: "image",
+            },
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
     });
 });

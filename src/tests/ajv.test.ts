@@ -465,3 +465,89 @@ describe("ajvValidator tests - reactionPayloadValidator", () => {
         ).toBe(true);
     });
 });
+
+describe("ajvValidator tests - profileUpdateValidator", () => {
+    const validate = ajvValidator.getSchema("profileUpdateValidator");
+
+    if (validate === undefined) {
+        throw new Error("Schema not found");
+    }
+
+    test("profileUpdateValidator true - only required", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: "test",
+                clientUsername: "test",
+            })
+        ).toBe(true);
+    });
+
+    test("profileUpdateValidator true - all fields", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: "test",
+                clientUsername: "test",
+                clientColor: "test",
+                clientProfileImage: "test",
+            })
+        ).toBe(true);
+    });
+
+    test("profileUpdateValidator false - wrong type", () => {
+        expect(
+            validate({
+                payloadType: "3",
+                clientDbId: "test",
+                clientUsername: "test",
+            })
+        ).toBe(false);
+    });
+
+    test("profileUpdateValidator false - missing field", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: "test",
+            })
+        ).toBe(false);
+    });
+
+    test("profileUpdateValidator false - additional field", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: "test",
+                clientUsername: "test",
+                test: "test",
+            })
+        ).toBe(false);
+    });
+
+    test("profileUpdateValidator false - object null", () => {
+        expect(validate(null)).toBe(false);
+    });
+
+    test("profileUpdateValidator false - field undefined", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: undefined,
+                clientUsername: "test",
+            })
+        ).toBe(false);
+    });
+
+    test("profileUpdateValidator true - optional field undefined", () => {
+        expect(
+            validate({
+                payloadType: 3,
+                clientDbId: "test",
+                clientUsername: "test",
+                clientColor: undefined,
+                clientProfileImage: undefined,
+            })
+        ).toBe(true);
+    });
+});

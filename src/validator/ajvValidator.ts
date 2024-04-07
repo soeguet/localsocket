@@ -216,4 +216,30 @@ ajvValidator.addSchema(
     "reactionPayloadValidator"
 );
 
+ajvValidator.addSchema(
+    {
+        type: "object",
+        properties: {
+            payloadType: {
+                type: "number",
+            },
+            clientDbId: {
+                type: "string",
+            },
+            clientUsername: {
+                type: "string",
+            },
+            clientColor: {
+                type: "string",
+            },
+            clientProfileImage: {
+                type: "string",
+            },
+        },
+        required: ["payloadType", "clientDbId", "clientUsername"],
+        additionalProperties: false,
+    },
+    "profileUpdateValidator"
+);
+
 export default ajvValidator;

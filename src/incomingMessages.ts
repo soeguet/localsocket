@@ -2,6 +2,7 @@ import {
     PayloadSubType,
     type AuthenticationPayload,
     type ClientEntity,
+    type ClientUpdatePayload,
     type MessagePayload,
     type ReactionPayload,
 } from "./types/payloadTypes";
@@ -19,9 +20,10 @@ import {
 } from "./handlers/databaseHandler";
 import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
 import {
-    validateAuthPayloadTyping,
-    validateMessagePayloadTyping,
-    validateReactionPayloadTyping,
+    validateAuthPayload,
+    validateMessagePayload,
+    validateReactionPayload,
+    validateclientUpdatePayload,
 } from "./handlers/typeHandler";
 import type { Server, ServerWebSocket } from "bun";
 
@@ -37,10 +39,9 @@ export async function processIncomingMessage(
 
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
-        ////
         case PayloadSubType.auth: {
             //
-            const validAuthPayload = validateAuthPayloadTyping(
+            const validAuthPayload = validateAuthPayload(
                 payloadFromClientAsObject
             );
 
@@ -71,7 +72,7 @@ export async function processIncomingMessage(
         }
 
         case PayloadSubType.message: {
-            const validMessagePayload = validateMessagePayloadTyping(
+            const validMessagePayload = validateMessagePayload(
                 payloadFromClientAsObject
             );
 
@@ -111,20 +112,41 @@ export async function processIncomingMessage(
         }
 
         case PayloadSubType.profileUpdate: {
+            const validMessagePayload = validateclientUpdatePayload(
+                payloadFromClientAsObject
+            );
+
+            // redefine for LSP compliance
+            const clientUpdatePayload: ClientUpdatePayload =
+                payloadFromClientAsObject;
+
+            if (
+                !validMessagePayload ||
+                clientUpdatePayload.clientDbId === "" ||
+                clientUpdatePayload.clientUsername === ""
+            ) {
+                ws.send(
+                    "Invalid clientUpdatePayload type. Type check not successful!"
+                );
+                ws.send(JSON.stringify(clientUpdatePayload));
+                ws.close(
+                    1008,
+                    "Invalid clientUpdatePayload type. Type check not successful!"
+                );
+                break;
+            }
+
             await updateClientProfileInformation(payloadFromClientAsObject);
 
-            await retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: ClientEntity | unknown) =>
-                    sendAllRegisteredUsersListToClient(server, allUsers)
-            );
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+            await sendAllRegisteredUsersListToClient(server, allUsers);
+
             break;
         }
 
         case PayloadSubType.clientList: {
-            await retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: ClientEntity | unknown) =>
-                    sendAllRegisteredUsersListToClient(server, allUsers)
-            );
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+            await sendAllRegisteredUsersListToClient(server, allUsers);
             break;
         }
 
@@ -135,7 +157,7 @@ export async function processIncomingMessage(
         }
 
         case PayloadSubType.reaction: {
-            const validatedReactionPayload = validateReactionPayloadTyping(
+            const validatedReactionPayload = validateReactionPayload(
                 payloadFromClientAsObject
             );
 
