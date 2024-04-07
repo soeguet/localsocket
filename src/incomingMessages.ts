@@ -3,7 +3,6 @@ import {
     type AuthenticationPayload,
     type ClientEntity,
     type MessagePayload,
-    type ReactionEntity,
     type ReactionPayload,
 } from "./types/payloadTypes";
 import {
@@ -70,6 +69,7 @@ export async function processIncomingMessage(
 
             break;
         }
+
         case PayloadSubType.message: {
             const validMessagePayload = validateMessagePayloadTyping(
                 payloadFromClientAsObject
@@ -109,6 +109,7 @@ export async function processIncomingMessage(
             server.publish("the-group-chat", JSON.stringify(finalPayload));
             break;
         }
+
         case PayloadSubType.profileUpdate: {
             await updateClientProfileInformation(payloadFromClientAsObject);
 
@@ -133,22 +134,25 @@ export async function processIncomingMessage(
             break;
         }
 
-        ////
         case PayloadSubType.reaction: {
-            console.log("reaction received", messageAsString);
-
             const validatedReactionPayload = validateReactionPayloadTyping(
                 payloadFromClientAsObject
             );
 
+            // set to object of type ReactionPayload for LSP compliance
             const reactionPayload: ReactionPayload = payloadFromClientAsObject;
 
             if (
                 !validatedReactionPayload ||
+                reactionPayload.reactionDbId === "" ||
                 reactionPayload.reactionMessageId === "" ||
                 reactionPayload.reactionContext === "" ||
                 reactionPayload.reactionClientId === ""
             ) {
+                ws.send(
+                    "Invalid reaction payload type. Type check not successful!" +
+                        JSON.stringify(reactionPayload)
+                );
                 ws.close(
                     1008,
                     "Invalid authentication payload type. Type check not successful!"
@@ -175,7 +179,9 @@ export async function processIncomingMessage(
         case null:
         case undefined:
         default: {
-            ws.send("Invalid message payload type. Type check not successful!");
+            ws.send(
+                "SWITCH CASES: Invalid message payload type. Type check not successful!"
+            );
             console.log("switch messageType default");
             console.log("messageAsString", messageAsString);
             ws.close(

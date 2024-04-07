@@ -1,7 +1,6 @@
 import { expect, test, describe, afterEach, vi } from "vitest";
 import { PayloadSubType } from "../types/payloadTypes";
 import { processIncomingMessage } from "../incomingMessages";
-import { retrieveAllRegisteredUsersFromDatabase } from "../handlers/databaseHandler";
 
 const mockWebsocketConnection = {
     send: vi.fn(),
@@ -891,9 +890,360 @@ describe("incomingMessages - ReactionPayload", () => {
     test("valid ReactionPayload", async () => {
         const payload = JSON.stringify({
             payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
             reactionMessageId: "asdasd",
             reactionContext: "Test",
             reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - null value reactionDbId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: null,
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - null value reactionMessageId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: null,
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - null value reactionContext", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionContext: null,
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - null value reactionClientId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: null,
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - missing reactionClientId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - missing reactionContext", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - missing reactionMessageId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - missing reactionDbId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - empty string reactionDbId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "",
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - empty string reactionMessageId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "",
+            reactionContext: "Test",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - empty string reactionContext", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionContext: "",
+            reactionClientId: "asdasd",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid ReactionPayload - empty string reactionClientId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.reaction,
+            reactionDbId: "asdasd",
+            reactionMessageId: "asdasd",
+            reactionContext: "Test",
+            reactionClientId: "",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+});
+
+describe("incomingMessages - invalid PayloadType", () => {
+    test("invalid PayloadType", async () => {
+        const payload = JSON.stringify({
+            payloadType: "invalid",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("missing PayloadType", async () => {
+        const payload = JSON.stringify({});
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+});
+
+describe("incomingMessages - typing and force payloadType", () => {
+    test("valid typing PayloadType", async () => {
+        const payload = JSON.stringify({
+            payloadType: PayloadSubType.typing,
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+
+    test("valid force PayloadType", async () => {
+        const payload = JSON.stringify({
+            payloadType: PayloadSubType.force,
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+
+    test("invalid typing PayloadType", async () => {
+        const payload = JSON.stringify({
+            payloadType: "typing",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid force PayloadType", async () => {
+        const payload = JSON.stringify({
+            payloadType: "force",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("missing PayloadType", async () => {
+        const payload = JSON.stringify({});
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("simple return of message", async () => {
+        const payload = JSON.stringify({
+            payloadType: PayloadSubType.message,
+            messageType: {
+                messageDbId: "asdasd",
+                messageContext: "Test",
+                messageTime: "12:00",
+                messageDate: "2021-09-01",
+            },
+            clientType: {
+                clientDbId: "asdasd",
+            },
         });
 
         await processIncomingMessage(

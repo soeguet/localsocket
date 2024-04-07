@@ -141,7 +141,7 @@ export type QuoteEntity = {
  * @param {string} reactionContext
  * @param {string} reactionClientId
  */
-export type ReactionPayload = Omit<ReactionEntity, "reactionDbId"> & {
+export type ReactionPayload = ReactionEntity & {
     payloadType: PayloadSubType.reaction;
 };
 

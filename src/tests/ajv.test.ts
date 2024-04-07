@@ -397,6 +397,7 @@ describe("ajvValidator tests - reactionPayloadValidator", () => {
         expect(
             validate({
                 payloadType: 2,
+                reactionDbId: "test",
                 reactionMessageId: "test",
                 reactionContext: "test",
                 reactionClientId: "test",
@@ -456,6 +457,7 @@ describe("ajvValidator tests - reactionPayloadValidator", () => {
         expect(
             validate({
                 payloadType: 2,
+                reactionDbId: "test",
                 reactionMessageId: "test",
                 reactionContext: "test",
                 reactionClientId: "test",

@@ -191,6 +191,9 @@ ajvValidator.addSchema(
             payloadType: {
                 type: "number",
             },
+            reactionDbId: {
+                type: "string",
+            },
             reactionMessageId: {
                 type: "string",
             },
@@ -203,6 +206,7 @@ ajvValidator.addSchema(
         },
         required: [
             "payloadType",
+            "reactionDbId",
             "reactionMessageId",
             "reactionContext",
             "reactionClientId",
