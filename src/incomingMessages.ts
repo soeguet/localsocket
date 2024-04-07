@@ -3,6 +3,8 @@ import {
     type AuthenticationPayload,
     type ClientEntity,
     type MessagePayload,
+    type ReactionEntity,
+    type ReactionPayload,
 } from "./types/payloadTypes";
 import {
     persistMessageInDatabase,
@@ -20,6 +22,7 @@ import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHand
 import {
     validateAuthPayloadTyping,
     validateMessagePayloadTyping,
+    validateReactionPayloadTyping,
 } from "./handlers/typeHandler";
 import type { Server, ServerWebSocket } from "bun";
 
@@ -57,13 +60,13 @@ export async function processIncomingMessage(
                 payloadFromClientAsObject as AuthenticationPayload
             );
 
-            await retrieveAllRegisteredUsersFromDatabase().then((allUsers) => {
-                if (typeof allUsers === "undefined" || allUsers === null) {
-                    throw new Error("No users found");
-                }
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 
-                sendAllRegisteredUsersListToClient(server, allUsers);
-            });
+            if (typeof allUsers === "undefined" || allUsers === null) {
+                throw new Error("No users found");
+            }
+
+            sendAllRegisteredUsersListToClient(server, allUsers);
 
             break;
         }
@@ -133,20 +136,39 @@ export async function processIncomingMessage(
         ////
         case PayloadSubType.reaction: {
             console.log("reaction received", messageAsString);
-            await persistReactionToDatabase(payloadFromClientAsObject);
-            await retrieveUpdatedMessageFromDatabase(
-                payloadFromClientAsObject.reactionMessageId
-            ).then((updatedMessage) => {
-                const updatedMessageWithPayloadType = {
-                    ...updatedMessage,
-                    payloadType: PayloadSubType.reaction,
-                };
 
-                server.publish(
-                    "the-group-chat",
-                    JSON.stringify(updatedMessageWithPayloadType)
+            const validatedReactionPayload = validateReactionPayloadTyping(
+                payloadFromClientAsObject
+            );
+
+            const reactionPayload: ReactionPayload = payloadFromClientAsObject;
+
+            if (
+                !validatedReactionPayload ||
+                reactionPayload.reactionMessageId === "" ||
+                reactionPayload.reactionContext === "" ||
+                reactionPayload.reactionClientId === ""
+            ) {
+                ws.close(
+                    1008,
+                    "Invalid authentication payload type. Type check not successful!"
                 );
-            });
+                break;
+            }
+
+            await persistReactionToDatabase(payloadFromClientAsObject);
+            const updatedMessage = await retrieveUpdatedMessageFromDatabase(
+                payloadFromClientAsObject.reactionMessageId
+            );
+            const updatedMessageWithPayloadType = {
+                ...updatedMessage,
+                payloadType: PayloadSubType.reaction,
+            };
+
+            server.publish(
+                "the-group-chat",
+                JSON.stringify(updatedMessageWithPayloadType)
+            );
             break;
         }
 

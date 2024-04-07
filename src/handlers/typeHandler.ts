@@ -6,6 +6,10 @@ const messagePayloadvalidator = ajvValidator.getSchema(
 
 const authPayloadValidator = ajvValidator.getSchema("authPayloadValidator");
 
+const reactionPayloadValidator = ajvValidator.getSchema(
+    "reactionPayloadValidator"
+);
+
 export function validateMessagePayloadTyping(messagePayload: object | null) {
     if (messagePayloadvalidator === undefined) {
         throw new Error("Validator not found");
@@ -29,8 +33,20 @@ export function validateAuthPayloadTyping(
     console.log("authenticationPayload", authenticationPayload);
     try {
         return authPayloadValidator(authenticationPayload);
+    } catch (error) {
+        return false;
     }
-    catch (error) {
+}
+
+export function validateReactionPayloadTyping(reactionPayload: object | null) {
+    if (reactionPayloadValidator === undefined) {
+        throw new Error("Validator not found");
+    }
+
+    console.log("reactionPayload", reactionPayload);
+    try {
+        return reactionPayloadValidator(reactionPayload);
+    } catch (error) {
         return false;
     }
 }

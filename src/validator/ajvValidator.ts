@@ -162,14 +162,54 @@ ajvValidator.addSchema(
                 },
             },
         },
-        required: [
-            "payloadType",
-            "clientType",
-            "messageType",
-        ],
+        required: ["payloadType", "clientType", "messageType"],
         additionalProperties: false,
     },
     "messagePayloadValidator"
+);
+
+/**
+ * [[ RESULTING TYPE ]]
+ *  export type ReactionEntity = {
+ *     payloadType: PayloadSubType.reaction;
+ *     reactionDbId: string;
+ *     reactionMessageId: string;
+ *     reactionContext: string;
+ *     reactionClientId: string;
+ *  };
+ *
+ * @param {int} payloadType
+ * @param {string} reactionDbId
+ * @param {string} reactionMessageId
+ * @param {string} reactionContext
+ * @param {string} reactionClientId
+ */
+ajvValidator.addSchema(
+    {
+        type: "object",
+        properties: {
+            payloadType: {
+                type: "number",
+            },
+            reactionMessageId: {
+                type: "string",
+            },
+            reactionContext: {
+                type: "string",
+            },
+            reactionClientId: {
+                type: "string",
+            },
+        },
+        required: [
+            "payloadType",
+            "reactionMessageId",
+            "reactionContext",
+            "reactionClientId",
+        ],
+        additionalProperties: false,
+    },
+    "reactionPayloadValidator"
 );
 
 export default ajvValidator;
