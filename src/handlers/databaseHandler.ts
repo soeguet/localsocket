@@ -5,7 +5,6 @@ import type {
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
-    // console.log("message received", message);
     // check for null values
     if (prisma === undefined || prisma === null) {
         console.error("Database not found");

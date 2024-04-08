@@ -1,5 +1,5 @@
 import ajvValidator from "../validator/ajvValidator";
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe } from "vitest";
 
 describe("validate message payload from client", () => {
     const validate = ajvValidator.getSchema("messagePayloadValidator");
@@ -89,7 +89,7 @@ describe("validate message payload from client", () => {
         ).toBe(true);
     });
 
-        test("validator false - correct object - random typing", () => {
+    test("validator false - correct object - random typing", () => {
         expect(
             validate({
                 payloadType: 1,
@@ -119,5 +119,4 @@ describe("validate message payload from client", () => {
             })
         ).toBe(false);
     });
-
 });

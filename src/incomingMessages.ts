@@ -1,8 +1,11 @@
-import { type Server, type ServerWebSocket } from "bun";
 import {
     PayloadSubType,
     type AuthenticationPayload,
     type ClientEntity,
+    type ClientListPayload,
+    type ClientUpdatePayload,
+    type MessagePayload,
+    type ReactionPayload,
 } from "./types/payloadTypes";
 import {
     persistMessageInDatabase,
@@ -18,9 +21,12 @@ import {
 } from "./handlers/databaseHandler";
 import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
 import {
-    validateAuthPayloadTyping,
-    validateMessagePayloadTyping,
+    validateAuthPayload,
+    validateMessagePayload,
+    validateReactionPayload,
+    validateclientUpdatePayload,
 } from "./handlers/typeHandler";
+import type { Server, ServerWebSocket } from "bun";
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
@@ -34,115 +40,202 @@ export async function processIncomingMessage(
 
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
-        ////
-        case PayloadSubType.auth:
+        case PayloadSubType.auth: {
             //
-
-            const validAuthPayload = validateAuthPayloadTyping(
+            const validAuthPayload = validateAuthPayload(
                 payloadFromClientAsObject
             );
 
-            if (!validAuthPayload) {
-                ws.close(1008, "Invalid authentication payload type. Type check not successful!");
-                // throw new Error(
-                //     "Invalid authentication payload type. Type check not successful!"
-                // );
+            if (
+                !validAuthPayload ||
+                payloadFromClientAsObject.clientDbId === ""
+            ) {
+                ws.send(
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+                console.error(
+                    "VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
+                ws.close(
+                    1008,
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+                break;
             }
 
             await registerUserInDatabse(
                 payloadFromClientAsObject as AuthenticationPayload
             );
 
-            await retrieveAllRegisteredUsersFromDatabase().then((allUsers) => {
-                if (typeof allUsers === "undefined" || allUsers === null) {
-                    throw new Error("No users found");
-                }
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 
-                sendAllRegisteredUsersListToClient(server, allUsers);
-            });
+            if (typeof allUsers === "undefined" || allUsers === null) {
+                throw new Error("No users found");
+            }
+
+            sendAllRegisteredUsersListToClient(server, allUsers);
 
             break;
+        }
 
-        ////
-        case PayloadSubType.message:
-            //console.log("message received", payloadFromClientAsObject);
-            // VALIDATION
-            const validPayload = validateMessagePayloadTyping(
+        case PayloadSubType.message: {
+            const validMessagePayload = validateMessagePayload(
                 payloadFromClientAsObject
             );
 
-            if (!validPayload) {
-                ws.close(1008, "Invalid message payload type. Type check not successful!");
-                // throw new Error(
-                //     "Invalid message payload type. Type check not successful!"
-                // );
+            // redefine for LSP compliance
+            const messagePayload: MessagePayload = payloadFromClientAsObject;
+
+            if (
+                !validMessagePayload ||
+                messagePayload.messageType.messageDbId === "" ||
+                messagePayload.clientType.clientDbId === ""
+            ) {
+                console.error(
+                    "VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
+                ws.send(
+                    "Invalid message payload type. Type check not successful!"
+                );
+                ws.send(JSON.stringify(messagePayload));
+                ws.close(
+                    1008,
+                    "Invalid message payload type. Type check not successful!"
+                );
+                break;
             }
 
             // PERSIST MESSAGE
-            await persistMessageInDatabase(payloadFromClientAsObject);
+            await persistMessageInDatabase(messagePayload);
 
             // retrieve just persisted message
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 
-            const payload = {
+            const finalPayload = {
                 ...lastMessagesFromDatabase,
                 payloadType: PayloadSubType.message,
             };
 
-            server.publish("the-group-chat", JSON.stringify(payload));
+            server.publish("the-group-chat", JSON.stringify(finalPayload));
             break;
+        }
 
-        ////
-        case PayloadSubType.profileUpdate:
-            //console.log("profileUpdate received", messageAsString);
+        case PayloadSubType.profileUpdate: {
+            const validMessagePayload = validateclientUpdatePayload(
+                payloadFromClientAsObject
+            );
+
+            // redefine for LSP compliance
+            const clientUpdatePayload: ClientUpdatePayload =
+                payloadFromClientAsObject;
+
+            if (
+                !validMessagePayload ||
+                clientUpdatePayload.clientDbId === "" ||
+                clientUpdatePayload.clientUsername === ""
+            ) {
+                console.error(
+                    "VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
+                ws.send(
+                    "Invalid clientUpdatePayload type. Type check not successful!"
+                );
+                ws.send(JSON.stringify(clientUpdatePayload));
+                ws.close(
+                    1008,
+                    "Invalid clientUpdatePayload type. Type check not successful!"
+                );
+                break;
+            }
 
             await updateClientProfileInformation(payloadFromClientAsObject);
 
-            await retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: ClientEntity | unknown) =>
-                    sendAllRegisteredUsersListToClient(server, allUsers)
-            );
-            break;
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+            if (allUsers === undefined || allUsers === null) {
+                throw new Error("No users found");
+            }
 
-        ////
-        case PayloadSubType.clientList:
-            //console.log("clientList received", messageAsString);
-            await retrieveAllRegisteredUsersFromDatabase().then(
-                (allUsers: ClientEntity | unknown) =>
-                    sendAllRegisteredUsersListToClient(server, allUsers)
-            );
-            break;
+            const clientListPayload: ClientListPayload = {
+                payloadType: PayloadSubType.clientList,
+                // TODO validate this
+                clients: allUsers as ClientEntity[],
+            };
 
-        ////
+            server.publish("the-group-chat", JSON.stringify(clientListPayload));
+
+            break;
+        }
+
+        case PayloadSubType.clientList: {
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+            await sendAllRegisteredUsersListToClient(server, allUsers);
+            break;
+        }
+
         case PayloadSubType.typing:
-        case PayloadSubType.force:
+        case PayloadSubType.force: {
             server.publish("the-group-chat", messageAsString);
             break;
+        }
 
-        ////
-        case PayloadSubType.reaction:
-            console.log("reaction received", messageAsString);
-            await persistReactionToDatabase(payloadFromClientAsObject);
-            await retrieveUpdatedMessageFromDatabase(
-                payloadFromClientAsObject.reactionMessageId
-            ).then((updatedMessage) => {
-                const updatedMessageWithPayloadType = {
-                    ...updatedMessage,
-                    payloadType: PayloadSubType.reaction,
-                };
+        case PayloadSubType.reaction: {
+            const validatedReactionPayload = validateReactionPayload(
+                payloadFromClientAsObject
+            );
 
-                server.publish(
-                    "the-group-chat",
-                    JSON.stringify(updatedMessageWithPayloadType)
+            // set to object of type ReactionPayload for LSP compliance
+            const reactionPayload: ReactionPayload = payloadFromClientAsObject;
+
+            if (
+                !validatedReactionPayload ||
+                reactionPayload.reactionDbId === "" ||
+                reactionPayload.reactionMessageId === "" ||
+                reactionPayload.reactionContext === "" ||
+                reactionPayload.reactionClientId === ""
+            ) {
+                ws.send(
+                    "Invalid reaction payload type. Type check not successful!" +
+                        JSON.stringify(reactionPayload)
                 );
-            });
-            break;
+                console.error(
+                    "VALIDATION OF _REACTION_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
+                ws.close(
+                    1008,
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+                break;
+            }
 
-        ////
+            await persistReactionToDatabase(payloadFromClientAsObject);
+            const updatedMessage = await retrieveUpdatedMessageFromDatabase(
+                payloadFromClientAsObject.reactionMessageId
+            );
+            const updatedMessageWithPayloadType = {
+                ...updatedMessage,
+                payloadType: PayloadSubType.reaction,
+            };
+
+            server.publish(
+                "the-group-chat",
+                JSON.stringify(updatedMessageWithPayloadType)
+            );
+            break;
+        }
+
+        case null:
+        case undefined:
         default: {
-            console.log("switch messageType default");
-            console.log("messageAsString", messageAsString);
+            ws.send(
+                "SWITCH CASES: Invalid message payload type. Type check not successful!"
+            );
+            console.error("switch messageType default");
+            console.error("messageAsString", messageAsString);
+            ws.close(
+                1008,
+                "Invalid message payload type. Type check not successful!"
+            );
             break;
         }
     }
