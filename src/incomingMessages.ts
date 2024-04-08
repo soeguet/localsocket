@@ -2,6 +2,7 @@ import {
     PayloadSubType,
     type AuthenticationPayload,
     type ClientEntity,
+    type ClientListPayload,
     type ClientUpdatePayload,
     type MessagePayload,
     type ReactionPayload,
@@ -49,6 +50,12 @@ export async function processIncomingMessage(
                 !validAuthPayload ||
                 payloadFromClientAsObject.clientDbId === ""
             ) {
+                ws.send(
+                    "Invalid authentication payload type. Type check not successful!"
+                );
+                console.error(
+                    "VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
                 ws.close(
                     1008,
                     "Invalid authentication payload type. Type check not successful!"
@@ -84,6 +91,9 @@ export async function processIncomingMessage(
                 messagePayload.messageType.messageDbId === "" ||
                 messagePayload.clientType.clientDbId === ""
             ) {
+                console.error(
+                    "VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
                 ws.send(
                     "Invalid message payload type. Type check not successful!"
                 );
@@ -125,6 +135,9 @@ export async function processIncomingMessage(
                 clientUpdatePayload.clientDbId === "" ||
                 clientUpdatePayload.clientUsername === ""
             ) {
+                console.error(
+                    "VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
                 ws.send(
                     "Invalid clientUpdatePayload type. Type check not successful!"
                 );
@@ -139,7 +152,17 @@ export async function processIncomingMessage(
             await updateClientProfileInformation(payloadFromClientAsObject);
 
             const allUsers = await retrieveAllRegisteredUsersFromDatabase();
-            await sendAllRegisteredUsersListToClient(server, allUsers);
+            if (allUsers === undefined || allUsers === null) {
+                throw new Error("No users found");
+            }
+
+            const clientListPayload: ClientListPayload = {
+                payloadType: PayloadSubType.clientList,
+                // TODO validate this
+                clients: allUsers as ClientEntity[],
+            };
+
+            server.publish("the-group-chat", JSON.stringify(clientListPayload));
 
             break;
         }
@@ -175,6 +198,9 @@ export async function processIncomingMessage(
                     "Invalid reaction payload type. Type check not successful!" +
                         JSON.stringify(reactionPayload)
                 );
+                console.error(
+                    "VALIDATION OF _REACTION_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+                );
                 ws.close(
                     1008,
                     "Invalid authentication payload type. Type check not successful!"
@@ -204,8 +230,8 @@ export async function processIncomingMessage(
             ws.send(
                 "SWITCH CASES: Invalid message payload type. Type check not successful!"
             );
-            console.log("switch messageType default");
-            console.log("messageAsString", messageAsString);
+            console.error("switch messageType default");
+            console.error("messageAsString", messageAsString);
             ws.close(
                 1008,
                 "Invalid message payload type. Type check not successful!"

@@ -17,8 +17,16 @@ vi.mock("../databaseRequests", () => ({
     persistMessageInDatabase: vi.fn(),
     retrieveUpdatedMessageFromDatabase: vi.fn(),
     retrieveLastMessageFromDatabase: vi.fn(() => ({})),
-    retrieveAllRegisteredUsersFromDatabase: vi.fn(() => []),
-    sendAllRegisteredUsersListToClient: vi.fn(),
+    retrieveAllRegisteredUsersFromDatabase: vi.fn(() => [
+        {
+            clientDbId: "1",
+            clientUsername: "test",
+        },
+        {
+            clientDbId: "2",
+            clientUsername: "test2",
+        },
+    ]),
     updateClientProfileInformation: vi.fn(),
 }));
 
@@ -1278,12 +1286,10 @@ describe("incomingMessages - profileUpdatePayload", () => {
     test("valid profileUpdatePayload", async () => {
         const payload = JSON.stringify({
             payloadType: PayloadSubType.profileUpdate,
-            clientType: {
-                clientDbId: "asdasd",
-                clientUsername: "Test",
-                clientColor: "red",
-                clientProfileImage: "image",
-            },
+            clientDbId: "asdasd",
+            clientUsername: "Test",
+            clientColor: "red",
+            clientProfileImage: "image",
         });
 
         await processIncomingMessage(
@@ -1298,12 +1304,10 @@ describe("incomingMessages - profileUpdatePayload", () => {
     test("invalid profileUpdatePayload - null value clientDbId", async () => {
         const invalidPayload = JSON.stringify({
             payloadType: PayloadSubType.profileUpdate,
-            clientType: {
-                clientDbId: null,
-                clientUsername: "Test",
-                clientColor: "red",
-                clientProfileImage: "image",
-            },
+            clientDbId: null,
+            clientUsername: "Test",
+            clientColor: "red",
+            clientProfileImage: "image",
         });
 
         await processIncomingMessage(
@@ -1314,5 +1318,136 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
         expect(mockServer.publish).toBeCalledTimes(0);
         expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - empty string clientDbId", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "",
+            clientUsername: "Test",
+            clientColor: "red",
+            clientProfileImage: "image",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - null value clientUsername", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: null,
+            clientColor: "red",
+            clientProfileImage: "image",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - empty string clientUsername", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: "",
+            clientColor: "red",
+            clientProfileImage: "image",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - null value clientColor", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: "Test",
+            clientColor: null,
+            clientProfileImage: "image",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("valid profileUpdatePayload - empty string clientColor", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: "Test",
+            clientColor: "",
+            clientProfileImage: "image",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
+    });
+
+    test("invalid profileUpdatePayload - null value clientProfileImage", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: "Test",
+            clientColor: "red",
+            clientProfileImage: null,
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
+    test("valid profileUpdatePayload - empty string clientProfileImage", async () => {
+        const invalidPayload = JSON.stringify({
+            payloadType: PayloadSubType.profileUpdate,
+            clientDbId: "asdasd",
+            clientUsername: "Test",
+            clientColor: "red",
+            clientProfileImage: "",
+        });
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            invalidPayload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(1);
     });
 });

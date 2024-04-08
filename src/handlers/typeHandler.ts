@@ -25,7 +25,6 @@ export function validateMessagePayload(
         throw new Error("Validator not found");
     }
 
-    console.log("messagePayload", messagePayload);
     try {
         return messagePayloadvalidator(messagePayload);
     } catch (error) {
@@ -46,7 +45,6 @@ export function validateAuthPayload(
         throw new Error("Validator not found");
     }
 
-    console.log("authenticationPayload", authenticationPayload);
     try {
         return authPayloadValidator(authenticationPayload);
     } catch (error) {
@@ -67,7 +65,6 @@ export function validateReactionPayload(
         throw new Error("Validator not found");
     }
 
-    console.log("reactionPayload", reactionPayload);
     try {
         return reactionPayloadValidator(reactionPayload);
     } catch (error) {
@@ -88,7 +85,6 @@ export function validateclientUpdatePayload(
         throw new Error("Validator not found");
     }
 
-    console.log("clientProfileUpdatePayload", profileUpdateValidator);
     try {
         return profileUpdateValidator(clientProfileUpdatePayload);
     } catch (error) {
