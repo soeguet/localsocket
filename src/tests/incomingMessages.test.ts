@@ -1,6 +1,6 @@
-import { expect, test, describe, afterEach, vi } from "vitest";
+import { vi, afterEach, describe, test, expect } from "vitest";
+import { processIncomingMessage } from "../handlers/incomingMessageHandler";
 import { PayloadSubType } from "../types/payloadTypes";
-import { processIncomingMessage } from "../incomingMessages";
 
 const mockWebsocketConnection = {
     send: vi.fn(),
@@ -12,23 +12,6 @@ const mockServer = {
     broadcast: vi.fn(),
     publish: vi.fn(),
 } as any;
-
-vi.mock("../databaseRequests", () => ({
-    persistMessageInDatabase: vi.fn(),
-    retrieveUpdatedMessageFromDatabase: vi.fn(),
-    retrieveLastMessageFromDatabase: vi.fn(() => ({})),
-    retrieveAllRegisteredUsersFromDatabase: vi.fn(() => [
-        {
-            clientDbId: "1",
-            clientUsername: "test",
-        },
-        {
-            clientDbId: "2",
-            clientUsername: "test2",
-        },
-    ]),
-    updateClientProfileInformation: vi.fn(),
-}));
 
 // /**
 //  * [[ RESULTING TYPE ]]
@@ -50,9 +33,10 @@ vi.mock("../databaseRequests", () => ({
 //     clientColor?: string;
 //     clientProfileImage?: string;
 // };
-vi.mock("../handlers/databaseHandler.ts", () => ({
-    persistReactionToDatabase: vi.fn(),
-    registerUserInDatabse: vi.fn(),
+vi.mock("../handlers/databaseHandler", () => ({
+    persistMessageInDatabase: vi.fn(),
+    retrieveUpdatedMessageFromDatabase: vi.fn(),
+    retrieveLastMessageFromDatabase: vi.fn(() => ({})),
     retrieveAllRegisteredUsersFromDatabase: vi.fn(() => [
         {
             clientDbId: "1",
@@ -63,6 +47,9 @@ vi.mock("../handlers/databaseHandler.ts", () => ({
             clientUsername: "test2",
         },
     ]),
+    updateClientProfileInformation: vi.fn(),
+    persistReactionToDatabase: vi.fn(),
+    registerUserInDatabse: vi.fn(),
     checkForDatabaseErrors: vi.fn((message) => message),
 }));
 

@@ -1,7 +1,10 @@
 import prisma from "../db/db";
-import type {
-    AuthenticationPayload,
-    ReactionPayload,
+import {
+    PayloadSubType,
+    type AuthenticationPayload,
+    type ClientUpdatePayload,
+    type MessagePayload,
+    type ReactionPayload,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -51,4 +54,128 @@ export async function persistReactionToDatabase(payload: ReactionPayload) {
             reactionClientId: payload.reactionClientId,
         },
     });
+}
+
+export async function sendLast100MessagesToNewClient() {
+    // grab all messages
+    const messageList = await prisma.messagePayload.findMany({
+        take: -100,
+        orderBy: {
+            messagePayloadDbId: "asc",
+        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        },
+    });
+    return {
+        payloadType: PayloadSubType.messageList,
+        messageList: messageList,
+    };
+}
+
+export async function updateClientProfileInformation(
+    payload: ClientUpdatePayload
+) {
+    await prisma.client.upsert({
+        where: { clientDbId: payload.clientDbId },
+        update: {
+            clientUsername: payload.clientUsername,
+            clientProfileImage: payload.clientProfileImage,
+            clientColor: payload.clientColor,
+        },
+        create: {
+            clientDbId: payload.clientDbId,
+            clientUsername: payload.clientUsername,
+            clientProfileImage: payload.clientProfileImage,
+            clientColor: payload.clientColor,
+        },
+    });
+}
+
+export async function retrieveLastMessageFromDatabase() {
+    const lastMessage = await prisma.messagePayload.findFirst({
+        take: -1,
+        orderBy: {
+            messagePayloadDbId: "asc",
+        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        },
+    });
+
+    return lastMessage;
+}
+
+export async function persistMessageInDatabase(payload: MessagePayload) {
+    const dataObject = {
+        clientType: {
+            connect: {
+                clientDbId: payload.clientType.clientDbId,
+            },
+        },
+        messagePayloadDbId: payload.messageType.messageDbId,
+        messageType: {
+            create: {
+                messageDate: payload.messageType.messageDate,
+                messageTime: payload.messageType.messageTime,
+                messageContext: payload.messageType.messageContext,
+            },
+        },
+    };
+
+    if (payload.quoteType !== undefined && payload.quoteType !== null) {
+        const quotedObject = {
+            ...dataObject,
+            quoteType: {
+                create: {
+                    quoteDate: payload.quoteType.quoteDate,
+                    quoteTime: payload.quoteType.quoteTime,
+                    quoteMessageContext: payload.quoteType.quoteMessageContext,
+                    quoteClientId: payload.quoteType.quoteClientId,
+                },
+            },
+        };
+        await prisma.messagePayload.create({
+            data: quotedObject,
+        });
+        //
+    } else {
+        await prisma.messagePayload.create({
+            data: dataObject,
+        });
+    }
+}
+
+export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
+    const updatedMessage = await prisma.messagePayload.findFirst({
+        where: {
+            messagePayloadDbId: messageDbId,
+        },
+        select: {
+            messageType: true,
+            quoteType: true,
+            reactionType: true,
+            clientType: {
+                select: {
+                    clientDbId: true,
+                },
+            },
+        },
+    });
+
+    return updatedMessage;
 }

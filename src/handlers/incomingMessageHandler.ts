@@ -1,32 +1,29 @@
+import type { ServerWebSocket, Server } from "bun";
 import {
     PayloadSubType,
     type AuthenticationPayload,
-    type ClientEntity,
     type ClientListPayload,
+    type ClientEntity,
     type ClientUpdatePayload,
-    type MessagePayload,
     type ReactionPayload,
-} from "./types/payloadTypes";
-import {
-    persistMessageInDatabase,
-    retrieveLastMessageFromDatabase,
-    retrieveUpdatedMessageFromDatabase,
-    updateClientProfileInformation,
-} from "./databaseRequests";
+    type MessagePayload,
+} from "../types/payloadTypes";
 import {
     checkForDatabaseErrors,
-    persistReactionToDatabase,
     registerUserInDatabse,
     retrieveAllRegisteredUsersFromDatabase,
-} from "./handlers/databaseHandler";
-import { sendAllRegisteredUsersListToClient } from "./handlers/communicationHandler";
+    persistMessageInDatabase,
+    retrieveLastMessageFromDatabase,
+    updateClientProfileInformation,
+    persistReactionToDatabase,
+    retrieveUpdatedMessageFromDatabase,
+} from "./databaseHandler";
 import {
     validateAuthPayload,
     validateMessagePayload,
-    validateReactionPayload,
     validateclientUpdatePayload,
-} from "./handlers/typeHandler";
-import type { Server, ServerWebSocket } from "bun";
+    validateReactionPayload,
+} from "./typeHandler";
 
 export async function processIncomingMessage(
     ws: ServerWebSocket<WebSocket>,
@@ -73,7 +70,13 @@ export async function processIncomingMessage(
                 throw new Error("No users found");
             }
 
-            sendAllRegisteredUsersListToClient(server, allUsers);
+            const clientListPayload: ClientListPayload = {
+                payloadType: PayloadSubType.clientList,
+                // TODO validate this
+                clients: allUsers as ClientEntity[],
+            };
+
+            server.publish("the-group-chat", JSON.stringify(clientListPayload));
 
             break;
         }
@@ -169,7 +172,17 @@ export async function processIncomingMessage(
 
         case PayloadSubType.clientList: {
             const allUsers = await retrieveAllRegisteredUsersFromDatabase();
-            await sendAllRegisteredUsersListToClient(server, allUsers);
+            if (allUsers === undefined || allUsers === null) {
+                throw new Error("No users found");
+            }
+
+            const clientListPayload: ClientListPayload = {
+                payloadType: PayloadSubType.clientList,
+                // TODO validate this
+                clients: allUsers as ClientEntity[],
+            };
+
+            server.publish("the-group-chat", JSON.stringify(clientListPayload));
             break;
         }
 

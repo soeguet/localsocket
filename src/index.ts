@@ -1,5 +1,5 @@
-import { sendLast100MessagesToNewClient } from "./src/databaseRequests";
-import { processIncomingMessage } from "./src/incomingMessages";
+import { sendLast100MessagesToNewClient } from "./handlers/databaseHandler";
+import { processIncomingMessage } from "./handlers/incomingMessageHandler";
 
 console.log("Hello via Bun!");
 
