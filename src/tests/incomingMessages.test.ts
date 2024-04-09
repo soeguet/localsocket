@@ -1143,6 +1143,19 @@ describe("incomingMessages - invalid PayloadType", () => {
         expect(mockWebsocketConnection.close).toBeCalledTimes(1);
     });
 
+    test("invalid payload as simple string", async () => {
+        const payload = "invalid";
+
+        await processIncomingMessage(
+            mockWebsocketConnection,
+            mockServer,
+            payload
+        );
+
+        expect(mockServer.publish).toBeCalledTimes(0);
+        expect(mockWebsocketConnection.close).toBeCalledTimes(1);
+    });
+
     test("missing PayloadType", async () => {
         const payload = JSON.stringify({});
 

@@ -33,7 +33,20 @@ export async function processIncomingMessage(
     // some random checks on message & database
     const messageAsString = checkForDatabaseErrors(message) as string;
 
-    const payloadFromClientAsObject = JSON.parse(messageAsString);
+    let payloadFromClientAsObject;
+
+    try {
+        payloadFromClientAsObject = JSON.parse(messageAsString);
+    } catch (error) {
+        console.error(
+            "Error parsing message from client. Please check the message and try again. Probably not a JSON object."
+        );
+        ws.send(
+            "Error parsing message from client. Please check the message and try again. Probably not a JSON object."
+        );
+        ws.close(1008, "Error parsing message from client.");
+        return;
+    }
 
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
@@ -111,7 +124,6 @@ export async function processIncomingMessage(
             // PERSIST MESSAGE
             await persistMessageInDatabase(messagePayload);
 
-            // retrieve just persisted message
             const lastMessagesFromDatabase =
                 await retrieveLastMessageFromDatabase();
 

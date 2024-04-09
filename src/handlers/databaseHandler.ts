@@ -149,13 +149,22 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
                 },
             },
         };
-        await prisma.messagePayload.create({
-            data: quotedObject,
+
+        await prisma.messagePayload.upsert({
+            create: quotedObject,
+            update: {},
+            where: {
+                messagePayloadDbId: payload.messageType.messageDbId,
+            },
         });
         //
     } else {
-        await prisma.messagePayload.create({
-            data: dataObject,
+        await prisma.messagePayload.upsert({
+            create: dataObject,
+            update: {},
+            where: {
+                messagePayloadDbId: payload.messageType.messageDbId,
+            },
         });
     }
 }
