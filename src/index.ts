@@ -36,9 +36,9 @@ const server = Bun.serve<WebSocket>({
         // WEBSOCKET - OPEN
         async open(ws) {
             ws.subscribe("the-group-chat");
-            const messageListPayload = await sendLast100MessagesToNewClient();
-
-            ws.send(JSON.stringify(messageListPayload));
+            // const messageListPayload = await sendLast100MessagesToNewClient();
+            //
+            // ws.send(JSON.stringify(messageListPayload));
         },
         //
         // WEBSOCKET - NEW MESSAGE

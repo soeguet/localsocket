@@ -5,6 +5,7 @@ import {
     type ClientUpdatePayload,
     type MessagePayload,
     type ReactionPayload,
+    type MessageListPayload,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -77,7 +78,7 @@ export async function sendLast100MessagesToNewClient() {
     return {
         payloadType: PayloadSubType.messageList,
         messageList: messageList,
-    };
+    } as MessageListPayload;
 }
 
 export async function updateClientProfileInformation(
@@ -159,13 +160,15 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
         });
         //
     } else {
-        await prisma.messagePayload.upsert({
+        const abc = await prisma.messagePayload.upsert({
             create: dataObject,
             update: {},
             where: {
                 messagePayloadDbId: payload.messageType.messageDbId,
             },
         });
+
+        console.log("abc", abc);
     }
 }
 
@@ -188,3 +191,4 @@ export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
 
     return updatedMessage;
 }
+

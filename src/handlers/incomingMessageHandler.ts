@@ -6,7 +6,7 @@ import {
     type ClientEntity,
     type ClientUpdatePayload,
     type ReactionPayload,
-    type MessagePayload,
+    type MessagePayload, type MessageListPayload,
 } from "../types/payloadTypes";
 import {
     checkForDatabaseErrors,
@@ -16,7 +16,7 @@ import {
     retrieveLastMessageFromDatabase,
     updateClientProfileInformation,
     persistReactionToDatabase,
-    retrieveUpdatedMessageFromDatabase,
+    retrieveUpdatedMessageFromDatabase, sendLast100MessagesToNewClient,
 } from "./databaseHandler";
 import {
     validateAuthPayload,
@@ -50,6 +50,7 @@ export async function processIncomingMessage(
 
     // switch part
     switch (payloadFromClientAsObject.payloadType) {
+        // PayloadSubType.auth == 0
         case PayloadSubType.auth: {
             //
             const validAuthPayload = validateAuthPayload(
@@ -94,6 +95,7 @@ export async function processIncomingMessage(
             break;
         }
 
+        // PayloadSubType.message == 1
         case PayloadSubType.message: {
             const validMessagePayload = validateMessagePayload(
                 payloadFromClientAsObject
@@ -136,6 +138,25 @@ export async function processIncomingMessage(
             break;
         }
 
+        // PayloadSubType.clientList == 2
+        case PayloadSubType.clientList: {
+            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+            if (allUsers === undefined || allUsers === null) {
+                throw new Error("No users found");
+            }
+
+            const clientListPayload: ClientListPayload = {
+                payloadType: PayloadSubType.clientList,
+                // TODO validate this
+                clients: allUsers as ClientEntity[],
+            };
+
+            server.publish("the-group-chat", JSON.stringify(clientListPayload));
+            break;
+
+        }
+
+        // PayloadSubType.profileUpdate == 3
         case PayloadSubType.profileUpdate: {
             const validMessagePayload = validateclientUpdatePayload(
                 payloadFromClientAsObject
@@ -182,28 +203,22 @@ export async function processIncomingMessage(
             break;
         }
 
-        case PayloadSubType.clientList: {
-            const allUsers = await retrieveAllRegisteredUsersFromDatabase();
-            if (allUsers === undefined || allUsers === null) {
-                throw new Error("No users found");
-            }
-
-            const clientListPayload: ClientListPayload = {
-                payloadType: PayloadSubType.clientList,
-                // TODO validate this
-                clients: allUsers as ClientEntity[],
-            };
-
-            server.publish("the-group-chat", JSON.stringify(clientListPayload));
+        // PayloadSubType.messageList == 4
+        case PayloadSubType.messageList: {
+            const messageListPayload:MessageListPayload = await sendLast100MessagesToNewClient();
+            ws.send(JSON.stringify(messageListPayload));
             break;
         }
 
+        // PayloadSubType.typing == 5
         case PayloadSubType.typing:
+        // PayloadSubType.force == 6
         case PayloadSubType.force: {
             server.publish("the-group-chat", messageAsString);
             break;
         }
 
+        // PayloadSubType.reaction == 7
         case PayloadSubType.reaction: {
             const validatedReactionPayload = validateReactionPayload(
                 payloadFromClientAsObject
