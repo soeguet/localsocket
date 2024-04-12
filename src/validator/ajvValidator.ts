@@ -107,7 +107,7 @@ ajvValidator.addSchema(
                 additionalProperties: false,
             },
             quoteType: {
-                type: "object",
+                type: ["object", "null"],
                 properties: {
                     quoteDbId: {
                         type: "string",
@@ -135,7 +135,7 @@ ajvValidator.addSchema(
                 additionalProperties: false,
             },
             reactionType: {
-                type: "array",
+                type: ["array", "null"],
                 items: {
                     type: "object",
                     properties: {
@@ -164,6 +164,7 @@ ajvValidator.addSchema(
         },
         required: ["payloadType", "clientType", "messageType"],
         additionalProperties: false,
+        nullable: true,
     },
     "messagePayloadValidator"
 );

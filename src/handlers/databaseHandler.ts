@@ -1,11 +1,11 @@
 import prisma from "../db/db";
 import {
-    PayloadSubType,
     type AuthenticationPayload,
     type ClientUpdatePayload,
-    type MessagePayload,
-    type ReactionPayload,
     type MessageListPayload,
+    type MessagePayload,
+    PayloadSubType,
+    type ReactionPayload,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -43,7 +43,7 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
 }
 
 export async function retrieveAllRegisteredUsersFromDatabase() {
-    return await prisma.client.findMany();
+    return prisma.client.findMany();
 }
 
 export async function persistReactionToDatabase(payload: ReactionPayload) {
@@ -101,7 +101,7 @@ export async function updateClientProfileInformation(
 }
 
 export async function retrieveLastMessageFromDatabase() {
-    const lastMessage = await prisma.messagePayload.findFirst({
+    return prisma.messagePayload.findFirst({
         take: -1,
         orderBy: {
             messagePayloadDbId: "asc",
@@ -117,8 +117,10 @@ export async function retrieveLastMessageFromDatabase() {
             },
         },
     });
+}
 
-    return lastMessage;
+function generateIsoDate() {
+ return new Date().toISOString().replace(/[-:.TZ]/g, '')
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
@@ -128,7 +130,7 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
                 clientDbId: payload.clientType.clientDbId,
             },
         },
-        messagePayloadDbId: payload.messageType.messageDbId,
+        messagePayloadDbId: generateIsoDate(),
         messageType: {
             create: {
                 messageDate: payload.messageType.messageDate,
@@ -173,7 +175,7 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
 }
 
 export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
-    const updatedMessage = await prisma.messagePayload.findFirst({
+    return prisma.messagePayload.findFirst({
         where: {
             messagePayloadDbId: messageDbId,
         },
@@ -188,7 +190,4 @@ export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
             },
         },
     });
-
-    return updatedMessage;
 }
-

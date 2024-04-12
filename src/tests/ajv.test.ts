@@ -264,6 +264,24 @@ describe("ajvValidator tests - messagePayloadValidator", () => {
         ).toBe(true);
     });
 
+    test("messagePayloadValidator false - wrong quoteType null", () => {
+        expect(
+            validate({
+                payloadType: 1,
+                messageType: {
+                    messageDbId: "test",
+                    messageContext: "test",
+                    messageTime: "test",
+                    messageDate: new Date().toString(),
+                },
+                clientType: {
+                    clientDbId: "test",
+                },
+                quoteType: null,
+            })
+        ).toBe(true);
+    });
+
     test("messagePayloadValidator false - wrong reactionType format", () => {
         expect(
             validate({
