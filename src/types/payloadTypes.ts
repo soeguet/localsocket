@@ -97,6 +97,7 @@ export type ClientEntity = {
  */
 export type MessageEntity = {
     messageDbId: string;
+    deleted: false;
     messageContext: string;
     messageTime: string;
     messageDate: string;
@@ -164,6 +165,7 @@ export type ReactionEntity = {
  *      payloadType: PayloadSubType.message;
  *      messageType: {
  *          messageDbId: string;
+ *          deleted: false;
  *          messageContext: string;
  *          messageTime: string;
  *          messageDate: Date;

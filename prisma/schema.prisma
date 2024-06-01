@@ -42,6 +42,7 @@ model QuoteType {
 
 model MessageType {
     messageDbId    String         @id
+	deleted			Boolean        @default(false)
     messageContext String
     messageTime    String
     messageDate    String

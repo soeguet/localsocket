@@ -120,7 +120,7 @@ export async function retrieveLastMessageFromDatabase() {
 }
 
 function generateIsoDate() {
- return new Date().toISOString().replace(/[-:.TZ]/g, '')
+    return new Date().toISOString().replace(/[-:.TZ]/g, "");
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
@@ -134,6 +134,7 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
         messageType: {
             create: {
                 messageDate: payload.messageType.messageDate,
+                deleted: payload.messageType.deleted,
                 messageTime: payload.messageType.messageTime,
                 messageContext: payload.messageType.messageContext,
             },
@@ -191,3 +192,4 @@ export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
         },
     });
 }
+

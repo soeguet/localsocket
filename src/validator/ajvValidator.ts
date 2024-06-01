@@ -44,6 +44,7 @@ ajvValidator.addSchema(
  *      payloadType: PayloadSubType.message;
  *      messageType: {
  *          messageDbId: string;
+ *          deleted: false;
  *          messageContext: string;
  *          messageTime: string;
  *          messageDate: Date;
@@ -77,6 +78,9 @@ ajvValidator.addSchema(
                 properties: {
                     messageDbId: {
                         type: "string",
+                    },
+                    delete: {
+                        type: "boolean",
                     },
                     messageContext: {
                         type: "string",
@@ -244,3 +248,4 @@ ajvValidator.addSchema(
 );
 
 export default ajvValidator;
+
