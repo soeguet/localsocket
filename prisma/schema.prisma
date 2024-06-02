@@ -32,7 +32,7 @@ model MessagePayload {
 }
 
 model QuoteType {
-    quoteDbId           String         @id
+    quoteDbId           String          @id
     quoteClientId       String?
     quoteMessageContext String?
     quoteTime           String?
@@ -42,7 +42,8 @@ model QuoteType {
 
 model MessageType {
     messageDbId    String         @id
-	deleted			Boolean        @default(false)
+    deleted        Boolean        @default(false)
+    edited         Boolean        @default(false)
     messageContext String
     messageTime    String
     messageDate    String
