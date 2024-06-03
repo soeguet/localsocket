@@ -9,6 +9,8 @@ import {
 	type MessagePayload,
 	type MessageListPayload,
 	type DeleteEntity,
+	type SimplePayload,
+	type EditEntity,
 } from "../types/payloadTypes";
 import {
 	checkForDatabaseErrors,
@@ -32,6 +34,10 @@ import {
 	validateEditPayload,
 } from "./typeHandler";
 
+function validateSimplePayload(payload: unknown): payload is SimplePayload {
+	return (payload as SimplePayload).payloadType !== undefined;
+}
+
 export async function processIncomingMessage(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server,
@@ -40,7 +46,7 @@ export async function processIncomingMessage(
 	// some random checks on message & database
 	const messageAsString = checkForDatabaseErrors(message) as string;
 
-	let payloadFromClientAsObject;
+	let payloadFromClientAsObject: unknown;
 
 	try {
 		payloadFromClientAsObject = JSON.parse(messageAsString);
@@ -55,6 +61,10 @@ export async function processIncomingMessage(
 		return;
 	}
 
+	if (!validateSimplePayload(payloadFromClientAsObject)) {
+		return;
+	}
+
 	// switch part
 	switch (payloadFromClientAsObject.payloadType) {
 		// PayloadSubType.auth == 0
@@ -62,7 +72,7 @@ export async function processIncomingMessage(
 			//
 			const validAuthPayload = validateAuthPayload(payloadFromClientAsObject);
 
-			if (!validAuthPayload || payloadFromClientAsObject.clientDbId === "") {
+			if (!validAuthPayload) {
 				ws.send(
 					"Invalid authentication payload type. Type check not successful!",
 				);
@@ -76,9 +86,14 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			await registerUserInDatabse(
-				payloadFromClientAsObject as AuthenticationPayload,
-			);
+			try {
+				await registerUserInDatabse(
+					payloadFromClientAsObject as AuthenticationPayload,
+				);
+			} catch (error) {
+				console.error("Error registering user in database", error);
+				return;
+			}
 
 			const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 
@@ -103,20 +118,13 @@ export async function processIncomingMessage(
 				payloadFromClientAsObject,
 			);
 
-			// redefine for LSP compliance
-			const messagePayload: MessagePayload = payloadFromClientAsObject;
-
-			if (
-				!validMessagePayload ||
-				messagePayload.messageType.messageDbId === "" ||
-				messagePayload.clientType.clientDbId === ""
-			) {
+			if (!validMessagePayload) {
 				console.error(
 					"VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
 				);
-				console.error("messagePayload", messagePayload);
+				console.error("payloadFromClientAsObject", payloadFromClientAsObject);
 				ws.send("Invalid message payload type. Type check not successful!");
-				ws.send(JSON.stringify(messagePayload));
+				ws.send(JSON.stringify(payloadFromClientAsObject));
 				ws.close(
 					1008,
 					"Invalid message payload type. Type check not successful!",
@@ -124,8 +132,15 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			// PERSIST MESSAGE
-			await persistMessageInDatabase(messagePayload);
+			try {
+				// PERSIST MESSAGE
+				await persistMessageInDatabase(
+					payloadFromClientAsObject as MessagePayload,
+				);
+			} catch (error) {
+				console.error("Error persisting message to database", error);
+				return;
+			}
 
 			const lastMessagesFromDatabase = await retrieveLastMessageFromDatabase();
 
@@ -161,20 +176,12 @@ export async function processIncomingMessage(
 				payloadFromClientAsObject,
 			);
 
-			// redefine for LSP compliance
-			const clientUpdatePayload: ClientUpdatePayload =
-				payloadFromClientAsObject;
-
-			if (
-				!validMessagePayload ||
-				clientUpdatePayload.clientDbId === "" ||
-				clientUpdatePayload.clientUsername === ""
-			) {
+			if (!validMessagePayload) {
 				console.error(
 					"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
 				);
 				ws.send("Invalid clientUpdatePayload type. Type check not successful!");
-				ws.send(JSON.stringify(clientUpdatePayload));
+				ws.send(JSON.stringify(payloadFromClientAsObject));
 				ws.close(
 					1008,
 					"Invalid clientUpdatePayload type. Type check not successful!",
@@ -182,7 +189,14 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			await updateClientProfileInformation(payloadFromClientAsObject);
+			try {
+				await updateClientProfileInformation(
+					payloadFromClientAsObject as ClientUpdatePayload,
+				);
+			} catch (error) {
+				console.error("Error updating client profile information", error);
+				return;
+			}
 
 			const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 			if (allUsers === undefined || allUsers === null) {
@@ -222,19 +236,11 @@ export async function processIncomingMessage(
 				payloadFromClientAsObject,
 			);
 
-			// set to object of type ReactionPayload for LSP compliance
-			const reactionPayload: ReactionPayload = payloadFromClientAsObject;
-
-			if (
-				!validatedReactionPayload ||
-				reactionPayload.reactionDbId === "" ||
-				reactionPayload.reactionMessageId === "" ||
-				reactionPayload.reactionContext === "" ||
-				reactionPayload.reactionClientId === ""
-			) {
+			if (!validatedReactionPayload) {
 				ws.send(
-					"Invalid reaction payload type. Type check not successful!" +
-						JSON.stringify(reactionPayload),
+					`Invalid reaction payload type. Type check not successful!${JSON.stringify(
+						payloadFromClientAsObject,
+					)}`,
 				);
 				console.error(
 					"VALIDATION OF _REACTION_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
@@ -246,9 +252,17 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			await persistReactionToDatabase(payloadFromClientAsObject);
+			try {
+				await persistReactionToDatabase(
+					payloadFromClientAsObject as ReactionPayload,
+				);
+			} catch (error) {
+				console.error("Error persisting reaction to database", error);
+				return;
+			}
+
 			const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-				payloadFromClientAsObject.reactionMessageId,
+				(payloadFromClientAsObject as ReactionPayload).reactionMessageId,
 			);
 			const updatedMessageWithPayloadType = {
 				...updatedMessage,
@@ -270,8 +284,9 @@ export async function processIncomingMessage(
 
 			if (!validatedDeletePayload) {
 				ws.send(
-					"Invalid delete payload type. Type check not successful!" +
-						JSON.stringify(payloadFromClientAsObject),
+					`Invalid delete payload type. Type check not successful!${JSON.stringify(
+						payloadFromClientAsObject,
+					)}`,
 				);
 				console.error(
 					"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
@@ -283,10 +298,15 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			await deleteMessageStatus(payloadFromClientAsObject);
+			try {
+				await deleteMessageStatus(payloadFromClientAsObject as DeleteEntity);
+			} catch (error) {
+				console.error("Error deleting message status", error);
+				return;
+			}
 
 			const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-				payloadFromClientAsObject.messageDbId,
+				(payloadFromClientAsObject as DeleteEntity).messageDbId,
 			);
 
 			const updatedMessageWithPayloadType = {
@@ -309,8 +329,9 @@ export async function processIncomingMessage(
 
 			if (!validatedEditPayload) {
 				ws.send(
-					"Invalid delete payload type. Type check not successful!" +
-						JSON.stringify(payloadFromClientAsObject),
+					`Invalid delete payload type. Type check not successful!${JSON.stringify(
+						payloadFromClientAsObject,
+					)}`,
 				);
 				console.error(
 					"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
@@ -322,10 +343,15 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			await editMessageContent(payloadFromClientAsObject);
+			try {
+				await editMessageContent(payloadFromClientAsObject as EditEntity);
+			} catch (error) {
+				console.error("Error editing message content", error);
+				return;
+			}
 
 			const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-				payloadFromClientAsObject.messageDbId,
+				(payloadFromClientAsObject as EditEntity).messageDbId,
 			);
 
 			const updatedMessageWithPayloadType = {
@@ -339,8 +365,6 @@ export async function processIncomingMessage(
 			);
 			break;
 		}
-		case null:
-		case undefined:
 		default: {
 			ws.send(
 				"SWITCH CASES: Invalid message payload type. Type check not successful!",

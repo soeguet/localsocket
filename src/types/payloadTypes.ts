@@ -11,6 +11,10 @@ export enum PayloadSubType {
 	edit = 9,
 }
 
+export type SimplePayload = {
+	payloadType: PayloadSubType;
+};
+
 /**
  * [[ RESULTING TYPE ]]
  *  export type AuthenticationPayload = {
