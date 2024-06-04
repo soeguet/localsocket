@@ -45,7 +45,6 @@ export async function retrieveAllRegisteredUsersFromDatabase() {
 	return prisma.client.findMany();
 }
 export async function editMessageContent(payload: EditEntity) {
-	console.log("EDITING MESSAGE", payload);
 	await prisma.messagePayload.update({
 		where: {
 			messagePayloadDbId: payload.messageDbId,
@@ -193,15 +192,13 @@ export async function persistMessageInDatabase(payload: MessagePayload) {
 		});
 		//
 	} else {
-		const abc = await prisma.messagePayload.upsert({
+		await prisma.messagePayload.upsert({
 			create: dataObject,
 			update: {},
 			where: {
 				messagePayloadDbId: payload.messageType.messageDbId,
 			},
 		});
-
-		console.log("abc", abc);
 	}
 }
 
