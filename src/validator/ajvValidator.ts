@@ -65,6 +65,11 @@ ajvValidator.addSchema(
  *          reactionContext: string;
  *          reactionClientId: string;
  *      }[];
+ *      imageType?: {
+ *      	imageDbId: string;
+ *      	type: string;
+ *      	data: string;
+ *      };
  *    };
  */
 ajvValidator.addSchema(
@@ -170,6 +175,22 @@ ajvValidator.addSchema(
 					],
 					additionalProperties: false,
 				},
+			},
+			imageType: {
+				type: ["object", "null"],
+				properties: {
+					imageDbId: {
+						type: "string",
+					},
+					type: {
+						type: "string",
+					},
+					data: {
+						type: "string",
+					},
+				},
+				required: ["imageDbId", "type", "data"],
+				additionalProperties: false,
 			},
 		},
 		required: ["payloadType", "clientType", "messageType"],

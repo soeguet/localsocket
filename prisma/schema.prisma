@@ -29,6 +29,7 @@ model MessagePayload {
     reactionType       ReactionType[]
     clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
     messageType        MessageType?
+    imageType          ImageType?
 }
 
 model QuoteType {
@@ -56,6 +57,13 @@ model ReactionType {
     reactionContext   String
     reactionClientId  String
     messagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messagePayloadDbId])
+}
+
+model ImageType {
+    imageDbId      String          @id
+    data       String?
+    type      String?
+    messagePayload MessagePayload? @relation(fields: [imageDbId], references: [messagePayloadDbId])
 }
 
 // export const clientEntitySchema = pgTable("client", {
