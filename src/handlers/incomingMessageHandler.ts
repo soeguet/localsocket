@@ -143,6 +143,7 @@ export async function processIncomingMessage(
 			}
 
 			const lastMessagesFromDatabase = await retrieveLastMessageFromDatabase();
+			debugger;
 
 			const finalPayload = {
 				...lastMessagesFromDatabase,
