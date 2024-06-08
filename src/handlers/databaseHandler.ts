@@ -1,4 +1,3 @@
-import { convertCompilerOptionsFromJson } from "typescript";
 import prisma from "../db/db";
 import {
 	type AuthenticationPayload,
@@ -9,6 +8,7 @@ import {
 	type ReactionPayload,
 	type DeleteEntity,
 	type EditEntity,
+	type ImageEntity,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -102,6 +102,7 @@ export async function sendLast100MessagesToNewClient() {
 					clientDbId: true,
 				},
 			},
+			imageType: true,
 		},
 	});
 	return {
@@ -144,6 +145,7 @@ export async function retrieveLastMessageFromDatabase() {
 					clientDbId: true,
 				},
 			},
+			imageType: true,
 		},
 	});
 }
@@ -153,53 +155,39 @@ function generateIsoDate() {
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
-	const dataObject = {
-		clientType: {
-			connect: {
-				clientDbId: payload.clientType.clientDbId,
-			},
-		},
-		messagePayloadDbId: generateIsoDate(),
-		messageType: {
-			create: {
-				messageDate: payload.messageType.messageDate,
-				deleted: payload.messageType.deleted,
-				messageTime: payload.messageType.messageTime,
-				messageContext: payload.messageType.messageContext,
-			},
-		},
-	};
-
-	if (payload.quoteType !== undefined && payload.quoteType !== null) {
-		const quotedObject = {
-			...dataObject,
-			quoteType: {
+	await prisma.messagePayload.create({
+		data: {
+			messagePayloadDbId: payload.messageType.messageDbId,
+			messageType: {
 				create: {
-					quoteDate: payload.quoteType.quoteDate,
-					quoteTime: payload.quoteType.quoteTime,
-					quoteMessageContext: payload.quoteType.quoteMessageContext,
-					quoteClientId: payload.quoteType.quoteClientId,
+					messageContext: payload.messageType.messageContext,
+					messageTime: payload.messageType.messageTime,
+					messageDate: payload.messageType.messageDate,
+					deleted: payload.messageType.deleted,
+					edited: payload.messageType.edited,
 				},
 			},
-		};
-
-		await prisma.messagePayload.upsert({
-			create: quotedObject,
-			update: {},
-			where: {
-				messagePayloadDbId: payload.messageType.messageDbId,
+			clientType: {
+				connect: {
+					clientDbId: payload.clientType.clientDbId,
+				},
 			},
-		});
-		//
-	} else {
-		await prisma.messagePayload.upsert({
-			create: dataObject,
-			update: {},
-			where: {
-				messagePayloadDbId: payload.messageType.messageDbId,
+			quoteType: {
+				create: {
+					quoteClientId: payload.quoteType?.quoteClientId,
+					quoteDate: payload.quoteType?.quoteDate,
+					quoteMessageContext: payload.quoteType?.quoteMessageContext,
+					quoteTime: payload.quoteType?.quoteTime,
+				},
 			},
-		});
-	}
+			imageType: {
+				create: {
+					data: payload.imageType?.data,
+					type: payload.imageType?.type,
+				},
+			},
+		},
+	});
 }
 
 export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
@@ -216,6 +204,7 @@ export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
 					clientDbId: true,
 				},
 			},
+			imageType: true,
 		},
 	});
 }
