@@ -99,6 +99,7 @@ export type ClientEntity = {
 	clientUsername: string;
 	clientColor?: string;
 	clientProfileImage?: string;
+	availability: boolean;
 };
 
 /**

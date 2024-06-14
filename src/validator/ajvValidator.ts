@@ -215,6 +215,7 @@ ajvValidator.addSchema(
  * @param {string} reactionMessageId
  * @param {string} reactionContext
  * @param {string} reactionClientId
+ * @param {boolean} availability
  */
 ajvValidator.addSchema(
 	{
@@ -235,6 +236,9 @@ ajvValidator.addSchema(
 			reactionClientId: {
 				type: "string",
 			},
+			availability: {
+				type: "boolean",
+			},
 		},
 		required: [
 			"payloadType",
@@ -242,6 +246,7 @@ ajvValidator.addSchema(
 			"reactionMessageId",
 			"reactionContext",
 			"reactionClientId",
+			"availability",
 		],
 		additionalProperties: false,
 	},
@@ -324,8 +329,11 @@ ajvValidator.addSchema(
 			clientProfileImage: {
 				type: "string",
 			},
+			availability: {
+				type: "boolean",
+			},
 		},
-		required: ["payloadType", "clientDbId", "clientUsername"],
+		required: ["payloadType", "clientDbId", "clientUsername", "availability"],
 		additionalProperties: false,
 	},
 	"profileUpdateValidator",

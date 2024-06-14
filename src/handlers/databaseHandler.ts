@@ -120,12 +120,14 @@ export async function updateClientProfileInformation(
 			clientUsername: payload.clientUsername,
 			clientProfileImage: payload.clientProfileImage,
 			clientColor: payload.clientColor,
+			availability: payload.availability,
 		},
 		create: {
 			clientDbId: payload.clientDbId,
 			clientUsername: payload.clientUsername,
 			clientProfileImage: payload.clientProfileImage,
 			clientColor: payload.clientColor,
+			availability: payload.availability,
 		},
 	});
 }

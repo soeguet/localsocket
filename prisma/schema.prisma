@@ -18,6 +18,7 @@ model Client {
     clientUsername     String
     clientColor        String?
     clientProfileImage String?
+    availability       Boolean          @default(true)
     messagePayload     MessagePayload[]
 }
 
@@ -61,8 +62,8 @@ model ReactionType {
 
 model ImageType {
     imageDbId      String          @id
-    data       String?
-    type      String?
+    data           String?
+    type           String?
     messagePayload MessagePayload? @relation(fields: [imageDbId], references: [messagePayloadDbId])
 }
 
