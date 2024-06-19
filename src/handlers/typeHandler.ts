@@ -1,19 +1,13 @@
 import ajvValidator from "../validator/ajvValidator";
 
-const messagePayloadvalidator = ajvValidator.getSchema(
-	"messagePayloadValidator",
-);
-
+const messagePayloadvalidator = ajvValidator.getSchema("messagePayloadValidator",);
+const reactionPayloadValidator = ajvValidator.getSchema("reactionPayloadValidator",);
 const authPayloadValidator = ajvValidator.getSchema("authPayloadValidator");
-
-const reactionPayloadValidator = ajvValidator.getSchema(
-	"reactionPayloadValidator",
-);
-
 const profileUpdateValidator = ajvValidator.getSchema("profileUpdateValidator");
-
 const deletePayloadValidator = ajvValidator.getSchema("deletePayloadValidator");
 const editPayloadValidator = ajvValidator.getSchema("editPayloadValidator");
+const emergencyInitPayloadValidator = ajvValidator.getSchema("emergencyInitPayloadValidator");
+const emergencyMessagePayloadValidator = ajvValidator.getSchema("emergencyMessagePayloadValidator");
 
 /**
  * Validates the message payload
@@ -30,6 +24,34 @@ export function validateMessagePayload(
 
 	try {
 		return messagePayloadvalidator(messagePayload);
+	} catch (error) {
+		return false;
+	}
+}
+
+export function validateEmergencyInitPayload(
+	emergencyInitPayload: object | null,
+): boolean | Promise<unknown> {
+	if (emergencyInitPayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return emergencyInitPayloadValidator(emergencyInitPayload);
+	} catch (error) {
+		return false;
+	}
+}
+
+export function validateEmergencyPayload(
+	emergencyPayload: object | null,
+): boolean | Promise<unknown> {
+	if (emergencyMessagePayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return emergencyMessagePayloadValidator(emergencyPayload);
 	} catch (error) {
 		return false;
 	}

@@ -8,7 +8,7 @@ import {
 	type ReactionPayload,
 	type DeleteEntity,
 	type EditEntity,
-	type ImageEntity,
+	type EmergencyMessagePayload,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -22,6 +22,39 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 		return;
 	}
 	return message;
+}
+
+export async function persistEmergencyMessage(payload: EmergencyMessagePayload) {
+	try {
+		await prisma.emergencyMessages.create({
+			data: {
+				emergencyChatId: payload.emergencyChatId,
+				messageDbId: payload.messageDbId,
+				clientDbId: payload.clientDbId,
+				time: payload.time,
+				message: payload.message,
+			},
+		});
+	} catch (error) {
+		console.error("Error persisting emergency message", error);
+	}
+}
+
+export async function retrieveLastEmergencyMessage(messageDbId: string) {
+	try {
+		return prisma.emergencyMessages.findFirst({
+			// take: -1,
+			// orderBy: {
+			// 	messageDbId: "asc",
+			// },
+			where: {
+				messageDbId: messageDbId,
+			},
+		});
+	} catch (error) {
+		console.error("Error retrieving last emergency message", error);
+		return;
+	}
 }
 
 export async function registerUserInDatabse(payload: AuthenticationPayload) {
@@ -150,10 +183,6 @@ export async function retrieveLastMessageFromDatabase() {
 			imageType: true,
 		},
 	});
-}
-
-function generateIsoDate() {
-	return new Date().toISOString().replace(/[-:.TZ]/g, "");
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {

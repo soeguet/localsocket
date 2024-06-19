@@ -19,6 +19,79 @@ ajvValidator.addSchema(
 	"testValidator",
 );
 
+// export type EmergencyPayload = {
+// 	payloadType: PayloadSubType.emergency;
+// 	emergencyChatId: string;
+// 	messageDbId: string;
+// 	clientDbId: string;
+// 	time: string;
+// 	message: string;
+// };
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: {
+				type: "number",
+			},
+			emergencyChatId: {
+				type: "string",
+				minLength: 1,
+			},
+			messageDbId: {
+				type: "string",
+				minLength: 1,
+			},
+			clientDbId: {
+				type: "string",
+				minLength: 1,
+			},
+			time: {
+				type: "string",
+				minLength: 1,
+			},
+			message: {
+				type: "string",
+				minLength: 1,
+			},
+		},
+		required: ["payloadType", "messageDbId", "emergencyChatId", "clientDbId", "time", "message"],
+		additionalProperties: false,
+	},
+	"emergencyMessagePayloadValidator",
+);
+
+// export type EmergencyInitPayload = {
+// 	payloadType: PayloadSubType.emergencyInit;
+// 	active: boolean;
+// 	emergencyChatId: string;
+// 	initiatorClientDbId: string;
+// };
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: {
+				type: "number",
+			},
+			active: {
+				type: "boolean",
+			},
+			emergencyChatId: {
+				type: "string",
+				minLength: 1,
+			},
+			initiatorClientDbId: {
+				type: "string",
+				minLength: 1,
+			},
+		},
+		required: ["payloadType", "active", "emergencyChatId", "initiatorClientDbId"],
+		additionalProperties: false,
+	},
+	"emergencyInitPayloadValidator",
+);
+
 ajvValidator.addSchema(
 	{
 		type: "object",
@@ -28,9 +101,11 @@ ajvValidator.addSchema(
 			},
 			clientUsername: {
 				type: "string",
+				minLength: 1,
 			},
 			clientDbId: {
 				type: "string",
+				minLength: 1,
 			},
 		},
 		required: ["payloadType", "clientUsername", "clientDbId"],
@@ -84,6 +159,7 @@ ajvValidator.addSchema(
 				properties: {
 					messageDbId: {
 						type: "string",
+						minLength: 1,
 					},
 					deleted: {
 						type: "boolean",
@@ -93,12 +169,15 @@ ajvValidator.addSchema(
 					},
 					messageContext: {
 						type: "string",
+						minLength: 1,
 					},
 					messageTime: {
 						type: "string",
+						minLength: 1,
 					},
 					messageDate: {
 						type: "string",
+						minLength: 1,
 					},
 				},
 				required: [
@@ -116,6 +195,7 @@ ajvValidator.addSchema(
 				properties: {
 					clientDbId: {
 						type: "string",
+						minLength: 1,
 					},
 				},
 				required: ["clientDbId"],
@@ -181,12 +261,15 @@ ajvValidator.addSchema(
 				properties: {
 					imageDbId: {
 						type: "string",
+						minLength: 1,
 					},
 					type: {
 						type: "string",
+						minLength: 1,
 					},
 					data: {
 						type: "string",
+						minLength: 1,
 					},
 				},
 				required: ["imageDbId", "type", "data"],
@@ -195,7 +278,6 @@ ajvValidator.addSchema(
 		},
 		required: ["payloadType", "clientType", "messageType"],
 		additionalProperties: false,
-		nullable: true,
 	},
 	"messagePayloadValidator",
 );
@@ -215,7 +297,6 @@ ajvValidator.addSchema(
  * @param {string} reactionMessageId
  * @param {string} reactionContext
  * @param {string} reactionClientId
- * @param {boolean} availability
  */
 ajvValidator.addSchema(
 	{
@@ -226,18 +307,19 @@ ajvValidator.addSchema(
 			},
 			reactionDbId: {
 				type: "string",
+				minLength: 1,
 			},
 			reactionMessageId: {
 				type: "string",
+				minLength: 1,
 			},
 			reactionContext: {
 				type: "string",
+				minLength: 1,
 			},
 			reactionClientId: {
 				type: "string",
-			},
-			availability: {
-				type: "boolean",
+				minLength: 1,
 			},
 		},
 		required: [
@@ -246,7 +328,6 @@ ajvValidator.addSchema(
 			"reactionMessageId",
 			"reactionContext",
 			"reactionClientId",
-			"availability",
 		],
 		additionalProperties: false,
 	},
@@ -272,6 +353,7 @@ ajvValidator.addSchema(
 			},
 			messageDbId: {
 				type: "string",
+				minLength: 1,
 			},
 		},
 		required: ["payloadType", "messageDbId"],
@@ -299,9 +381,11 @@ ajvValidator.addSchema(
 			},
 			messageDbId: {
 				type: "string",
+				minLength: 1,
 			},
 			messageContext: {
 				type: "string",
+				minLength: 1,
 			},
 		},
 		required: ["payloadType", "messageDbId", "messageContext"],
@@ -319,9 +403,11 @@ ajvValidator.addSchema(
 			},
 			clientDbId: {
 				type: "string",
+				minLength: 1,
 			},
 			clientUsername: {
 				type: "string",
+				minLength: 1,
 			},
 			clientColor: {
 				type: "string",

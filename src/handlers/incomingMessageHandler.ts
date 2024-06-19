@@ -11,6 +11,8 @@ import {
 	type DeleteEntity,
 	type SimplePayload,
 	type EditEntity,
+	type EmergencyMessagePayload,
+	type EmergencyInitPayload,
 } from "../types/payloadTypes";
 import {
 	checkForDatabaseErrors,
@@ -24,6 +26,8 @@ import {
 	sendLast100MessagesToNewClient,
 	deleteMessageStatus,
 	editMessageContent,
+	persistEmergencyMessage,
+	retrieveLastEmergencyMessage,
 } from "./databaseHandler";
 import {
 	validateAuthPayload,
@@ -32,7 +36,10 @@ import {
 	validateReactionPayload,
 	validateDeletePayload,
 	validateEditPayload,
+	validateEmergencyPayload,
+	validateEmergencyInitPayload,
 } from "./typeHandler";
+import emergencyChatState from "../state/emergencyChatState";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -190,10 +197,24 @@ export async function processIncomingMessage(
 				break;
 			}
 
-			try {
-				await updateClientProfileInformation(
-					payloadFromClientAsObject as ClientUpdatePayload,
+			const payload = payloadFromClientAsObject as ClientUpdatePayload;
+
+			if (payload.clientUsername === "") {
+				console.error(
+
+					"clientUsername cannot be empty",
 				);
+				return;
+			}
+			if (payload.clientDbId === "") {
+				console.error(
+					"clientDbId cannot be empty",
+				);
+				return;
+			}
+
+			try {
+				await updateClientProfileInformation(payload);
 			} catch (error) {
 				console.error("Error updating client profile information", error);
 				return;
@@ -251,6 +272,36 @@ export async function processIncomingMessage(
 					"Invalid authentication payload type. Type check not successful!",
 				);
 				break;
+			}
+
+			const payload = payloadFromClientAsObject as ReactionPayload;
+
+			if (payload.reactionDbId === "") {
+				console.error(
+					"reactionDbId cannot be empty",
+				);
+				return;
+			}
+
+			if (payload.reactionMessageId === "") {
+				console.error(
+					"reactionMessageId cannot be empty",
+				);
+				return;
+			}
+
+			if (payload.reactionContext === "") {
+				console.error(
+					"reactionContext cannot be empty",
+				);
+				return;
+			}
+
+			if (payload.reactionClientId === "") {
+				console.error(
+					"reactionClientId cannot be empty",
+				);
+				return;
 			}
 
 			try {
@@ -366,6 +417,97 @@ export async function processIncomingMessage(
 			);
 			break;
 		}
+
+		// PayloadSubType.emergencyInit == 10
+		case PayloadSubType.emergencyInit: {
+			const validatedEmergencyInitPayload = validateEmergencyInitPayload(
+				payloadFromClientAsObject,
+			);
+
+			if (!validatedEmergencyInitPayload) {
+				ws.send(
+					`Invalid emergency_init payload type. Type check not successful!${JSON.stringify(
+						payloadFromClientAsObject,
+					)}`,
+				);
+				console.error(
+					"VALIDATION OF _EMERGENCY_INIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
+				);
+				ws.close(
+					1008,
+					"Invalid emergency_init payload type. Type check not successful!",
+				);
+				break;
+			}
+
+			const payload = payloadFromClientAsObject as EmergencyInitPayload;
+			emergencyChatState.active = payload.active;
+			emergencyChatState.emergencyChatId = payload.emergencyChatId;
+			emergencyChatState.initiatorClientDbId = payload.initiatorClientDbId
+
+			// send the payload straight back to all the clients
+			server.publish("the-group-chat", message);
+
+			break;
+		}
+
+		// PayloadSubType.emergencyMessage == 11
+		case PayloadSubType.emergencyMessage: {
+			const validatedEmergencyPayload = validateEmergencyPayload(
+				payloadFromClientAsObject,
+			);
+
+			if (!validatedEmergencyPayload) {
+				ws.send(
+					`Invalid emergency payload type. Type check not successful!${JSON.stringify(
+						payloadFromClientAsObject,
+					)}`,
+				);
+				console.error(
+					"VALIDATION OF _EMERGENCY_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN.",
+				);
+				ws.close(
+					1008,
+					"Invalid emergency payload type. Type check not successful!",
+				);
+				break;
+			}
+
+			const payload = payloadFromClientAsObject as EmergencyMessagePayload;
+			try {
+				await persistEmergencyMessage(payload)
+			} catch (error) {
+				console.error("Error persisting emergency message", error);
+				return;
+			}
+
+			let lastEmergencyMessage;
+			try {
+				lastEmergencyMessage = await retrieveLastEmergencyMessage(payload.messageDbId);
+			}
+			catch (error) {
+				console.error("Error retrieving last emergency message", error);
+				return;
+			}
+
+			if (lastEmergencyMessage === undefined || lastEmergencyMessage === null) {
+				console.error("lastEmergencyMessage is undefined or null");
+				return;
+			}
+
+			const updatedMessageWithPayloadType = {
+				...lastEmergencyMessage,
+				payloadType: PayloadSubType.emergencyMessage,
+			};
+
+			server.publish(
+				"the-group-chat",
+				JSON.stringify(updatedMessageWithPayloadType),
+			);
+			break;
+		}
+
+
 		default: {
 			ws.send(
 				"SWITCH CASES: Invalid message payload type. Type check not successful!",
