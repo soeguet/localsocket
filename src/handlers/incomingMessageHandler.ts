@@ -199,20 +199,6 @@ export async function processIncomingMessage(
 
 			const payload = payloadFromClientAsObject as ClientUpdatePayload;
 
-			if (payload.clientUsername === "") {
-				console.error(
-
-					"clientUsername cannot be empty",
-				);
-				return;
-			}
-			if (payload.clientDbId === "") {
-				console.error(
-					"clientDbId cannot be empty",
-				);
-				return;
-			}
-
 			try {
 				await updateClientProfileInformation(payload);
 			} catch (error) {
@@ -276,38 +262,8 @@ export async function processIncomingMessage(
 
 			const payload = payloadFromClientAsObject as ReactionPayload;
 
-			if (payload.reactionDbId === "") {
-				console.error(
-					"reactionDbId cannot be empty",
-				);
-				return;
-			}
-
-			if (payload.reactionMessageId === "") {
-				console.error(
-					"reactionMessageId cannot be empty",
-				);
-				return;
-			}
-
-			if (payload.reactionContext === "") {
-				console.error(
-					"reactionContext cannot be empty",
-				);
-				return;
-			}
-
-			if (payload.reactionClientId === "") {
-				console.error(
-					"reactionClientId cannot be empty",
-				);
-				return;
-			}
-
 			try {
-				await persistReactionToDatabase(
-					payloadFromClientAsObject as ReactionPayload,
-				);
+				await persistReactionToDatabase(payload);
 			} catch (error) {
 				console.error("Error persisting reaction to database", error);
 				return;
@@ -441,12 +397,22 @@ export async function processIncomingMessage(
 			}
 
 			const payload = payloadFromClientAsObject as EmergencyInitPayload;
-			emergencyChatState.active = payload.active;
-			emergencyChatState.emergencyChatId = payload.emergencyChatId;
-			emergencyChatState.initiatorClientDbId = payload.initiatorClientDbId
 
-			// send the payload straight back to all the clients
-			server.publish("the-group-chat", message);
+			if (emergencyChatState.active !== true) {
+				emergencyChatState.active = payload.active;
+				emergencyChatState.emergencyChatId = payload.emergencyChatId;
+				emergencyChatState.initiatorClientDbId = payload.initiatorClientDbId
+				// send the payload straight back to all the clients
+				server.publish("the-group-chat", message);
+			} else {
+				const alreadyActiveEmergencyChat = {
+					...emergencyChatState,
+					payloadType: PayloadSubType.emergencyInit,
+				}
+				server.publish("the-group-chat", JSON.stringify(alreadyActiveEmergencyChat));
+
+				// TODO send out all messages for this emergency chat to all clients
+			}
 
 			break;
 		}
