@@ -16,16 +16,16 @@ ajvValidator.addSchema(
 		required: ["message"],
 		additionalProperties: false,
 	},
-	"testValidator",
+	"testValidator"
 );
 
-// export type EmergencyPayload = {
-// 	payloadType: PayloadSubType.emergency;
-// 	emergencyChatId: string;
-// 	messageDbId: string;
-// 	clientDbId: string;
-// 	time: string;
-// 	message: string;
+// const payload: EmergencyMessagePayload = {
+// 	payloadType: PayloadSubType.emergencyMessage,
+// 	emergencyChatId: useEmergencyStore.getState().emergencyChatId,
+// 	messageDbId: generateSimpleId(),
+// 	clientDbId: useUserStore.getState().myId,
+// 	time: getTimeWithHHmmFormat(new Date()),
+// 	message: utf8ToBase64(textAreaRef.current.value),
 // };
 ajvValidator.addSchema(
 	{
@@ -55,10 +55,17 @@ ajvValidator.addSchema(
 				minLength: 1,
 			},
 		},
-		required: ["payloadType", "messageDbId", "emergencyChatId", "clientDbId", "time", "message"],
+		required: [
+			"payloadType",
+			"messageDbId",
+			"emergencyChatId",
+			"clientDbId",
+			"time",
+			"message",
+		],
 		additionalProperties: false,
 	},
-	"emergencyMessagePayloadValidator",
+	"emergencyMessagePayloadValidator"
 );
 
 // export type EmergencyInitPayload = {
@@ -86,10 +93,15 @@ ajvValidator.addSchema(
 				type: "string",
 			},
 		},
-		required: ["payloadType", "active", "emergencyChatId", "initiatorClientDbId"],
+		required: [
+			"payloadType",
+			"active",
+			"emergencyChatId",
+			"initiatorClientDbId",
+		],
 		additionalProperties: false,
 	},
-	"emergencyInitPayloadValidator",
+	"emergencyInitPayloadValidator"
 );
 
 ajvValidator.addSchema(
@@ -111,7 +123,7 @@ ajvValidator.addSchema(
 		required: ["payloadType", "clientUsername", "clientDbId"],
 		additionalProperties: false,
 	},
-	"authPayloadValidator",
+	"authPayloadValidator"
 );
 
 /**
@@ -279,7 +291,7 @@ ajvValidator.addSchema(
 		required: ["payloadType", "clientType", "messageType"],
 		additionalProperties: false,
 	},
-	"messagePayloadValidator",
+	"messagePayloadValidator"
 );
 
 /**
@@ -331,7 +343,7 @@ ajvValidator.addSchema(
 		],
 		additionalProperties: false,
 	},
-	"reactionPayloadValidator",
+	"reactionPayloadValidator"
 );
 
 /**
@@ -359,7 +371,7 @@ ajvValidator.addSchema(
 		required: ["payloadType", "messageDbId"],
 		additionalProperties: false,
 	},
-	"deletePayloadValidator",
+	"deletePayloadValidator"
 );
 
 /**
@@ -391,7 +403,7 @@ ajvValidator.addSchema(
 		required: ["payloadType", "messageDbId", "messageContext"],
 		additionalProperties: false,
 	},
-	"editPayloadValidator",
+	"editPayloadValidator"
 );
 
 ajvValidator.addSchema(
@@ -419,10 +431,15 @@ ajvValidator.addSchema(
 				type: "boolean",
 			},
 		},
-		required: ["payloadType", "clientDbId", "clientUsername", "availability"],
+		required: [
+			"payloadType",
+			"clientDbId",
+			"clientUsername",
+			"availability",
+		],
 		additionalProperties: false,
 	},
-	"profileUpdateValidator",
+	"profileUpdateValidator"
 );
 
 export default ajvValidator;

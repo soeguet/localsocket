@@ -14,11 +14,12 @@ datasource db {
 }
 
 model EmergencyMessages {
-    emergencyChatId String
-    clientDbId      String
-    messageDbId     String @id
-    time            String
-    message         String
+    emergencyMessagePayloadDbId Int    @id @default(autoincrement())
+    emergencyChatId             String
+    clientDbId                  String
+    messageDbId                 String @unique
+    time                        String
+    message                     String
 }
 
 model Client {

@@ -36,7 +36,7 @@ import {
 	validateReactionPayload,
 	validateDeletePayload,
 	validateEditPayload,
-	validateEmergencyPayload,
+	validateEmergencyMessagePayload,
 	validateEmergencyInitPayload,
 } from "./typeHandler";
 import emergencyChatState from "../state/emergencyChatState";
@@ -453,7 +453,9 @@ export async function processIncomingMessage(
 
 		// PayloadSubType.emergencyMessage == 11
 		case PayloadSubType.emergencyMessage: {
-			const validatedEmergencyPayload = validateEmergencyPayload(
+			console.log("emergency message");
+			console.log(payloadFromClientAsObject);
+			const validatedEmergencyPayload = validateEmergencyMessagePayload(
 				payloadFromClientAsObject
 			);
 			if (!validatedEmergencyPayload) {
@@ -463,7 +465,7 @@ export async function processIncomingMessage(
 					)}`
 				);
 				console.error(
-					"VALIDATION OF _EMERGENCY_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+					"VALIDATION OF _EMERGENCY_MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 				);
 				ws.close(
 					1008,
