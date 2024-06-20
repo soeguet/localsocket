@@ -67,6 +67,8 @@ ajvValidator.addSchema(
 // 	emergencyChatId: string;
 // 	initiatorClientDbId: string;
 // };
+//
+// NO LENGTH CHECK SINCE THE STRINGS CAN BE EMPTY FOR DISABLED EMERGENCY CHATS
 ajvValidator.addSchema(
 	{
 		type: "object",
@@ -79,11 +81,9 @@ ajvValidator.addSchema(
 			},
 			emergencyChatId: {
 				type: "string",
-				minLength: 1,
 			},
 			initiatorClientDbId: {
 				type: "string",
-				minLength: 1,
 			},
 		},
 		required: ["payloadType", "active", "emergencyChatId", "initiatorClientDbId"],
