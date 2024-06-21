@@ -13,6 +13,8 @@ import {
 	type EditEntity,
 	type EmergencyMessagePayload,
 	type EmergencyInitPayload,
+	type AllEmergencyMessagesPayload,
+	type EmergencyMessage,
 } from "../types/payloadTypes";
 import {
 	checkForDatabaseErrors,
@@ -28,6 +30,7 @@ import {
 	editMessageContent,
 	persistEmergencyMessage,
 	retrieveLastEmergencyMessage,
+	retrieveAllEmergencyMessages,
 } from "./databaseHandler";
 import {
 	validateAuthPayload,
@@ -240,6 +243,32 @@ export async function processIncomingMessage(
 			const messageListPayload: MessageListPayload =
 				await sendLast100MessagesToNewClient();
 			ws.send(JSON.stringify(messageListPayload));
+
+			//
+			// also send information about active emergency chats
+			const emergencyChat: EmergencyInitPayload = {
+				payloadType: PayloadSubType.emergencyInit,
+				...emergencyChatState,
+			};
+			ws.send(JSON.stringify(emergencyChat));
+
+			// additionally send out all messages for this emergency chat to all clients
+			if (!emergencyChat.active) {
+				break;
+			}
+
+			const allEmergencyMessages: EmergencyMessage[] =
+				await retrieveAllEmergencyMessages(
+					emergencyChat.emergencyChatId
+				);
+			const allEmergencyMessagesWithPayloadType: AllEmergencyMessagesPayload =
+				{
+					payloadType: PayloadSubType.allEmergencyMessages,
+					emergencyMessages: allEmergencyMessages,
+					emergencyChatId: emergencyChat.emergencyChatId,
+				};
+			ws.send(JSON.stringify(allEmergencyMessagesWithPayloadType));
+
 			break;
 		}
 
@@ -435,6 +464,7 @@ export async function processIncomingMessage(
 				emergencyChatState.initiatorClientDbId =
 					payload.initiatorClientDbId;
 				server.publish("the-group-chat", message);
+				return;
 			} else {
 				// 3)
 				const alreadyActiveEmergencyChat = {
@@ -447,14 +477,26 @@ export async function processIncomingMessage(
 				);
 
 				// TODO send out all messages for this emergency chat to all clients
+				const allExistingEmergencyMessages: EmergencyMessage[] =
+					await retrieveAllEmergencyMessages(
+						alreadyActiveEmergencyChat.emergencyChatId
+					);
+				const allExistingEmergencyMessagesWithPayloadType: AllEmergencyMessagesPayload =
+					{
+						emergencyMessages: allExistingEmergencyMessages,
+						payloadType: PayloadSubType.allEmergencyMessages,
+						emergencyChatId:
+							alreadyActiveEmergencyChat.emergencyChatId,
+					};
+				ws.send(
+					JSON.stringify(allExistingEmergencyMessagesWithPayloadType)
+				);
 			}
 			break;
 		}
 
 		// PayloadSubType.emergencyMessage == 11
 		case PayloadSubType.emergencyMessage: {
-			console.log("emergency message");
-			console.log(payloadFromClientAsObject);
 			const validatedEmergencyPayload = validateEmergencyMessagePayload(
 				payloadFromClientAsObject
 			);

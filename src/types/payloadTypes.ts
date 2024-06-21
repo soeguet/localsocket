@@ -11,7 +11,16 @@ export enum PayloadSubType {
 	edit = 9,
 	emergencyInit = 10,
 	emergencyMessage = 11,
+	allEmergencyMessages = 12,
 }
+
+export type AllEmergencyMessagesPayload = {
+	payloadType: PayloadSubType.allEmergencyMessages;
+	emergencyMessages: EmergencyMessage[];
+	emergencyChatId: string;
+};
+
+export type EmergencyMessage = Omit<EmergencyMessagePayload, "payloadType">;
 
 export type EmergencyInitPayload = {
 	payloadType: PayloadSubType.emergencyInit;

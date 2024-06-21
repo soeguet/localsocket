@@ -17,14 +17,20 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 		console.error("Database not found");
 		return;
 	}
-	if (typeof message !== "string" || message === "" || message === undefined) {
+	if (
+		typeof message !== "string" ||
+		message === "" ||
+		message === undefined
+	) {
 		console.error("Invalid message type");
 		return;
 	}
 	return message;
 }
 
-export async function persistEmergencyMessage(payload: EmergencyMessagePayload) {
+export async function persistEmergencyMessage(
+	payload: EmergencyMessagePayload
+) {
 	try {
 		await prisma.emergencyMessages.create({
 			data: {
@@ -145,7 +151,7 @@ export async function sendLast100MessagesToNewClient() {
 }
 
 export async function updateClientProfileInformation(
-	payload: ClientUpdatePayload,
+	payload: ClientUpdatePayload
 ) {
 	await prisma.client.upsert({
 		where: { clientDbId: payload.clientDbId },
@@ -236,6 +242,21 @@ export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {
 				},
 			},
 			imageType: true,
+		},
+	});
+}
+
+export async function retrieveAllEmergencyMessages(emergencyChatId: string) {
+	return prisma.emergencyMessages.findMany({
+		where: {
+			emergencyChatId: emergencyChatId,
+		},
+		select: {
+			messageDbId: true,
+			clientDbId: true,
+			emergencyChatId: true,
+			time: true,
+			message: true,
 		},
 	});
 }
