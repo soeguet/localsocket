@@ -13,6 +13,15 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+model EmergencyMessages {
+    emergencyMessagePayloadDbId Int    @id @default(autoincrement())
+    emergencyChatId             String
+    clientDbId                  String
+    messageDbId                 String @unique
+    time                        String
+    message                     String
+}
+
 model Client {
     clientDbId         String           @id
     clientUsername     String
@@ -66,50 +75,3 @@ model ImageType {
     type           String?
     messagePayload MessagePayload? @relation(fields: [imageDbId], references: [messagePayloadDbId])
 }
-
-// export const clientEntitySchema = pgTable("client", {
-//     clientDbId: varchar("clientDbId").notNull().primaryKey(),
-//     clientUsername: varchar("clientUsername").notNull(),
-//     clientColor: varchar("clientColor"),
-//     clientProfileImage: varchar("clientProfileImage"),
-// });
-//
-// export const messageTypeSchema = pgTable("messageType", {
-//     messageDbId: bigserial("messageDbId", { mode: "number" }).primaryKey(),
-//     messageDbId: varchar("messageDbId").notNull(),
-//     messageContext: varchar("messageContext").notNull(),
-//     messageTime: varchar("messageTime").notNull(),
-//     messageDate: varchar("messageDate").notNull(),
-// });
-//
-// export const quoteTypeSchema = pgTable("quoteType", {
-//     quoteDbId: bigserial("quoteDbId", { mode: "number" }).primaryKey(),
-//     quoteMessageId: varchar("quoteMessageId"),
-//     quoteClientId: varchar("quoteClientId"),
-//     quoteMessageContext: varchar("quoteMessageContext"),
-//     quoteTime: varchar("quoteTime"),
-//     quoteDate: varchar("quoteDate"),
-//     payloadId: varchar("payloadId")
-//         .notNull()
-//         .references(() => messagePayloadSchema.messagePayloadDbId),
-// });
-//
-// export const reactionTypeSchema = pgTable("reactionType", {
-//     reactionDbId: bigserial("reactionDbId", { mode: "number" }).primaryKey(),
-//     reactionMessageId: varchar("reactionMessageId").notNull(),
-//     reactionContext: varchar("reactionContext").notNull(),
-//     reactionClientId: varchar("reactionClientId").notNull(),
-//     payloadId: bigserial("payloadId", { mode: "number" })
-//         .notNull()
-//         .references(() => messagePayloadSchema.messagePayloadDbId),
-// });
-//
-// export const messagePayloadSchema = pgTable("messagePayloadType", {
-//     messagePayloadDbId: bigserial("messagePayloadDbId", { mode: "number" }).primaryKey(),
-//     clientDbId: varchar("clientDbId")
-//         .notNull()
-//         .references(() => clientEntitySchema.clientDbId),
-//     messageDbId: bigserial("messageDbId", { mode: "number" })
-//         .notNull()
-//         .REFERENCES(() => MESSAGETYPESCHEMA.MESSAGEDBID),
-// });

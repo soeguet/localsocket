@@ -1,19 +1,21 @@
 import ajvValidator from "../validator/ajvValidator";
 
 const messagePayloadvalidator = ajvValidator.getSchema(
-	"messagePayloadValidator",
+	"messagePayloadValidator"
 );
-
-const authPayloadValidator = ajvValidator.getSchema("authPayloadValidator");
-
 const reactionPayloadValidator = ajvValidator.getSchema(
-	"reactionPayloadValidator",
+	"reactionPayloadValidator"
 );
-
+const authPayloadValidator = ajvValidator.getSchema("authPayloadValidator");
 const profileUpdateValidator = ajvValidator.getSchema("profileUpdateValidator");
-
 const deletePayloadValidator = ajvValidator.getSchema("deletePayloadValidator");
 const editPayloadValidator = ajvValidator.getSchema("editPayloadValidator");
+const emergencyInitPayloadValidator = ajvValidator.getSchema(
+	"emergencyInitPayloadValidator"
+);
+const emergencyMessagePayloadValidator = ajvValidator.getSchema(
+	"emergencyMessagePayloadValidator"
+);
 
 /**
  * Validates the message payload
@@ -22,7 +24,7 @@ const editPayloadValidator = ajvValidator.getSchema("editPayloadValidator");
  * @throws {Error} Validator not found
  */
 export function validateMessagePayload(
-	messagePayload: object | null,
+	messagePayload: object | null
 ): boolean | Promise<unknown> {
 	if (messagePayloadvalidator === undefined) {
 		throw new Error("Validator not found");
@@ -31,6 +33,37 @@ export function validateMessagePayload(
 	try {
 		return messagePayloadvalidator(messagePayload);
 	} catch (error) {
+		console.error("Error validating message payload", error);
+		return false;
+	}
+}
+
+export function validateEmergencyInitPayload(
+	emergencyInitPayload: object | null
+): boolean | Promise<unknown> {
+	if (emergencyInitPayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return emergencyInitPayloadValidator(emergencyInitPayload);
+	} catch (error) {
+		console.error("Error validating emergency init payload", error);
+		return false;
+	}
+}
+
+export function validateEmergencyMessagePayload(
+	emergencyPayload: object | null
+): boolean | Promise<unknown> {
+	if (emergencyMessagePayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return emergencyMessagePayloadValidator(emergencyPayload);
+	} catch (error) {
+		console.error("Error validating emergency payload", error);
 		return false;
 	}
 }
@@ -42,7 +75,7 @@ export function validateMessagePayload(
  * @throws {Error} Validator not found
  */
 export function validateAuthPayload(
-	authenticationPayload: object | null,
+	authenticationPayload: object | null
 ): boolean | Promise<unknown> {
 	if (authPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -51,6 +84,7 @@ export function validateAuthPayload(
 	try {
 		return authPayloadValidator(authenticationPayload);
 	} catch (error) {
+		console.error("Error validating authentication payload", error);
 		return false;
 	}
 }
@@ -62,7 +96,7 @@ export function validateAuthPayload(
  * @throws {Error} Validator not found
  */
 export function validateReactionPayload(
-	reactionPayload: object | null,
+	reactionPayload: object | null
 ): boolean | Promise<unknown> {
 	if (reactionPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -71,6 +105,7 @@ export function validateReactionPayload(
 	try {
 		return reactionPayloadValidator(reactionPayload);
 	} catch (error) {
+		console.error("Error validating reaction payload", error);
 		return false;
 	}
 }
@@ -82,7 +117,7 @@ export function validateReactionPayload(
  * @throws {Error} Validator not found
  */
 export function validateDeletePayload(
-	deletePayload: object | null,
+	deletePayload: object | null
 ): boolean | Promise<unknown> {
 	if (deletePayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -91,6 +126,7 @@ export function validateDeletePayload(
 	try {
 		return deletePayloadValidator(deletePayload);
 	} catch (error) {
+		console.error("Error validating delete payload", error);
 		return false;
 	}
 }
@@ -102,7 +138,7 @@ export function validateDeletePayload(
  * @throws {Error} Validator not found
  */
 export function validateclientUpdatePayload(
-	clientProfileUpdatePayload: object | null,
+	clientProfileUpdatePayload: object | null
 ): boolean | Promise<unknown> {
 	if (profileUpdateValidator === undefined) {
 		throw new Error("Validator not found");
@@ -111,6 +147,7 @@ export function validateclientUpdatePayload(
 	try {
 		return profileUpdateValidator(clientProfileUpdatePayload);
 	} catch (error) {
+		console.error("Error validating client profile update payload", error);
 		return false;
 	}
 }
@@ -122,7 +159,7 @@ export function validateclientUpdatePayload(
  * @throws {Error} Validator not found
  */
 export function validateEditPayload(
-	editPayload: object | null,
+	editPayload: object | null
 ): boolean | Promise<unknown> {
 	if (editPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -131,6 +168,7 @@ export function validateEditPayload(
 	try {
 		return editPayloadValidator(editPayload);
 	} catch (error) {
+		console.error("Error validating edit payload", error);
 		return false;
 	}
 }
