@@ -9,6 +9,8 @@ import {
 	type DeleteEntity,
 	type EditEntity,
 	type EmergencyMessagePayload,
+	type NewProfilePicturePayload,
+	type ProfilePictureObject,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string | Buffer) {
@@ -26,6 +28,35 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 		return;
 	}
 	return message;
+}
+
+export async function persistProfilePicture(payload: ProfilePictureObject) {
+	await prisma.profilePictures.upsert({
+		where: {
+			clientDbId: payload.clientDbId,
+		},
+		update: {
+			imageHash: payload.imageHash,
+			data: payload.data,
+		},
+		create: {
+			clientDbId: payload.clientDbId,
+			imageHash: payload.imageHash,
+			data: payload.data,
+		},
+	});
+}
+
+export async function fetchProfilePicture(clientDbId: string) {
+	return prisma.profilePictures.findFirst({
+		where: {
+			clientDbId: clientDbId,
+		},
+	});
+}
+
+export async function fetchAllProfilePictures() {
+	return prisma.profilePictures.findMany();
 }
 
 export async function persistEmergencyMessage(

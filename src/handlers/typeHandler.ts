@@ -10,12 +10,92 @@ const authPayloadValidator = ajvValidator.getSchema("authPayloadValidator");
 const profileUpdateValidator = ajvValidator.getSchema("profileUpdateValidator");
 const deletePayloadValidator = ajvValidator.getSchema("deletePayloadValidator");
 const editPayloadValidator = ajvValidator.getSchema("editPayloadValidator");
+const newProfilePictureValidator = ajvValidator.getSchema(
+	"newProfilePictureValidator"
+);
+const fetchProfilePictureValidator = ajvValidator.getSchema(
+	"fetchProfilePictureValidator"
+);
+const fetchCurrentClientProfilePictureHashValidator = ajvValidator.getSchema(
+	"fetchCurrentClientProfilePictureHashValidator"
+);
+const fetchAllProfilePicturesValidator = ajvValidator.getSchema(
+	"fetchAllProfilePicturesValidator"
+);
 const emergencyInitPayloadValidator = ajvValidator.getSchema(
 	"emergencyInitPayloadValidator"
 );
 const emergencyMessagePayloadValidator = ajvValidator.getSchema(
 	"emergencyMessagePayloadValidator"
 );
+
+export function validateNewProfilePicturePayload(
+	newProfilePicturePayload: object | null
+): boolean | Promise<unknown> {
+	if (newProfilePictureValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return newProfilePictureValidator(newProfilePicturePayload);
+	} catch (error) {
+		console.error("Error validating new profile picture payload", error);
+		return false;
+	}
+}
+
+export function validateFetchProfilePicturePayload(
+	fetchProfilePicturePayload: object | null
+): boolean | Promise<unknown> {
+	if (fetchProfilePictureValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return fetchProfilePictureValidator(fetchProfilePicturePayload);
+	} catch (error) {
+		console.error("Error validating fetch profile picture payload", error);
+		return false;
+	}
+}
+
+export function validateFetchCurrentClientProfilePictureHashPayload(
+	fetchCurrentClientProfilePictureHashPayload: object | null
+): boolean | Promise<unknown> {
+	if (fetchCurrentClientProfilePictureHashValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return fetchCurrentClientProfilePictureHashValidator(
+			fetchCurrentClientProfilePictureHashPayload
+		);
+	} catch (error) {
+		console.error(
+			"Error validating fetch current client profile picture hash payload",
+			error
+		);
+		return false;
+	}
+}
+
+export function validateFetchAllProfilePicturesPayload(
+	fetchAllProfilePicturesPayload: object | null
+): boolean | Promise<unknown> {
+	if (fetchAllProfilePicturesValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return fetchAllProfilePicturesValidator(fetchAllProfilePicturesPayload);
+	} catch (error) {
+		console.error(
+			"Error validating fetch all profile pictures payload",
+			error
+		);
+		return false;
+	}
+}
 
 /**
  * Validates the message payload

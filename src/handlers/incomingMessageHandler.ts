@@ -15,6 +15,12 @@ import {
 	type EmergencyInitPayload,
 	type AllEmergencyMessagesPayload,
 	type EmergencyMessage,
+	type NewProfilePicturePayload,
+	type FetchProfilePicturePayload,
+	type FetchAllProfilePicturesPayload,
+	type FetchCurrentClientProfilePictureHashPayload,
+	type ClientUpdatePayloadV2,
+	type ProfilePictureObject,
 } from "../types/payloadTypes";
 import {
 	checkForDatabaseErrors,
@@ -31,6 +37,9 @@ import {
 	persistEmergencyMessage,
 	retrieveLastEmergencyMessage,
 	retrieveAllEmergencyMessages,
+	persistProfilePicture,
+	fetchProfilePicture,
+	fetchAllProfilePictures,
 } from "./databaseHandler";
 import {
 	validateAuthPayload,
@@ -41,8 +50,13 @@ import {
 	validateEditPayload,
 	validateEmergencyMessagePayload,
 	validateEmergencyInitPayload,
+	validateNewProfilePicturePayload,
+	validateFetchProfilePicturePayload,
+	validateFetchAllProfilePicturesPayload,
+	validateFetchCurrentClientProfilePictureHashPayload,
 } from "./typeHandler";
 import emergencyChatState from "../state/emergencyChatState";
+import { generateUnixTimestampFnv1aHash } from "../helper/hashGenerator";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -238,6 +252,87 @@ export async function processIncomingMessage(
 			break;
 		}
 
+		case PayloadSubType.profileUpdateV2: {
+			const validMessagePayload = validateclientUpdatePayload(
+				payloadFromClientAsObject
+			);
+
+			if (!validMessagePayload) {
+				ws.send(
+					"Invalid clientUpdatePayload type. Type check not successful!"
+				);
+				ws.send(JSON.stringify(payloadFromClientAsObject));
+				ws.close(
+					1008,
+					"Invalid clientUpdatePayload type. Type check not successful!"
+				);
+				break;
+			}
+
+			// fetch bot versions of pictures
+			const payload = payloadFromClientAsObject as ClientUpdatePayload;
+			const clientProfilePicture = await fetchProfilePicture(
+				payload.clientDbId
+			);
+
+			// validate if the picture is the same as the one in the database
+			if (payload.clientProfileImage) {
+				if (
+					clientProfilePicture === undefined ||
+					clientProfilePicture === null ||
+					clientProfilePicture.data === "" ||
+					clientProfilePicture.data !== payload.clientProfileImage
+				) {
+					const profilePictureObject: ProfilePictureObject = {
+						clientDbId: payload.clientDbId,
+						imageHash: generateUnixTimestampFnv1aHash(),
+						data: payload.clientProfileImage,
+					};
+					// persist the picture
+					try {
+						persistProfilePicture(profilePictureObject);
+					} catch (error) {
+						console.error(
+							"Error persisting profile picture",
+							error
+						);
+						return;
+					}
+
+					// update the client profile picture hash
+					payload.clientProfileImage =
+						generateUnixTimestampFnv1aHash();
+
+					// TODO inform all clients about the new picture
+				}
+			}
+
+			try {
+				await updateClientProfileInformation(payload);
+			} catch (error) {
+				console.error(
+					"Error updating client profile information",
+					error
+				);
+				return;
+			}
+
+			const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+			if (allUsers === undefined || allUsers === null) {
+				throw new Error("No users found");
+			}
+
+			const clientListPayload: ClientListPayload = {
+				payloadType: PayloadSubType.clientList,
+				// TODO validate this
+				clients: allUsers as ClientEntity[],
+			};
+
+			server.publish("the-group-chat", JSON.stringify(clientListPayload));
+
+			break;
+		}
+
 		// PayloadSubType.messageList == 4
 		case PayloadSubType.messageList: {
 			const messageListPayload: MessageListPayload =
@@ -288,7 +383,7 @@ export async function processIncomingMessage(
 
 			if (!validatedReactionPayload) {
 				ws.send(
-					`Invalid reaction payload type. Type check not successful!${JSON.stringify(
+					`Invalid reaction payload type. Type check not successful! ${JSON.stringify(
 						payloadFromClientAsObject
 					)}`
 				);
@@ -334,7 +429,7 @@ export async function processIncomingMessage(
 
 			if (!validatedDeletePayload) {
 				ws.send(
-					`Invalid delete payload type. Type check not successful!${JSON.stringify(
+					`Invalid delete payload type. Type check not successful! ${JSON.stringify(
 						payloadFromClientAsObject
 					)}`
 				);
@@ -381,7 +476,7 @@ export async function processIncomingMessage(
 
 			if (!validatedEditPayload) {
 				ws.send(
-					`Invalid delete payload type. Type check not successful!${JSON.stringify(
+					`Invalid delete payload type. Type check not successful! ${JSON.stringify(
 						payloadFromClientAsObject
 					)}`
 				);
@@ -428,7 +523,7 @@ export async function processIncomingMessage(
 
 			if (!validatedEmergencyInitPayload) {
 				ws.send(
-					`Invalid emergency_init payload type. Type check not successful!${JSON.stringify(
+					`Invalid emergency_init payload type. Type check not successful! ${JSON.stringify(
 						payloadFromClientAsObject
 					)}`
 				);
@@ -502,7 +597,7 @@ export async function processIncomingMessage(
 			);
 			if (!validatedEmergencyPayload) {
 				ws.send(
-					`Invalid emergency payload type. Type check not successful!${JSON.stringify(
+					`Invalid emergency payload type. Type check not successful! ${JSON.stringify(
 						payloadFromClientAsObject
 					)}`
 				);
@@ -553,6 +648,196 @@ export async function processIncomingMessage(
 				"the-group-chat",
 				JSON.stringify(updatedMessageWithPayloadType)
 			);
+			break;
+		}
+
+		// PayloadSubType.newProfilePicture == 13
+		case PayloadSubType.newProfilePicture: {
+			const validatedNewProfilePicturePayload =
+				validateNewProfilePicturePayload(payloadFromClientAsObject);
+
+			if (!validatedNewProfilePicturePayload) {
+				ws.send(
+					`Invalid new profile picture payload type. Type check not successful! ${JSON.stringify(
+						payloadFromClientAsObject
+					)}`
+				);
+				console.error(
+					"VALIDATION OF _NEW_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+				);
+				ws.close(
+					1008,
+					"Invalid new profile picture payload type. Type check not successful!"
+				);
+				break;
+			}
+
+			const payload =
+				payloadFromClientAsObject as NewProfilePicturePayload;
+
+			try {
+				await persistProfilePicture(payload);
+			} catch (error) {
+				console.error("Error persisting profile picture", error);
+				return;
+			}
+
+			const updatedProfilePicturePayload: NewProfilePicturePayload = {
+				...payload,
+				payloadType: PayloadSubType.newProfilePicture,
+			};
+
+			server.publish(
+				"the-group-chat",
+				JSON.stringify(updatedProfilePicturePayload)
+			);
+
+			break;
+		}
+
+		// PayloadSubType.fetchProfilePicture == 14
+		case PayloadSubType.fetchProfilePicture: {
+			const validatedFetchProfilePicturePayload =
+				validateFetchProfilePicturePayload(payloadFromClientAsObject);
+
+			if (!validatedFetchProfilePicturePayload) {
+				ws.send(
+					`Invalid fetch profile picture payload type. Type check not successful! ${JSON.stringify(
+						payloadFromClientAsObject
+					)}`
+				);
+				console.error(
+					"VALIDATION OF _FETCH_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+				);
+				ws.close(
+					1008,
+					"Invalid fetch profile picture payload type. Type check not successful!"
+				);
+				break;
+			}
+
+			const payload =
+				payloadFromClientAsObject as FetchProfilePicturePayload;
+
+			try {
+				const profilePicture = await fetchProfilePicture(
+					payload.clientDbId
+				);
+				if (profilePicture === undefined || profilePicture === null) {
+					throw new Error("No profile picture found");
+				}
+
+				const fetchProfilePicturePayload: FetchProfilePicturePayload = {
+					...profilePicture,
+					payloadType: PayloadSubType.fetchProfilePicture,
+				};
+
+				ws.send(JSON.stringify(fetchProfilePicturePayload));
+			} catch (error) {
+				console.error("Error fetching profile picture", error);
+				return;
+			}
+
+			break;
+		}
+
+		// PayloadSubType.fetchAllProfilePictures == 15
+		case PayloadSubType.fetchAllProfilePictures: {
+			const validatedFetchAllProfilePicturesPayload =
+				validateFetchAllProfilePicturesPayload(
+					payloadFromClientAsObject
+				);
+
+			if (!validatedFetchAllProfilePicturesPayload) {
+				ws.send(
+					`Invalid fetch all profile pictures payload type. Type check not successful! ${JSON.stringify(
+						payloadFromClientAsObject
+					)}`
+				);
+				console.error(
+					"VALIDATION OF _FETCH_ALL_PROFILE_PICTURES_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+				);
+				ws.close(
+					1008,
+					"Invalid fetch all profile pictures payload type. Type check not successful!"
+				);
+				break;
+			}
+
+			try {
+				const allProfilePictures = await fetchAllProfilePictures();
+				if (
+					allProfilePictures === undefined ||
+					allProfilePictures === null
+				) {
+					throw new Error("No profile pictures found");
+				}
+
+				const fetchAllProfilePicturesPayload: FetchAllProfilePicturesPayload =
+					{
+						payloadType: PayloadSubType.fetchAllProfilePictures,
+						profilePictures: allProfilePictures,
+					};
+
+				ws.send(JSON.stringify(fetchAllProfilePicturesPayload));
+			} catch (error) {
+				console.error("Error fetching profile picture", error);
+				return;
+			}
+
+			break;
+		}
+
+		// PayloadSubType.fetchCurrentClientProfilePictureHash == 16
+		case PayloadSubType.fetchCurrentClientProfilePictureHash: {
+			const validatedFetchCurrentClientProfilePictureHashPayload =
+				validateFetchCurrentClientProfilePictureHashPayload(
+					payloadFromClientAsObject
+				);
+
+			if (!validatedFetchCurrentClientProfilePictureHashPayload) {
+				ws.send(
+					`Invalid fetch current client profile picture hash payload type. Type check not successful! ${JSON.stringify(
+						payloadFromClientAsObject
+					)}`
+				);
+				console.error(
+					"VALIDATION OF _FETCH_CURRENT_CLIENT_PROFILE_PICTURE_HASH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+				);
+				ws.close(
+					1008,
+					"Invalid fetch current client profile picture hash payload type. Type check not successful!"
+				);
+				break;
+			}
+
+			const payload =
+				payloadFromClientAsObject as FetchCurrentClientProfilePictureHashPayload;
+
+			try {
+				const profilePicture = await fetchProfilePicture(
+					payload.clientDbId
+				);
+				if (profilePicture === undefined || profilePicture === null) {
+					throw new Error("No profile picture found");
+				}
+
+				const fetchCurrentClientProfilePictureHashPayload: FetchCurrentClientProfilePictureHashPayload =
+					{
+						clientProfilePictureHash: profilePicture.imageHash,
+						clientDbId: payload.clientDbId,
+						payloadType:
+							PayloadSubType.fetchCurrentClientProfilePictureHash,
+					};
+
+				ws.send(
+					JSON.stringify(fetchCurrentClientProfilePictureHashPayload)
+				);
+			} catch (error) {
+				console.error("Error fetching profile picture", error);
+				return;
+			}
+
 			break;
 		}
 
