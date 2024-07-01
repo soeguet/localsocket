@@ -30,7 +30,7 @@ const emergencyMessagePayloadValidator = ajvValidator.getSchema(
 );
 
 export function validateNewProfilePicturePayload(
-	newProfilePicturePayload: object | null
+	newProfilePicturePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (newProfilePictureValidator === undefined) {
 		throw new Error("Validator not found");
@@ -45,7 +45,7 @@ export function validateNewProfilePicturePayload(
 }
 
 export function validateFetchProfilePicturePayload(
-	fetchProfilePicturePayload: object | null
+	fetchProfilePicturePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchProfilePictureValidator === undefined) {
 		throw new Error("Validator not found");
@@ -60,7 +60,7 @@ export function validateFetchProfilePicturePayload(
 }
 
 export function validateFetchCurrentClientProfilePictureHashPayload(
-	fetchCurrentClientProfilePictureHashPayload: object | null
+	fetchCurrentClientProfilePictureHashPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchCurrentClientProfilePictureHashValidator === undefined) {
 		throw new Error("Validator not found");
@@ -80,7 +80,7 @@ export function validateFetchCurrentClientProfilePictureHashPayload(
 }
 
 export function validateFetchAllProfilePicturesPayload(
-	fetchAllProfilePicturesPayload: object | null
+	fetchAllProfilePicturesPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchAllProfilePicturesValidator === undefined) {
 		throw new Error("Validator not found");
@@ -104,7 +104,7 @@ export function validateFetchAllProfilePicturesPayload(
  * @throws {Error} Validator not found
  */
 export function validateMessagePayload(
-	messagePayload: object | null
+	messagePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (messagePayloadvalidator === undefined) {
 		throw new Error("Validator not found");
@@ -119,7 +119,7 @@ export function validateMessagePayload(
 }
 
 export function validateEmergencyInitPayload(
-	emergencyInitPayload: object | null
+	emergencyInitPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (emergencyInitPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -134,7 +134,7 @@ export function validateEmergencyInitPayload(
 }
 
 export function validateEmergencyMessagePayload(
-	emergencyPayload: object | null
+	emergencyPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (emergencyMessagePayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -155,7 +155,7 @@ export function validateEmergencyMessagePayload(
  * @throws {Error} Validator not found
  */
 export function validateAuthPayload(
-	authenticationPayload: object | null
+	authenticationPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (authPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -176,7 +176,7 @@ export function validateAuthPayload(
  * @throws {Error} Validator not found
  */
 export function validateReactionPayload(
-	reactionPayload: object | null
+	reactionPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (reactionPayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -197,7 +197,7 @@ export function validateReactionPayload(
  * @throws {Error} Validator not found
  */
 export function validateDeletePayload(
-	deletePayload: object | null
+	deletePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (deletePayloadValidator === undefined) {
 		throw new Error("Validator not found");
@@ -218,7 +218,7 @@ export function validateDeletePayload(
  * @throws {Error} Validator not found
  */
 export function validateclientUpdatePayload(
-	clientProfileUpdatePayload: object | null
+	clientProfileUpdatePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (profileUpdateValidator === undefined) {
 		throw new Error("Validator not found");
@@ -239,7 +239,7 @@ export function validateclientUpdatePayload(
  * @throws {Error} Validator not found
  */
 export function validateEditPayload(
-	editPayload: object | null
+	editPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (editPayloadValidator === undefined) {
 		throw new Error("Validator not found");
