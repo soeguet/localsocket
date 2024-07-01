@@ -21,18 +21,9 @@ function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
 }
 
-export async function processIncomingMessage(
-	ws: ServerWebSocket<WebSocket>,
-	server: Server,
-	message: string | Buffer
-) {
-	// some random checks on message & database
-	const messageAsString = checkForDatabaseErrors(message) as string;
-
-	let payloadFromClientAsObject: unknown;
-
+function parseInitialPayload(message: string, ws: ServerWebSocket<WebSocket>) {
 	try {
-		payloadFromClientAsObject = JSON.parse(messageAsString);
+		return JSON.parse(message);
 	} catch (error) {
 		console.error(
 			"Error parsing message from client. Please check the message and try again. Probably not a JSON object.",
@@ -42,24 +33,44 @@ export async function processIncomingMessage(
 			"Error parsing message from client. Please check the message and try again. Probably not a JSON object."
 		);
 		ws.close(1008, "Error parsing message from client.");
-		return;
+		throw new Error("Error parsing message from client.");
 	}
+}
 
-	if (!validateSimplePayload(payloadFromClientAsObject)) {
+export async function processIncomingMessage(
+	ws: ServerWebSocket<WebSocket>,
+	server: Server,
+	message: string
+) {
+	const messageAsString = checkForDatabaseErrors(message);
+	const payloadFromClientAsUnknownObject = parseInitialPayload(
+		message,
+		ws
+	) as unknown;
+
+	if (!validateSimplePayload(payloadFromClientAsUnknownObject)) {
 		return;
 	}
 
 	// switch part
-	switch (payloadFromClientAsObject.payloadType) {
+	switch (payloadFromClientAsUnknownObject.payloadType) {
 		case PayloadSubType.auth: {
 			// PayloadSubType.auth == 0
-			await authPayloadHandler(payloadFromClientAsObject, ws, server);
+			await authPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.message: {
 			// PayloadSubType.message == 1
-			await messagePayloadHandler(payloadFromClientAsObject, ws, server);
+			await messagePayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
@@ -72,7 +83,7 @@ export async function processIncomingMessage(
 		case PayloadSubType.profileUpdate: {
 			// PayloadSubType.profileUpdate == 3
 			await profileUpdatePayloadHandler(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				ws,
 				server
 			);
@@ -82,7 +93,7 @@ export async function processIncomingMessage(
 		case PayloadSubType.profileUpdateV2: {
 			// PayloadSubType.profileUpdateV2 == 17
 			await profileUpdatePayloadHandlerV2(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				ws,
 				server
 			);
@@ -105,26 +116,30 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.reaction: {
 			// PayloadSubType.reaction == 7
-			reactionPayloadHandler(payloadFromClientAsObject, ws, server);
+			reactionPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.delete: {
 			// PayloadSubType.delete == 8
-			deletePayloadHandler(payloadFromClientAsObject, ws, server);
+			deletePayloadHandler(payloadFromClientAsUnknownObject, ws, server);
 			break;
 		}
 
 		case PayloadSubType.edit: {
 			// PayloadSubType.edit == 9
-			editPayloadHandler(payloadFromClientAsObject, ws, server);
+			editPayloadHandler(payloadFromClientAsUnknownObject, ws, server);
 			break;
 		}
 
 		case PayloadSubType.emergencyInit: {
 			// PayloadSubType.emergencyInit == 10
 			emergencyInitPayloadHandler(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				message,
 				ws,
 				server
@@ -135,7 +150,7 @@ export async function processIncomingMessage(
 		case PayloadSubType.emergencyMessage: {
 			// PayloadSubType.emergencyMessage == 11
 			emergencyMessagePayloadHandler(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				ws,
 				server
 			);
@@ -144,20 +159,27 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.newProfilePicture: {
 			// PayloadSubType.newProfilePicture == 13
-			newProfilePictureHandler(payloadFromClientAsObject, ws, server);
+			newProfilePictureHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.fetchProfilePicture: {
 			// PayloadSubType.fetchProfilePicture == 14
-			fetchProfilePicturePayloadHandler(payloadFromClientAsObject, ws);
+			fetchProfilePicturePayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws
+			);
 			break;
 		}
 
 		case PayloadSubType.fetchAllProfilePictures: {
 			// PayloadSubType.fetchAllProfilePictures == 15
 			fetchAllProfilePicturesPayloadHandler(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				ws
 			);
 			break;
@@ -166,7 +188,7 @@ export async function processIncomingMessage(
 		case PayloadSubType.fetchCurrentClientProfilePictureHash: {
 			// PayloadSubType.fetchCurrentClientProfilePictureHash == 16
 			fetchCurrentClientProfilePictureHashPayloadHandler(
-				payloadFromClientAsObject,
+				payloadFromClientAsUnknownObject,
 				ws
 			);
 			break;

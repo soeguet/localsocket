@@ -10,7 +10,6 @@ const headers = {
 };
 
 const server = Bun.serve<WebSocket>({
-	//
 	fetch(req, server) {
 		// preflight request for CORS
 		if (req.method === "OPTIONS") {
@@ -23,29 +22,25 @@ const server = Bun.serve<WebSocket>({
 		if (new URL(req.url).pathname === "/chat") {
 			const success = server.upgrade(req);
 			if (success) {
-				return undefined;
+				return;
 			}
 		}
 
-		// handle HTTP request normally -> if nothing matches -> 404
+		// if nothing matches -> 404
 		return new Response("who are you and what do you want?", {
 			status: 404,
 		});
 	},
-	//
 	websocket: {
-		// WEBSOCKET - OPEN
 		async open(ws) {
 			ws.subscribe("the-group-chat");
-			// const messageListPayload = await sendLast100MessagesToNewClient();
-			//
-			// ws.send(JSON.stringify(messageListPayload));
 		},
-		//
-		// WEBSOCKET - NEW MESSAGE
-		// this is called when a message is received
 		async message(ws, message): Promise<void> {
-			await processIncomingMessage(ws, server, message);
+			if (typeof message === "string") {
+				await processIncomingMessage(ws, server, message);
+			} else {
+				console.error("Invalid message type");
+			}
 		},
 	},
 	port: 5588,

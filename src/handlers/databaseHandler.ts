@@ -9,15 +9,14 @@ import {
 	type DeleteEntity,
 	type EditEntity,
 	type EmergencyMessagePayload,
-	type NewProfilePicturePayload,
 	type ProfilePictureObject,
 } from "../types/payloadTypes";
 
-export function checkForDatabaseErrors(message: string | Buffer) {
+export function checkForDatabaseErrors(message: string) {
 	// check for null values
 	if (prisma === undefined || prisma === null) {
 		console.error("Database not found");
-		return;
+		throw new Error("Database not found");
 	}
 	if (
 		typeof message !== "string" ||
@@ -25,7 +24,7 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 		message === undefined
 	) {
 		console.error("Invalid message type");
-		return;
+		throw new Error("Invalid message type");
 	}
 	return message;
 }
