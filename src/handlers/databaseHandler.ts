@@ -45,6 +45,19 @@ export async function persistProfilePicture(payload: ProfilePictureObject) {
 		},
 	});
 }
+export async function persistProfilePictureHashForClient(
+	clientDbId: string,
+	imageHash: string
+) {
+	await prisma.client.update({
+		where: {
+			clientDbId: clientDbId,
+		},
+		data: {
+			clientProfileImage: imageHash,
+		},
+	});
+}
 
 export async function fetchProfilePicture(clientDbId: string) {
 	return prisma.profilePictures.findFirst({

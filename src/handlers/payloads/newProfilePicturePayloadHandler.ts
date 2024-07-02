@@ -1,7 +1,10 @@
 import type { Serve, Server, ServerWebSocket } from "bun";
 import { validateNewProfilePicturePayload } from "../typeHandler";
 import { type NewProfilePicturePayload } from "../../types/payloadTypes";
-import { persistProfilePicture } from "../databaseHandler";
+import {
+	persistProfilePicture,
+	persistProfilePictureHashForClient,
+} from "../databaseHandler";
 
 const errorMessage =
 	"Invalid new profile picture payload type. Type check not successful!";
@@ -31,6 +34,20 @@ export async function newProfilePictureHandler(
 		await persistProfilePicture(payload);
 	} catch (error) {
 		console.error("Error persisting profile picture", error);
+		return;
+	}
+
+	// persist image hash for client
+	try {
+		await persistProfilePictureHashForClient(
+			payload.clientDbId,
+			payload.imageHash
+		);
+	} catch (error) {
+		console.error(
+			"Error persisting profile picture hash for client",
+			error
+		);
 		return;
 	}
 
