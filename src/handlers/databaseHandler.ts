@@ -9,13 +9,14 @@ import {
 	type DeleteEntity,
 	type EditEntity,
 	type EmergencyMessagePayload,
+	type ProfilePictureObject,
 } from "../types/payloadTypes";
 
-export function checkForDatabaseErrors(message: string | Buffer) {
+export function checkForDatabaseErrors(message: string) {
 	// check for null values
 	if (prisma === undefined || prisma === null) {
 		console.error("Database not found");
-		return;
+		throw new Error("Database not found");
 	}
 	if (
 		typeof message !== "string" ||
@@ -23,9 +24,51 @@ export function checkForDatabaseErrors(message: string | Buffer) {
 		message === undefined
 	) {
 		console.error("Invalid message type");
-		return;
+		throw new Error("Invalid message type");
 	}
 	return message;
+}
+
+export async function persistProfilePicture(payload: ProfilePictureObject) {
+	await prisma.profilePictures.upsert({
+		where: {
+			clientDbId: payload.clientDbId,
+		},
+		update: {
+			imageHash: payload.imageHash,
+			data: payload.data,
+		},
+		create: {
+			clientDbId: payload.clientDbId,
+			imageHash: payload.imageHash,
+			data: payload.data,
+		},
+	});
+}
+export async function persistProfilePictureHashForClient(
+	clientDbId: string,
+	imageHash: string
+) {
+	await prisma.client.update({
+		where: {
+			clientDbId: clientDbId,
+		},
+		data: {
+			clientProfileImage: imageHash,
+		},
+	});
+}
+
+export async function fetchProfilePicture(clientDbId: string) {
+	return prisma.profilePictures.findFirst({
+		where: {
+			clientDbId: clientDbId,
+		},
+	});
+}
+
+export async function fetchAllProfilePictures() {
+	return prisma.profilePictures.findMany();
 }
 
 export async function persistEmergencyMessage(

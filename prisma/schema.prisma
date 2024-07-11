@@ -22,6 +22,13 @@ model EmergencyMessages {
     message                     String
 }
 
+model ProfilePictures {
+    profilePictureDbId Int    @id @default(autoincrement())
+    clientDbId         String @unique
+    imageHash          String @unique
+    data               String
+}
+
 model Client {
     clientDbId         String           @id
     clientUsername     String

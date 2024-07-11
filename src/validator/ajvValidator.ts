@@ -19,14 +19,59 @@ ajvValidator.addSchema(
 	"testValidator"
 );
 
-// const payload: EmergencyMessagePayload = {
-// 	payloadType: PayloadSubType.emergencyMessage,
-// 	emergencyChatId: useEmergencyStore.getState().emergencyChatId,
-// 	messageDbId: generateSimpleId(),
-// 	clientDbId: useUserStore.getState().myId,
-// 	time: getTimeWithHHmmFormat(new Date()),
-// 	message: utf8ToBase64(textAreaRef.current.value),
-// };
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
+			clientDbId: { type: "string", minLength: 1 },
+			imageHash: { type: "string", minLength: 1 },
+			data: { type: "string", minLength: 1 },
+		},
+		required: ["payloadType", "clientDbId", "imageHash", "data"],
+		additionalProperties: false,
+	},
+	"newProfilePictureValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
+			clientDbId: { type: "string", minLength: 1 },
+		},
+		required: ["payloadType", "clientDbId"],
+		additionalProperties: false,
+	},
+	"fetchProfilePictureValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
+			clientDbId: { type: "string", minLength: 1 },
+		},
+		required: ["payloadType", "clientDbId"],
+		additionalProperties: false,
+	},
+	"fetchCurrentClientProfilePictureHashValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
+		},
+		required: ["payloadType"],
+		additionalProperties: false,
+	},
+	"fetchAllProfilePicturesValidator"
+);
+
 ajvValidator.addSchema(
 	{
 		type: "object",
