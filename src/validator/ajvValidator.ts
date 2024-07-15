@@ -24,6 +24,58 @@ ajvValidator.addSchema(
 		type: "object",
 		properties: {
 			payloadType: { type: "number" },
+			banner: {
+				type: "object",
+				properties: {
+					id: { type: "string", minLength: 1 },
+					title: { type: "string", minLength: 1 },
+					message: { type: "string", minLength: 1 },
+					priority: { type: "number" },
+					hidden: { type: "boolean" },
+				},
+				required: ["id", "title", "message", "priority", "hidden"],
+				additionalProperties: false,
+			},
+			action: { type: "string", minLength: 1 },
+		},
+		required: ["payloadType", "banner", "action"],
+		additionalProperties: false,
+	},
+	"bannerPayloadValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
+			banners: {
+				type: ["array", "null"],
+				items: {
+					type: "object",
+					properties: {
+						id: { type: "string", minLength: 1 },
+						title: { type: "string", minLength: 1 },
+						message: { type: "string", minLength: 1 },
+						priority: { type: "number" },
+						hidden: { type: "boolean" },
+					},
+					required: ["id", "title", "message", "priority", "hidden"],
+					additionalProperties: false,
+				},
+			},
+		},
+		required: ["payloadType"],
+		additionalProperties: false,
+	},
+	"bannerListPayloadValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
+			payloadType: { type: "number" },
 			clientDbId: { type: "string", minLength: 1 },
 			imageHash: { type: "string", minLength: 1 },
 			data: { type: "string", minLength: 1 },

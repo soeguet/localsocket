@@ -1,6 +1,6 @@
 import type { Server, ServerWebSocket } from "bun";
 import { PayloadSubType, type SimplePayload } from "../types/payloadTypes";
-import { checkForDatabaseErrors } from "./databaseHandler";
+import { checkForDatabaseErrors, retrieveAllBanners } from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
 import { deletePayloadHandler } from "./payloads/deletePayloadHandler";
@@ -16,6 +16,8 @@ import { newProfilePictureHandler } from "./payloads/newProfilePicturePayloadHan
 import { profileUpdatePayloadHandler } from "./payloads/profileUpdatePayloadHandler";
 import { profileUpdatePayloadHandlerV2 } from "./payloads/profileUpdatePayloadHandlerV2";
 import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
+import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
+import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -195,6 +197,16 @@ export async function processIncomingMessage(
 		}
 
 		case PayloadSubType.fetchAllBanners: {
+			// PayloadSubType.fetchAllBanners == 18
+			fetchAllBannersPayloadHandler(ws);
+			break;
+		}
+
+		case PayloadSubType.modifyBanner: {
+			// PayloadSubType.modifyBanner == 19
+			modifyBannerPayloadHandler(payloadFromClientAsUnknownObject, ws);
+			// send back the banner list after updating the banner list
+			fetchAllBannersPayloadHandler(ws);
 			break;
 		}
 

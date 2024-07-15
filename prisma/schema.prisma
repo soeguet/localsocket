@@ -13,6 +13,14 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+model Banners {
+    id       String  @id
+    title    String
+    message  String
+    priority Int
+    hidden   Boolean
+}
+
 model EmergencyMessages {
     emergencyMessagePayloadDbId Int    @id @default(autoincrement())
     emergencyChatId             String

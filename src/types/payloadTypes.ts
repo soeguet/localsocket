@@ -26,12 +26,34 @@ export type ProfilePictureHash = string;
 export type ClientId = string;
 export type Hash = string;
 
+export type Priority = 1 | 2 | 3 | 4 | 5;
+
+export type BannerObject = {
+	id: Hash;
+	title: string;
+	message: string;
+	priority: Priority;
+	hidden: boolean;
+};
+
+export type BannerAction = "add" | "remove" | "update";
+
+export type BannerPayload = {
+	payloadType: PayloadSubType.modifyBanner;
+	banner: BannerObject;
+	action: BannerAction;
+};
+
+export type BannerListPayload = {
+	payloadType: PayloadSubType.fetchAllBanners;
+	banners?: BannerObject[];
+};
+
 export type ProfilePictureObject = {
 	clientDbId: ClientId;
 	imageHash: ProfilePictureHash;
 	data: ProfilePicture;
 };
-
 export type ClientUpdatePayloadV2 = {
 	payloadType: PayloadSubType.profileUpdateV2;
 } & ClientEntity;
