@@ -17,6 +17,8 @@ export enum PayloadSubType {
 	fetchAllProfilePictures = 15,
 	fetchCurrentClientProfilePictureHash = 16,
 	profileUpdateV2 = 17,
+	fetchAllBanners = 18,
+	modifyBanner = 19,
 }
 
 export type ProfilePicture = string;

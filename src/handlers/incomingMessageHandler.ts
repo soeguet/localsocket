@@ -194,6 +194,10 @@ export async function processIncomingMessage(
 			break;
 		}
 
+		case PayloadSubType.fetchAllBanners: {
+			break;
+		}
+
 		default: {
 			ws.send(
 				"SWITCH CASES: Invalid message payload type. Type check not successful!"
