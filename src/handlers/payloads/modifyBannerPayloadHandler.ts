@@ -30,11 +30,11 @@ export async function modifyBannerPayloadHandler(
 	const payload = payloadFromClientAsObject as BannerPayload;
 
 	if (payload.action === "add") {
-		addBanner(payload);
+		await addBanner(payload);
 	} else if (payload.action === "remove") {
-		removeBanner(payload);
+		await removeBanner(payload);
 	} else if (payload.action === "update") {
-		updateBanner(payload);
+		await updateBanner(payload);
 	}
 }
 

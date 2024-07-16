@@ -104,7 +104,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.messageList: {
 			// PayloadSubType.messageList == 4
-			messageListPayloadHandler(ws);
+			await messageListPayloadHandler(ws);
 			break;
 		}
 
@@ -118,7 +118,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.reaction: {
 			// PayloadSubType.reaction == 7
-			reactionPayloadHandler(
+			await reactionPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -128,19 +128,27 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.delete: {
 			// PayloadSubType.delete == 8
-			deletePayloadHandler(payloadFromClientAsUnknownObject, ws, server);
+			await deletePayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.edit: {
 			// PayloadSubType.edit == 9
-			editPayloadHandler(payloadFromClientAsUnknownObject, ws, server);
+			await editPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.emergencyInit: {
 			// PayloadSubType.emergencyInit == 10
-			emergencyInitPayloadHandler(
+			await emergencyInitPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				message,
 				ws,
@@ -151,7 +159,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.emergencyMessage: {
 			// PayloadSubType.emergencyMessage == 11
-			emergencyMessagePayloadHandler(
+			await emergencyMessagePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -161,7 +169,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.newProfilePicture: {
 			// PayloadSubType.newProfilePicture == 13
-			newProfilePictureHandler(
+			await newProfilePictureHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -171,7 +179,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchProfilePicture: {
 			// PayloadSubType.fetchProfilePicture == 14
-			fetchProfilePicturePayloadHandler(
+			await fetchProfilePicturePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
@@ -180,7 +188,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchAllProfilePictures: {
 			// PayloadSubType.fetchAllProfilePictures == 15
-			fetchAllProfilePicturesPayloadHandler(
+			await fetchAllProfilePicturesPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
@@ -189,7 +197,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchCurrentClientProfilePictureHash: {
 			// PayloadSubType.fetchCurrentClientProfilePictureHash == 16
-			fetchCurrentClientProfilePictureHashPayloadHandler(
+			await fetchCurrentClientProfilePictureHashPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
@@ -198,15 +206,18 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchAllBanners: {
 			// PayloadSubType.fetchAllBanners == 18
-			fetchAllBannersPayloadHandler(ws);
+			await fetchAllBannersPayloadHandler(ws);
 			break;
 		}
 
 		case PayloadSubType.modifyBanner: {
 			// PayloadSubType.modifyBanner == 19
-			modifyBannerPayloadHandler(payloadFromClientAsUnknownObject, ws);
+			await modifyBannerPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws
+			);
 			// send back the banner list after updating the banner list
-			fetchAllBannersPayloadHandler(ws);
+			await fetchAllBannersPayloadHandler(ws);
 			break;
 		}
 
