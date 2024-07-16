@@ -1,6 +1,6 @@
 import type { Server, ServerWebSocket } from "bun";
 import { PayloadSubType, type SimplePayload } from "../types/payloadTypes";
-import { checkForDatabaseErrors } from "./databaseHandler";
+import { checkForDatabaseErrors, retrieveAllBanners } from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
 import { deletePayloadHandler } from "./payloads/deletePayloadHandler";
@@ -16,6 +16,8 @@ import { newProfilePictureHandler } from "./payloads/newProfilePicturePayloadHan
 import { profileUpdatePayloadHandler } from "./payloads/profileUpdatePayloadHandler";
 import { profileUpdatePayloadHandlerV2 } from "./payloads/profileUpdatePayloadHandlerV2";
 import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
+import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
+import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -102,7 +104,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.messageList: {
 			// PayloadSubType.messageList == 4
-			messageListPayloadHandler(ws);
+			await messageListPayloadHandler(ws);
 			break;
 		}
 
@@ -116,7 +118,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.reaction: {
 			// PayloadSubType.reaction == 7
-			reactionPayloadHandler(
+			await reactionPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -126,19 +128,27 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.delete: {
 			// PayloadSubType.delete == 8
-			deletePayloadHandler(payloadFromClientAsUnknownObject, ws, server);
+			await deletePayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.edit: {
 			// PayloadSubType.edit == 9
-			editPayloadHandler(payloadFromClientAsUnknownObject, ws, server);
+			await editPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws,
+				server
+			);
 			break;
 		}
 
 		case PayloadSubType.emergencyInit: {
 			// PayloadSubType.emergencyInit == 10
-			emergencyInitPayloadHandler(
+			await emergencyInitPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				message,
 				ws,
@@ -149,7 +159,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.emergencyMessage: {
 			// PayloadSubType.emergencyMessage == 11
-			emergencyMessagePayloadHandler(
+			await emergencyMessagePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -159,7 +169,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.newProfilePicture: {
 			// PayloadSubType.newProfilePicture == 13
-			newProfilePictureHandler(
+			await newProfilePictureHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
 				server
@@ -169,7 +179,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchProfilePicture: {
 			// PayloadSubType.fetchProfilePicture == 14
-			fetchProfilePicturePayloadHandler(
+			await fetchProfilePicturePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
@@ -178,7 +188,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchAllProfilePictures: {
 			// PayloadSubType.fetchAllProfilePictures == 15
-			fetchAllProfilePicturesPayloadHandler(
+			await fetchAllProfilePicturesPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
@@ -187,10 +197,27 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchCurrentClientProfilePictureHash: {
 			// PayloadSubType.fetchCurrentClientProfilePictureHash == 16
-			fetchCurrentClientProfilePictureHashPayloadHandler(
+			await fetchCurrentClientProfilePictureHashPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
+			break;
+		}
+
+		case PayloadSubType.fetchAllBanners: {
+			// PayloadSubType.fetchAllBanners == 18
+			await fetchAllBannersPayloadHandler(ws);
+			break;
+		}
+
+		case PayloadSubType.modifyBanner: {
+			// PayloadSubType.modifyBanner == 19
+			await modifyBannerPayloadHandler(
+				payloadFromClientAsUnknownObject,
+				ws
+			);
+			// send back the banner list after updating the banner list
+			await fetchAllBannersPayloadHandler(ws);
 			break;
 		}
 

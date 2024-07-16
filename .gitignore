@@ -183,3 +183,4 @@ drizzle/
 drizzle
 messages.db
 prisma/migrations
+.supermaven

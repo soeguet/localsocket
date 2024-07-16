@@ -29,6 +29,41 @@ const emergencyMessagePayloadValidator = ajvValidator.getSchema(
 	"emergencyMessagePayloadValidator"
 );
 
+const bannerPayloadValidator = ajvValidator.getSchema("bannerPayloadValidator");
+const bannerListPayloadValidator = ajvValidator.getSchema(
+	"bannerListPayloadValidator"
+);
+
+export function validateBannerPayload(
+	bannerPayload: object | null | unknown
+): boolean | Promise<unknown> {
+	if (bannerPayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return bannerPayloadValidator(bannerPayload);
+	} catch (error) {
+		console.error("Error validating banner payload", error);
+		return false;
+	}
+}
+
+export function validateBannerListPayload(
+	bannerListPayload: object | null | unknown
+): boolean | Promise<unknown> {
+	if (bannerListPayloadValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return bannerListPayloadValidator(bannerListPayload);
+	} catch (error) {
+		console.error("Error validating banner list payload", error);
+		return false;
+	}
+}
+
 export function validateNewProfilePicturePayload(
 	newProfilePicturePayload: object | null | unknown
 ): boolean | Promise<unknown> {

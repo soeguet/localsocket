@@ -10,6 +10,7 @@ import {
 	type EditEntity,
 	type EmergencyMessagePayload,
 	type ProfilePictureObject,
+	type BannerObject,
 } from "../types/payloadTypes";
 
 export function checkForDatabaseErrors(message: string) {
@@ -45,6 +46,45 @@ export async function persistProfilePicture(payload: ProfilePictureObject) {
 		},
 	});
 }
+
+export async function persistBanner(payload: BannerObject) {
+	await prisma.banners.create({
+		data: {
+			id: payload.id,
+			title: payload.title,
+			message: payload.message,
+			priority: payload.priority,
+			hidden: payload.hidden,
+		},
+	});
+}
+
+export async function deleteBanner(id: string) {
+	await prisma.banners.delete({
+		where: {
+			id: id,
+		},
+	});
+}
+
+export async function updateBanner(payload: BannerObject) {
+	await prisma.banners.update({
+		where: {
+			id: payload.id,
+		},
+		data: {
+			title: payload.title,
+			message: payload.message,
+			priority: payload.priority,
+			hidden: payload.hidden,
+		},
+	});
+}
+
+export async function retrieveAllBanners() {
+	return prisma.banners.findMany();
+}
+
 export async function persistProfilePictureHashForClient(
 	clientDbId: string,
 	imageHash: string
