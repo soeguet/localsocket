@@ -47,6 +47,15 @@ export async function persistProfilePicture(payload: ProfilePictureObject) {
 	});
 }
 
+export async function fetchAllProfilePictureHashes() {
+	return prisma.profilePictures.findMany({
+		select: {
+			clientDbId: true,
+			imageHash: true,
+		},
+	});
+}
+
 export async function persistBanner(payload: BannerObject) {
 	await prisma.banners.create({
 		data: {

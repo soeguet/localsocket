@@ -18,6 +18,7 @@ import { profileUpdatePayloadHandlerV2 } from "./payloads/profileUpdatePayloadHa
 import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
 import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
 import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
+import { fetchAllProfilePictureHashesPayloadHandler } from "./payloads/fetchAllProfilePictureHashesPayloadHandler";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -192,6 +193,12 @@ export async function processIncomingMessage(
 				payloadFromClientAsUnknownObject,
 				ws
 			);
+			break;
+		}
+
+		case PayloadSubType.fetchAllProfilePictureHashes: {
+			// PayloadSubType.fetchAllProfilePictureHashes == 20
+			await fetchAllProfilePictureHashesPayloadHandler(ws);
 			break;
 		}
 

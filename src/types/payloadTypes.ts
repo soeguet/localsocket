@@ -16,15 +16,24 @@ export enum PayloadSubType {
 	fetchProfilePicture = 14,
 	fetchAllProfilePictures = 15,
 	fetchCurrentClientProfilePictureHash = 16,
+	fetchAllProfilePictureHashes = 20,
 	profileUpdateV2 = 17,
 	fetchAllBanners = 18,
 	modifyBanner = 19,
 }
 
 export type ProfilePicture = string;
-export type ProfilePictureHash = string;
 export type ClientId = string;
 export type Hash = string;
+
+export type ProfilePicturesHash = {
+	clientDbId: ClientId;
+	imageHash: Hash;
+};
+export type AllProfilePictureHashesPayload = {
+	payloadType: PayloadSubType.fetchAllProfilePictureHashes;
+	profilePictureHashes?: ProfilePicturesHash[];
+};
 
 export type Priority = 1 | 2 | 3 | 4 | 5;
 
@@ -51,7 +60,7 @@ export type BannerListPayload = {
 
 export type ProfilePictureObject = {
 	clientDbId: ClientId;
-	imageHash: ProfilePictureHash;
+	imageHash: Hash;
 	data: ProfilePicture;
 };
 export type ClientUpdatePayloadV2 = {
