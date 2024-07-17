@@ -184,3 +184,4 @@ drizzle
 messages.db
 prisma/migrations
 .supermaven
+.nvim/.bookmarks

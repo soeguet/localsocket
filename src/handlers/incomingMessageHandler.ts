@@ -1,6 +1,6 @@
 import type { Server, ServerWebSocket } from "bun";
 import { PayloadSubType, type SimplePayload } from "../types/payloadTypes";
-import { checkForDatabaseErrors, retrieveAllBanners } from "./databaseHandler";
+import { checkForDatabaseErrors } from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
 import { deletePayloadHandler } from "./payloads/deletePayloadHandler";

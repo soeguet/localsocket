@@ -1,1 +1,1 @@
-{"data":{"\/home\/soeguet\/code\/bun\/localsocket\/src\/handlers\/incomingMessageHandler.ts":{"56":{"a":"main switch statement","m":"\tswitch (payloadFromClientAsUnknownObject.payloadType) {"}}}}
+{"data":{"\/home\/soeguet\/code\/bun\/localsocket\/src\/handlers\/incomingMessageHandler.ts":{"56":{"m":"\tswitch (payloadFromClientAsUnknownObject.payloadType) {","a":"main switch statement"}}}}
