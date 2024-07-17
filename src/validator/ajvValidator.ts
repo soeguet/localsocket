@@ -278,7 +278,6 @@ ajvValidator.addSchema(
 					},
 					messageContext: {
 						type: "string",
-						minLength: 1,
 					},
 					messageTime: {
 						type: "string",

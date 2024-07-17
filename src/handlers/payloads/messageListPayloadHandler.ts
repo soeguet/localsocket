@@ -1,4 +1,4 @@
-import type { Server, ServerWebSocket } from "bun";
+import type { ServerWebSocket } from "bun";
 import emergencyChatState from "../../state/emergencyChatState";
 import {
 	type MessageListPayload,
