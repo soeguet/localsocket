@@ -1,4 +1,4 @@
-import type { ServerWebSocket } from "bun";
+import type { Server, ServerWebSocket } from "bun";
 import { retrieveAllBanners } from "../databaseHandler";
 import {
 	PayloadSubType,
@@ -24,9 +24,7 @@ function priorityConverter(priority: number): Priority {
 	}
 }
 
-export async function fetchAllBannersPayloadHandler(
-	ws: ServerWebSocket<WebSocket>
-) {
+export async function fetchAllBannersPayloadHandler(server: Server) {
 	const banners = await retrieveAllBanners();
 
 	const bannersAsArray: BannerObject[] = [];
@@ -48,5 +46,5 @@ export async function fetchAllBannersPayloadHandler(
 		banners: bannersAsArray,
 	};
 
-	ws.send(JSON.stringify(fetchAllBannersPayload));
+	server.publish("the-group-chat", JSON.stringify(fetchAllBannersPayload));
 }
