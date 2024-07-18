@@ -213,7 +213,7 @@ export async function processIncomingMessage(
 
 		case PayloadSubType.fetchAllBanners: {
 			// PayloadSubType.fetchAllBanners == 18
-			await fetchAllBannersPayloadHandler(ws);
+			await fetchAllBannersPayloadHandler(server);
 			break;
 		}
 
@@ -224,7 +224,7 @@ export async function processIncomingMessage(
 				ws
 			);
 			// send back the banner list after updating the banner list
-			await fetchAllBannersPayloadHandler(ws);
+			await fetchAllBannersPayloadHandler(server);
 			break;
 		}
 
