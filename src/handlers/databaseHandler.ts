@@ -68,7 +68,7 @@ export async function persistBanner(payload: BannerObject) {
 	});
 }
 
-export async function deleteBanner(id: string) {
+export async function deleteExistingBanner(id: string) {
 	await prisma.banners.delete({
 		where: {
 			id: id,
@@ -76,7 +76,7 @@ export async function deleteBanner(id: string) {
 	});
 }
 
-export async function updateBanner(payload: BannerObject) {
+export async function updateExistingBanner(payload: BannerObject) {
 	await prisma.banners.update({
 		where: {
 			id: payload.id,

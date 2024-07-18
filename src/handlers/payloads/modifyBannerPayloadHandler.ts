@@ -1,6 +1,10 @@
 import type { ServerWebSocket } from "bun";
 import { validateBannerPayload } from "../typeHandler";
-import { deleteBanner, persistBanner } from "../databaseHandler";
+import {
+	deleteExistingBanner,
+	persistBanner,
+	updateExistingBanner,
+} from "../databaseHandler";
 import type { BannerPayload } from "../../types/payloadTypes";
 
 export async function modifyBannerPayloadHandler(
@@ -40,7 +44,7 @@ export async function modifyBannerPayloadHandler(
 
 async function removeBanner(payload: BannerPayload) {
 	try {
-		await deleteBanner(payload.banner.id);
+		await deleteExistingBanner(payload.banner.id);
 	} catch (error) {
 		console.error("Error deleting banner", error);
 		return;
@@ -49,7 +53,7 @@ async function removeBanner(payload: BannerPayload) {
 
 async function updateBanner(payload: BannerPayload) {
 	try {
-		await updateBanner(payload);
+		await updateExistingBanner(payload.banner);
 	} catch (error) {
 		console.error("Error updating banner", error);
 		return;
