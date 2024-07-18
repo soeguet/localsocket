@@ -11,6 +11,7 @@ const headers = {
 
 const server = Bun.serve<WebSocket>({
 	fetch(req, server) {
+		const url = new URL(req.url);
 		// preflight request for CORS
 		if (req.method === "OPTIONS") {
 			return new Response(null, {
@@ -18,11 +19,15 @@ const server = Bun.serve<WebSocket>({
 			});
 		}
 
+		if (url.pathname === "/logging") {
+			return new Response("ok");
+		}
+
 		// handle websocket upgrade
-		if (new URL(req.url).pathname === "/chat") {
-			const success = server.upgrade(req);
-			if (success) {
-				return;
+		if (url.pathname === "/chat") {
+			const upgraded = server.upgrade(req);
+			if (!upgraded) {
+				return new Response("Upgrade failed", { status: 400 });
 			}
 		}
 
