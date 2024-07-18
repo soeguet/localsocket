@@ -10,7 +10,7 @@ const headers = {
 };
 
 const server = Bun.serve<WebSocket>({
-	fetch(req, server) {
+	fetch: async (req, server) => {
 		const url = new URL(req.url);
 		// preflight request for CORS
 		if (req.method === "OPTIONS") {
@@ -19,8 +19,17 @@ const server = Bun.serve<WebSocket>({
 			});
 		}
 
-		if (url.pathname === "/logging") {
-			return new Response("ok");
+		if (req.method === "POST" && req.url === "/v1/log/error") {
+			try {
+				const body = await req.json();
+				console.log(body);
+
+				// Handle the logging as needed
+				return new Response("Log received", { status: 200 });
+			} catch (error) {
+				console.error("Error parsing log:", error);
+				return new Response("Error parsing log", { status: 500 });
+			}
 		}
 
 		// handle websocket upgrade
