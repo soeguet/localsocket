@@ -11,6 +11,7 @@ const headers = {
 
 const server = Bun.serve<WebSocket>({
 	fetch: async (req, server) => {
+		console.log("Request received", req.method, req.url);
 		const url = new URL(req.url);
 		// preflight request for CORS
 		if (req.method === "OPTIONS") {
@@ -19,7 +20,7 @@ const server = Bun.serve<WebSocket>({
 			});
 		}
 
-		if (req.method === "POST" && req.url === "/v1/log/error") {
+		if (req.method === "POST" && url.pathname === "/v1/log/error") {
 			try {
 				const body = await req.json();
 				console.log(body);

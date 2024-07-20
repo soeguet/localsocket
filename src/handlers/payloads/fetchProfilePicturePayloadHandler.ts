@@ -1,4 +1,4 @@
-import type { Server, ServerWebSocket } from "bun";
+import type { ServerWebSocket } from "bun";
 import {
 	type FetchProfilePicturePayload,
 	PayloadSubType,
@@ -37,7 +37,7 @@ export async function fetchProfilePicturePayloadHandler(
 			throw new Error("No profile picture found");
 		}
 
-		const fetchProfilePicturePayload: FetchProfilePicturePayload = {
+		const fetchProfilePicturePayload = {
 			...profilePicture,
 			payloadType: PayloadSubType.fetchProfilePicture,
 		};
@@ -45,6 +45,28 @@ export async function fetchProfilePicturePayloadHandler(
 		ws.send(JSON.stringify(fetchProfilePicturePayload));
 	} catch (error) {
 		console.error("Error fetching profile picture", error);
-		return;
+
+		const errorPayload = {
+			message: error.message,
+			stack: error.stack,
+		};
+
+		try {
+			const response = await fetch("http://localhost:5588/v1/log/error", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(errorPayload),
+			});
+
+			if (response.ok) {
+				console.log("Error logged successfully");
+			} else {
+				console.error("Failed to log error", response.statusText);
+			}
+		} catch (loggingError) {
+			console.error("Error sending log request", loggingError);
+		}
 	}
 }
