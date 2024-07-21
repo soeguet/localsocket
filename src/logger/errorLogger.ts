@@ -5,7 +5,9 @@ interface HttpLogger {
 class ErrorLogger implements HttpLogger {
 	async logError(error: unknown) {
 		if (!(error instanceof Error)) {
-			console.error("Error is not an instance of Error", error);
+			errorLogger.logError(
+				new Error("Error is not an instance of Error")
+			);
 			return;
 		}
 
@@ -32,11 +34,12 @@ class ErrorLogger implements HttpLogger {
 			});
 
 			if (!response.ok) {
+				// if the request fails, log the error to the console
 				console.error("Failed to log error", response.statusText);
 				console.error("Error message: ", error);
 			}
 		} catch (loggingError) {
-			console.error("Error sending log request", loggingError);
+			errorLogger.logError(loggingError);
 		}
 	}
 }

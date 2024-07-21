@@ -5,6 +5,7 @@ import {
 	persistProfilePicture,
 	persistProfilePictureHashForClient,
 } from "../databaseHandler";
+import { errorLogger } from "../../logger/errorLogger";
 
 const errorMessage =
 	"Invalid new profile picture payload type. Type check not successful!";
@@ -13,6 +14,9 @@ function sendErrorResponse(ws: ServerWebSocket<WebSocket>, payload: unknown) {
 	const payloadAsString = JSON.stringify(payload);
 	ws.send(`${errorMessage} ${payloadAsString}`);
 	console.error(
+		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
+	);
+	errorLogger.logError(
 		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
 	);
 	ws.close(1008, errorMessage);
@@ -34,6 +38,7 @@ export async function newProfilePictureHandler(
 		await persistProfilePicture(payload);
 	} catch (error) {
 		console.error("Error persisting profile picture", error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -44,10 +49,7 @@ export async function newProfilePictureHandler(
 			payload.imageHash
 		);
 	} catch (error) {
-		console.error(
-			"Error persisting profile picture hash for client",
-			error
-		);
+		errorLogger.logError(error);
 		return;
 	}
 

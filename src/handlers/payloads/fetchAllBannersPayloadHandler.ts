@@ -6,6 +6,7 @@ import {
 	type BannerObject,
 	type Priority,
 } from "../../types/payloadTypes";
+import { errorLogger } from "../../logger/errorLogger";
 
 function priorityConverter(priority: number): Priority {
 	switch (priority) {
@@ -38,7 +39,8 @@ export async function fetchAllBannersPayloadHandler(server: Server) {
 		});
 	}
 	if (banners === undefined || banners === null) {
-		throw new Error("No banners found");
+		errorLogger.logError(new Error("No banners found"));
+		return;
 	}
 
 	const fetchAllBannersPayload: BannerListPayload = {

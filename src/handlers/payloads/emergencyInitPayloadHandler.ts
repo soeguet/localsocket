@@ -8,6 +8,7 @@ import {
 } from "../../types/payloadTypes";
 import { retrieveAllEmergencyMessages } from "../databaseHandler";
 import { validateEmergencyInitPayload } from "../typeHandler";
+import { errorLogger } from "../../logger/errorLogger";
 
 export async function emergencyInitPayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -25,9 +26,14 @@ export async function emergencyInitPayloadHandler(
 				payloadFromClientAsObject
 			)}`
 		);
+
 		console.error(
 			"VALIDATION OF _EMERGENCY_INIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
+		errorLogger.logError(
+			"VALIDATION OF _EMERGENCY_INIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+
 		ws.close(
 			1008,
 			"Invalid emergency_init payload type. Type check not successful!"

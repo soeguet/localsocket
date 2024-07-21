@@ -23,6 +23,9 @@ export async function fetchProfilePicturePayloadHandler(
 		console.error(
 			"VALIDATION OF _FETCH_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
+		errorLogger.logError(
+			"VALIDATION OF _FETCH_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
 		ws.close(
 			1008,
 			"Invalid fetch profile picture payload type. Type check not successful!"
@@ -35,7 +38,8 @@ export async function fetchProfilePicturePayloadHandler(
 	try {
 		const profilePicture = await fetchProfilePicture(payload.clientDbId);
 		if (profilePicture === undefined || profilePicture === null) {
-			throw new Error("No profile picture found");
+			errorLogger.logError(new Error("No profile picture found"));
+			return;
 		}
 
 		const fetchProfilePicturePayload = {

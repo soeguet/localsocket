@@ -1,4 +1,5 @@
 import prisma from "../db/db";
+import { errorLogger } from "../logger/errorLogger";
 import {
 	type AuthenticationPayload,
 	type ClientUpdatePayload,
@@ -13,21 +14,18 @@ import {
 	type BannerObject,
 	type ErrorLog,
 } from "../types/payloadTypes";
-import { validateErrorLogPayload } from "./typeHandler";
 
 export function checkForDatabaseErrors(message: string) {
 	// check for null values
 	if (prisma === undefined || prisma === null) {
-		console.error("Database not found");
-		throw new Error("Database not found");
+		errorLogger.logError(new Error("Database not found"));
 	}
 	if (
 		typeof message !== "string" ||
 		message === "" ||
 		message === undefined
 	) {
-		console.error("Invalid message type");
-		throw new Error("Invalid message type");
+		errorLogger.logError(new Error("Invalid message type"));
 	}
 	return message;
 }
@@ -149,7 +147,7 @@ export async function persistEmergencyMessage(
 			},
 		});
 	} catch (error) {
-		console.error("Error persisting emergency message", error);
+		errorLogger.logError(error);
 	}
 }
 
@@ -165,7 +163,7 @@ export async function retrieveLastEmergencyMessage(messageDbId: string) {
 			},
 		});
 	} catch (error) {
-		console.error("Error retrieving last emergency message", error);
+		errorLogger.logError(error);
 		return;
 	}
 }
@@ -183,7 +181,7 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
 			},
 		});
 	} catch (error) {
-		console.error("Error registering user in database", error);
+		errorLogger.logError(error);
 	}
 }
 

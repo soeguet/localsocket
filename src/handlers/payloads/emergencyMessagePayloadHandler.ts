@@ -8,6 +8,7 @@ import {
 	retrieveLastEmergencyMessage,
 } from "../databaseHandler";
 import { validateEmergencyMessagePayload } from "../typeHandler";
+import { errorLogger } from "../../logger/errorLogger";
 
 export async function emergencyMessagePayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -26,6 +27,9 @@ export async function emergencyMessagePayloadHandler(
 		console.error(
 			"VALIDATION OF _EMERGENCY_MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
+		errorLogger.logError(
+			"VALIDATION OF _EMERGENCY_MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
 		ws.close(
 			1008,
 			"Invalid emergency payload type. Type check not successful!"
@@ -38,7 +42,7 @@ export async function emergencyMessagePayloadHandler(
 	try {
 		await persistEmergencyMessage(payload);
 	} catch (error) {
-		console.error("Error persisting emergency message", error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -48,12 +52,13 @@ export async function emergencyMessagePayloadHandler(
 			payload.messageDbId
 		);
 	} catch (error) {
-		console.error("Error retrieving last emergency message", error);
+		errorLogger.logError(error);
 		return;
 	}
 
 	if (lastEmergencyMessage === undefined || lastEmergencyMessage === null) {
 		console.error("lastEmergencyMessage is undefined or null");
+		errorLogger.logError("lastEmergencyMessage is undefined or null");
 		return;
 	}
 

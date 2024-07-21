@@ -2,6 +2,7 @@ import {
 	processErrorLog,
 	processIncomingMessage,
 } from "./handlers/incomingMessageHandler";
+import { errorLogger } from "./logger/errorLogger";
 
 console.log("Hello via Bun!");
 
@@ -28,7 +29,7 @@ const server = Bun.serve<WebSocket>({
 				await processErrorLog(req);
 				return new Response("Log received", { status: 200 });
 			} catch (error) {
-				console.error("Error parsing log:", error);
+				errorLogger.logError(error);
 				return new Response("Error parsing log", { status: 500 });
 			}
 		}
@@ -54,7 +55,7 @@ const server = Bun.serve<WebSocket>({
 			if (typeof message === "string") {
 				await processIncomingMessage(ws, server, message);
 			} else {
-				console.error("Invalid message type");
+				errorLogger.logError(new Error("Invalid message type"));
 			}
 		},
 	},
