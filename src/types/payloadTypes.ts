@@ -1,3 +1,5 @@
+import type { w } from "vitest/dist/reporters-yx5ZTtEV.js";
+
 export enum PayloadSubType {
 	auth = 0,
 	message = 1,
@@ -193,4 +195,13 @@ export type EditEntity = {
 	payloadType: PayloadSubType.reaction;
 	messageDbId: string;
 	messageContext: string;
+};
+
+export type ErrorLog = {
+	title: string;
+	message: string;
+	stack: string;
+	time: string;
+	clientDbId: string;
+	clientUsername: string;
 };

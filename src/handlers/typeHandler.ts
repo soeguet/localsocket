@@ -33,6 +33,22 @@ const bannerPayloadValidator = ajvValidator.getSchema("bannerPayloadValidator");
 const bannerListPayloadValidator = ajvValidator.getSchema(
 	"bannerListPayloadValidator"
 );
+const errorLogValidator = ajvValidator.getSchema("errorLogValidator");
+
+export function validateErrorLogPayload(
+	errorLogPayload: object | null | unknown
+): boolean | Promise<unknown> {
+	if (errorLogValidator === undefined) {
+		throw new Error("Validator not found");
+	}
+
+	try {
+		return errorLogValidator(errorLogPayload);
+	} catch (error) {
+		console.error("Error validating error log payload", error);
+		return false;
+	}
+}
 
 export function validateBannerPayload(
 	bannerPayload: object | null | unknown

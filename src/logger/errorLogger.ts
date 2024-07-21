@@ -1,0 +1,46 @@
+interface HttpLogger {
+	logError(error: Error): void;
+}
+
+class ErrorLogger implements HttpLogger {
+	async logError(error: unknown) {
+		if (!(error instanceof Error)) {
+			console.error("Error is not an instance of Error", error);
+			return;
+		}
+
+		const time = new Date().toISOString();
+		const clientDbId = "Socket";
+		const clientUsername = "Socket";
+
+		const errorPayload = {
+			title: error.name,
+			message: error.message,
+			stack: error.stack,
+			time: time,
+			clientDbId: clientDbId,
+			clientUsername: clientUsername,
+		};
+
+		try {
+			const response = await fetch("http://localhost:5588/v1/log/error", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(errorPayload),
+			});
+
+			if (!response.ok) {
+				console.error("Failed to log error", response.statusText);
+				console.error("Error message: ", error);
+			}
+		} catch (loggingError) {
+			console.error("Error sending log request", loggingError);
+		}
+	}
+}
+
+const errorLogger = new ErrorLogger();
+
+export { errorLogger };

@@ -5,6 +5,7 @@ import {
 } from "../../types/payloadTypes";
 import { fetchProfilePicture } from "../databaseHandler";
 import { validateFetchProfilePicturePayload } from "../typeHandler";
+import { errorLogger } from "../../logger/errorLogger";
 
 export async function fetchProfilePicturePayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -44,29 +45,6 @@ export async function fetchProfilePicturePayloadHandler(
 
 		ws.send(JSON.stringify(fetchProfilePicturePayload));
 	} catch (error) {
-		console.error("Error fetching profile picture", error);
-
-		const errorPayload = {
-			message: error.message,
-			stack: error.stack,
-		};
-
-		try {
-			const response = await fetch("http://localhost:5588/v1/log/error", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(errorPayload),
-			});
-
-			if (response.ok) {
-				console.log("Error logged successfully");
-			} else {
-				console.error("Failed to log error", response.statusText);
-			}
-		} catch (loggingError) {
-			console.error("Error sending log request", loggingError);
-		}
+		errorLogger.logError(error);
 	}
 }

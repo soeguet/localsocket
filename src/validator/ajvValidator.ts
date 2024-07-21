@@ -23,6 +23,30 @@ ajvValidator.addSchema(
 	{
 		type: "object",
 		properties: {
+			title: { type: "string", minLength: 1 },
+			message: { type: "string", minLength: 1 },
+			stack: { type: "string", minLength: 1 },
+			time: { type: "string", minLength: 1 },
+			clientDbId: { type: "string", minLength: 1 },
+			clientUsername: { type: "string", minLength: 1 },
+		},
+		required: [
+			"title",
+			"message",
+			"stack",
+			"time",
+			"clientDbId",
+			"clientUsername",
+		],
+		additionalProperties: false,
+	},
+	"errorLogValidator"
+);
+
+ajvValidator.addSchema(
+	{
+		type: "object",
+		properties: {
 			payloadType: { type: "number" },
 			banner: {
 				type: "object",

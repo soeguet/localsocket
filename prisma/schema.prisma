@@ -13,6 +13,16 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+model ErrorLog {
+    errorDbId      Int    @id @default(autoincrement())
+    title          String
+    message        String
+    stack          String
+    time           String
+    clientDbId     String
+    clientUsername String
+}
+
 model Banners {
     id       String  @id
     title    String

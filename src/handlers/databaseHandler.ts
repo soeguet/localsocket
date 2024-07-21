@@ -11,7 +11,9 @@ import {
 	type EmergencyMessagePayload,
 	type ProfilePictureObject,
 	type BannerObject,
+	type ErrorLog,
 } from "../types/payloadTypes";
+import { validateErrorLogPayload } from "./typeHandler";
 
 export function checkForDatabaseErrors(message: string) {
 	// check for null values
@@ -28,6 +30,19 @@ export function checkForDatabaseErrors(message: string) {
 		throw new Error("Invalid message type");
 	}
 	return message;
+}
+
+export async function persistErrorLogInDatabase(errorLog: ErrorLog) {
+	await prisma.errorLog.create({
+		data: {
+			message: errorLog.message,
+			title: errorLog.title,
+			stack: errorLog.stack,
+			time: errorLog.time,
+			clientDbId: errorLog.clientDbId,
+			clientUsername: errorLog.clientUsername,
+		},
+	});
 }
 
 export async function persistProfilePicture(payload: ProfilePictureObject) {

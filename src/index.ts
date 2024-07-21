@@ -1,4 +1,7 @@
-import { processIncomingMessage } from "./handlers/incomingMessageHandler";
+import {
+	processErrorLog,
+	processIncomingMessage,
+} from "./handlers/incomingMessageHandler";
 
 console.log("Hello via Bun!");
 
@@ -22,10 +25,7 @@ const server = Bun.serve<WebSocket>({
 
 		if (req.method === "POST" && url.pathname === "/v1/log/error") {
 			try {
-				const body = await req.json();
-				console.log(body);
-
-				// Handle the logging as needed
+				await processErrorLog(req);
 				return new Response("Log received", { status: 200 });
 			} catch (error) {
 				console.error("Error parsing log:", error);
