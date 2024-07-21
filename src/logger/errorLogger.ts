@@ -39,7 +39,7 @@ class ErrorLogger implements HttpLogger {
 				console.error("Error message: ", error);
 			}
 		} catch (loggingError) {
-			errorLogger.logError(loggingError);
+			console.error("Error logging error:", loggingError);
 		}
 	}
 }

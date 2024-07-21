@@ -6,45 +6,79 @@ import { errorLogger } from "./logger/errorLogger";
 
 console.log("Hello via Bun!");
 
-const headers = {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-	"Access-Control-Allow-Headers":
-		"Origin, X-Requested-With, Content-Type, Accept",
+const allowedOrigins = new Set([
+	"http://localhost",
+	"http://127.0.0.1",
+	"wails://wails.localhost:34115",
+	"null", // Allow null origin for local file URLs and other special cases
+]);
+
+const isInternalIp = (origin: string) => {
+	const internalIpPattern = /^http:\/\/(10\.|172\.16\.|192\.168\.)/;
+	return internalIpPattern.test(origin);
+};
+
+const getCorsHeaders = (origin: string) => {
+	const allowOrigin =
+		allowedOrigins.has(origin) || isInternalIp(origin) ? origin : "*";
+	return {
+		"Access-Control-Allow-Origin": allowOrigin,
+		"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+		"Access-Control-Allow-Headers": "Content-Type",
+	};
 };
 
 const server = Bun.serve<WebSocket>({
 	fetch: async (req, server) => {
 		console.log("Request received", req.method, req.url);
-		const url = new URL(req.url);
-		// preflight request for CORS
+		const origin = req.headers.get("Origin") || "null"; // Default to "null" if the Origin header is missing
+		console.log("Request Origin:", origin); // Log the request origin for debugging
+		const corsHeaders = getCorsHeaders(origin);
+
 		if (req.method === "OPTIONS") {
+			console.log("Handling OPTIONS request");
 			return new Response(null, {
-				headers,
+				status: 204,
+				headers: corsHeaders,
 			});
 		}
 
-		if (req.method === "POST" && url.pathname === "/v1/log/error") {
+		if (req.method === "POST" && req.url.endsWith("/v1/log/error")) {
 			try {
 				await processErrorLog(req);
-				return new Response("Log received", { status: 200 });
+				return new Response("Log received", {
+					status: 200,
+					headers: corsHeaders,
+				});
 			} catch (error) {
 				errorLogger.logError(error);
-				return new Response("Error parsing log", { status: 500 });
+				return new Response("Error parsing log", {
+					status: 500,
+					headers: corsHeaders,
+				});
 			}
 		}
 
+		const url = new URL(req.url);
 		// handle websocket upgrade
-		if (url.pathname === "/chat") {
+		if (
+			url.pathname === "/chat" &&
+			req.headers.get("Upgrade") === "websocket"
+		) {
+			console.log("Upgrading to WebSocket");
 			const upgraded = server.upgrade(req);
 			if (!upgraded) {
-				return new Response("Upgrade failed", { status: 400 });
+				return new Response("Upgrade failed", {
+					status: 400,
+					headers: corsHeaders,
+				});
 			}
 		}
 
 		// if nothing matches -> 404
 		return new Response("who are you and what do you want?", {
 			status: 404,
+			headers: corsHeaders,
 		});
 	},
 	websocket: {
