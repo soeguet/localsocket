@@ -30,13 +30,10 @@ const getCorsHeaders = (origin: string) => {
 
 const server = Bun.serve<WebSocket>({
 	fetch: async (req, server) => {
-		console.log("Request received", req.method, req.url);
 		const origin = req.headers.get("Origin") || "null"; // Default to "null" if the Origin header is missing
-		console.log("Request Origin:", origin); // Log the request origin for debugging
 		const corsHeaders = getCorsHeaders(origin);
 
 		if (req.method === "OPTIONS") {
-			console.log("Handling OPTIONS request");
 			return new Response(null, {
 				status: 204,
 				headers: corsHeaders,
@@ -65,7 +62,6 @@ const server = Bun.serve<WebSocket>({
 			url.pathname === "/chat" &&
 			req.headers.get("Upgrade") === "websocket"
 		) {
-			console.log("Upgrading to WebSocket");
 			const upgraded = server.upgrade(req);
 			if (!upgraded) {
 				return new Response("Upgrade failed", {
