@@ -1,6 +1,13 @@
 import type { Server, ServerWebSocket } from "bun";
-import { PayloadSubType, type SimplePayload } from "../types/payloadTypes";
-import { checkForDatabaseErrors } from "./databaseHandler";
+import {
+	PayloadSubType,
+	type ErrorLog,
+	type SimplePayload,
+} from "../types/payloadTypes";
+import {
+	checkForDatabaseErrors,
+	persistErrorLogInDatabase,
+} from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
 import { deletePayloadHandler } from "./payloads/deletePayloadHandler";
@@ -19,24 +26,35 @@ import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
 import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
 import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
 import { fetchAllProfilePictureHashesPayloadHandler } from "./payloads/fetchAllProfilePictureHashesPayloadHandler";
+import { validateErrorLogPayload } from "./typeHandler";
+import { errorLogger } from "../logger/errorLogger";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
+}
+
+export async function processErrorLog(errorLog: Request) {
+	const errorLogObject = await errorLog.json();
+
+	const validatedErrorLog = validateErrorLogPayload(errorLogObject);
+	if (validatedErrorLog === false) {
+		errorLogger.logError(new Error("Error validating error log payload"));
+	}
+
+	const payload = errorLogObject as ErrorLog;
+
+	await persistErrorLogInDatabase(payload);
 }
 
 function parseInitialPayload(message: string, ws: ServerWebSocket<WebSocket>) {
 	try {
 		return JSON.parse(message);
 	} catch (error) {
-		console.error(
-			"Error parsing message from client. Please check the message and try again. Probably not a JSON object.",
-			error
-		);
+		errorLogger.logError(error);
 		ws.send(
 			"Error parsing message from client. Please check the message and try again. Probably not a JSON object."
 		);
 		ws.close(1008, "Error parsing message from client.");
-		throw new Error("Error parsing message from client.");
 	}
 }
 
@@ -234,6 +252,9 @@ export async function processIncomingMessage(
 			);
 			console.error("switch messageType default");
 			console.error("messageAsString", messageAsString);
+			errorLogger.logError(
+				"Invalid message payload type. Type check not successful! switch case fallthrough!"
+			);
 			ws.close(
 				1008,
 				"Invalid message payload type. Type check not successful!"

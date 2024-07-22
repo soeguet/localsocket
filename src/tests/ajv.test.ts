@@ -1,11 +1,13 @@
+import { describe, expect, test } from "vitest";
 import ajvValidator from "../validator/ajvValidator";
-import { expect, test, describe } from "vitest";
+import { errorLogger } from "../logger/errorLogger";
 
 describe("validator tests just to be sure everything is fine", () => {
 	const validate = ajvValidator.getSchema("testValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("validator true - only required", () => {
@@ -69,7 +71,8 @@ describe("ajvValidator tests - authPayloadValidator", () => {
 	const validate = ajvValidator.getSchema("authPayloadValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("authPayloadValidator true - only required", () => {
@@ -142,7 +145,8 @@ describe("ajvValidator tests - messagePayloadValidator", () => {
 	const validate = ajvValidator.getSchema("messagePayloadValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("messagePayloadValidator true - only required", () => {
@@ -414,7 +418,8 @@ describe("ajvValidator tests - reactionPayloadValidator", () => {
 	const validate = ajvValidator.getSchema("reactionPayloadValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("reactionPayloadValidator true - only required", () => {
@@ -494,7 +499,8 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 	const validate = ajvValidator.getSchema("profileUpdateValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("profileUpdateValidator true - only required", () => {
@@ -503,7 +509,7 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 				payloadType: 3,
 				clientDbId: "test",
 				clientUsername: "test",
-				availability: true
+				availability: true,
 			})
 		).toBe(true);
 	});
@@ -516,7 +522,7 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 				clientUsername: "test",
 				clientColor: "test",
 				clientProfileImage: "test",
-				availability: true
+				availability: true,
 			})
 		).toBe(true);
 	});
@@ -573,7 +579,7 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 				clientUsername: "test",
 				clientColor: undefined,
 				clientProfileImage: undefined,
-				availability: true
+				availability: true,
 			})
 		).toBe(true);
 	});

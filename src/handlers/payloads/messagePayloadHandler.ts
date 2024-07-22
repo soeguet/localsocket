@@ -5,6 +5,7 @@ import {
 	retrieveLastMessageFromDatabase,
 } from "../databaseHandler";
 import { validateMessagePayload } from "../typeHandler";
+import { errorLogger } from "../../logger/errorLogger";
 
 export async function messagePayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -20,6 +21,9 @@ export async function messagePayloadHandler(
 			"VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		console.error("payloadFromClientAsObject", payloadFromClientAsObject);
+		errorLogger.logError(
+			"VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
 		ws.send("Invalid message payload type. Type check not successful!");
 		ws.send(JSON.stringify(payloadFromClientAsObject));
 		ws.close(
@@ -35,7 +39,7 @@ export async function messagePayloadHandler(
 			payloadFromClientAsObject as MessagePayload
 		);
 	} catch (error) {
-		console.error("Error persisting message to database", error);
+		errorLogger.logError(error);
 		return;
 	}
 

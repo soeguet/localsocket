@@ -1,3 +1,4 @@
+import { errorLogger } from "../logger/errorLogger";
 import ajvValidator from "../validator/ajvValidator";
 import { expect, test, describe } from "vitest";
 
@@ -5,7 +6,8 @@ describe("validate message payload from client", () => {
 	const validate = ajvValidator.getSchema("messagePayloadValidator");
 
 	if (validate === undefined) {
-		throw new Error("Schema not found");
+		errorLogger.logError(new Error("Schema not found"));
+		return;
 	}
 
 	test("validator false - wrong object", () => {

@@ -1,3 +1,4 @@
+import { errorLogger } from "../logger/errorLogger";
 import ajvValidator from "../validator/ajvValidator";
 
 const messagePayloadvalidator = ajvValidator.getSchema(
@@ -33,18 +34,36 @@ const bannerPayloadValidator = ajvValidator.getSchema("bannerPayloadValidator");
 const bannerListPayloadValidator = ajvValidator.getSchema(
 	"bannerListPayloadValidator"
 );
+const errorLogValidator = ajvValidator.getSchema("errorLogValidator");
+
+export function validateErrorLogPayload(
+	errorLogPayload: object | null | unknown
+): boolean | Promise<unknown> {
+	if (errorLogValidator === undefined) {
+		errorLogger.logError(new Error("errorLogValidator not found"));
+		return false;
+	}
+
+	try {
+		return errorLogValidator(errorLogPayload);
+	} catch (error) {
+		errorLogger.logError(error);
+		return false;
+	}
+}
 
 export function validateBannerPayload(
 	bannerPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (bannerPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("bannerPayloadValidator not found"));
+		return false;
 	}
 
 	try {
 		return bannerPayloadValidator(bannerPayload);
 	} catch (error) {
-		console.error("Error validating banner payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -53,13 +72,14 @@ export function validateBannerListPayload(
 	bannerListPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (bannerListPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("bannerListPayloadValidator not found"));
+		return false;
 	}
 
 	try {
 		return bannerListPayloadValidator(bannerListPayload);
 	} catch (error) {
-		console.error("Error validating banner list payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -68,13 +88,14 @@ export function validateNewProfilePicturePayload(
 	newProfilePicturePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (newProfilePictureValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return newProfilePictureValidator(newProfilePicturePayload);
 	} catch (error) {
-		console.error("Error validating new profile picture payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -83,13 +104,14 @@ export function validateFetchProfilePicturePayload(
 	fetchProfilePicturePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchProfilePictureValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return fetchProfilePictureValidator(fetchProfilePicturePayload);
 	} catch (error) {
-		console.error("Error validating fetch profile picture payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -98,7 +120,8 @@ export function validateFetchCurrentClientProfilePictureHashPayload(
 	fetchCurrentClientProfilePictureHashPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchCurrentClientProfilePictureHashValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
@@ -106,10 +129,7 @@ export function validateFetchCurrentClientProfilePictureHashPayload(
 			fetchCurrentClientProfilePictureHashPayload
 		);
 	} catch (error) {
-		console.error(
-			"Error validating fetch current client profile picture hash payload",
-			error
-		);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -118,16 +138,14 @@ export function validateFetchAllProfilePicturesPayload(
 	fetchAllProfilePicturesPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (fetchAllProfilePicturesValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return fetchAllProfilePicturesValidator(fetchAllProfilePicturesPayload);
 	} catch (error) {
-		console.error(
-			"Error validating fetch all profile pictures payload",
-			error
-		);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -142,13 +160,14 @@ export function validateMessagePayload(
 	messagePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (messagePayloadvalidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return messagePayloadvalidator(messagePayload);
 	} catch (error) {
-		console.error("Error validating message payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -157,13 +176,14 @@ export function validateEmergencyInitPayload(
 	emergencyInitPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (emergencyInitPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return emergencyInitPayloadValidator(emergencyInitPayload);
 	} catch (error) {
-		console.error("Error validating emergency init payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -172,13 +192,14 @@ export function validateEmergencyMessagePayload(
 	emergencyPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (emergencyMessagePayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return emergencyMessagePayloadValidator(emergencyPayload);
 	} catch (error) {
-		console.error("Error validating emergency payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -193,13 +214,14 @@ export function validateAuthPayload(
 	authenticationPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (authPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return authPayloadValidator(authenticationPayload);
 	} catch (error) {
-		console.error("Error validating authentication payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -214,13 +236,14 @@ export function validateReactionPayload(
 	reactionPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (reactionPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return reactionPayloadValidator(reactionPayload);
 	} catch (error) {
-		console.error("Error validating reaction payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -235,13 +258,14 @@ export function validateDeletePayload(
 	deletePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (deletePayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return deletePayloadValidator(deletePayload);
 	} catch (error) {
-		console.error("Error validating delete payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -256,13 +280,14 @@ export function validateclientUpdatePayload(
 	clientProfileUpdatePayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (profileUpdateValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return profileUpdateValidator(clientProfileUpdatePayload);
 	} catch (error) {
-		console.error("Error validating client profile update payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
@@ -277,13 +302,14 @@ export function validateEditPayload(
 	editPayload: object | null | unknown
 ): boolean | Promise<unknown> {
 	if (editPayloadValidator === undefined) {
-		throw new Error("Validator not found");
+		errorLogger.logError(new Error("Validator not found"));
+		return false;
 	}
 
 	try {
 		return editPayloadValidator(editPayload);
 	} catch (error) {
-		console.error("Error validating edit payload", error);
+		errorLogger.logError(error);
 		return false;
 	}
 }
