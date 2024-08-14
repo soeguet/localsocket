@@ -101,8 +101,8 @@ ajvValidator.addSchema(
 		properties: {
 			payloadType: { type: "number" },
 			clientDbId: { type: "string", minLength: 1 },
-			imageHash: { type: "string", minLength: 1 },
-			data: { type: "string", minLength: 1 },
+			imageHash: { type: "string"},
+			data: { type: "string"},
 		},
 		required: ["payloadType", "clientDbId", "imageHash", "data"],
 		additionalProperties: false,
