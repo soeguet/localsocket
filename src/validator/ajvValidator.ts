@@ -225,6 +225,16 @@ ajvValidator.addSchema(
 	"emergencyInitPayloadValidator"
 );
 
+//export type VersionEntity = {
+//	major: number;
+//	minor: number;
+//	patch: number;
+//}
+//
+//export type AuthenticationPayload = {
+//	payloadType: PayloadSubType.auth;
+//	version: VersionEntity;
+//} & Pick<ClientEntity, "clientDbId" | "clientUsername">;
 ajvValidator.addSchema(
 	{
 		type: "object",
@@ -239,6 +249,25 @@ ajvValidator.addSchema(
 			clientDbId: {
 				type: "string",
 				minLength: 1,
+			},
+			version: {
+				type: "object",
+				properties: {
+					major: {
+						type: "number",
+						minLength: 1,
+					},
+					minor: {
+						type: "number",
+						minLength: 1,
+					},
+					patch: {
+						type: "number",
+						minLength: 1,
+					},
+				},
+				required: ["major", "minor", "patch"],
+				additionalProperties: false,
 			},
 		},
 		required: ["payloadType", "clientUsername", "clientDbId"],

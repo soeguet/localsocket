@@ -186,3 +186,4 @@ prisma/migrations
 .supermaven
 .nvim/.bookmarks
 .nvim/.bookmarks
+Session.vim

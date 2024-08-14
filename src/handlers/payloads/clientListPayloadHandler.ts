@@ -1,11 +1,12 @@
 import type { Server } from "bun";
 import {
-	type ClientListPayload,
 	PayloadSubType,
 	type ClientEntity,
+	type ClientListPayloadEnhanced,
 } from "../../types/payloadTypes";
 import { retrieveAllRegisteredUsersFromDatabase } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { getVersionState } from "../../state/versionState";
 
 export async function clientListPayloadHandler(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
@@ -14,11 +15,16 @@ export async function clientListPayloadHandler(server: Server) {
 		return;
 	}
 
-	const clientListPayload: ClientListPayload = {
+	//const clientListPayload: ClientListPayload = {
+	//	payloadType: PayloadSubType.clientList,
+	//	// TODO validate this
+	//	clients: allUsers as ClientEntity[],
+	//};
+
+	const clientListPayload: ClientListPayloadEnhanced = {
 		payloadType: PayloadSubType.clientList,
-		// TODO validate this
+		version: getVersionState(),
 		clients: allUsers as ClientEntity[],
 	};
-
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }

@@ -1,4 +1,5 @@
 import type { w } from "vitest/dist/reporters-yx5ZTtEV.js";
+import type { VersionStateType } from "../state/versionState";
 
 export enum PayloadSubType {
 	auth = 0,
@@ -117,8 +118,15 @@ export type SimplePayload = {
 	payloadType: PayloadSubType;
 };
 
+export type VersionEntity = {
+	major: number;
+	minor: number;
+	patch: number;
+}
+
 export type AuthenticationPayload = {
 	payloadType: PayloadSubType.auth;
+	version: VersionEntity;
 } & Pick<ClientEntity, "clientDbId" | "clientUsername">;
 
 export type ImageEntity = {
@@ -134,6 +142,12 @@ export type ClientUpdatePayload = {
 export type ClientListPayload = {
 	payloadType: PayloadSubType.clientList;
 	clients: ClientEntity[];
+};
+
+export type ClientListPayloadEnhanced = {
+	payloadType: PayloadSubType.clientList;
+	clients: ClientEntity[];
+	version: VersionStateType;
 };
 
 export type ClientEntity = {
