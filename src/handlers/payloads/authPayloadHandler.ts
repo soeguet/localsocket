@@ -1,9 +1,9 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
 	type AuthenticationPayload,
-	type ClientListPayload,
 	PayloadSubType,
 	type ClientEntity,
+	type ClientListPayloadEnhanced,
 } from "../../types/payloadTypes";
 import {
 	registerUserInDatabse,
@@ -11,6 +11,7 @@ import {
 } from "../databaseHandler";
 import { validateAuthPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { getVersionState, setVersionState } from "../../state/versionState.ts";
 
 export async function authPayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -26,7 +27,7 @@ export async function authPayloadHandler(
 		console.error(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -36,12 +37,19 @@ export async function authPayloadHandler(
 		return;
 	}
 
+	const payload = payloadFromClientAsObject as AuthenticationPayload;
+	const versionDetails = payload.version;
+
+	setVersionState({
+		major: versionDetails.major,
+		minor: versionDetails.minor,
+		patch: versionDetails.patch,
+	});
+
 	try {
-		await registerUserInDatabse(
-			payloadFromClientAsObject as AuthenticationPayload
-		);
+		await registerUserInDatabse(payload);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
@@ -49,11 +57,12 @@ export async function authPayloadHandler(
 
 	if (typeof allUsers === "undefined" || allUsers === null) {
 		console.error("No users found");
-		errorLogger.logError("No users found");
+		await errorLogger.logError("No users found");
 	}
 
-	const clientListPayload: ClientListPayload = {
+	const clientListPayload: ClientListPayloadEnhanced = {
 		payloadType: PayloadSubType.clientList,
+		version: getVersionState(),
 		// TODO validate this
 		clients: allUsers as ClientEntity[],
 	};

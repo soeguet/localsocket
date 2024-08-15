@@ -1,4 +1,3 @@
-import type { w } from "vitest/dist/reporters-yx5ZTtEV.js";
 import type { VersionStateType } from "../state/versionState";
 
 export enum PayloadSubType {
@@ -122,7 +121,7 @@ export type VersionEntity = {
 	major: number;
 	minor: number;
 	patch: number;
-}
+};
 
 export type AuthenticationPayload = {
 	payloadType: PayloadSubType.auth;

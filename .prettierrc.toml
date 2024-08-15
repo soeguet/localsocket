@@ -1,0 +1,11 @@
+# .prettierrc.toml
+trailingComma = "es5"
+useTabs = true
+tabWidth = 4
+semi = true
+singleQuote = false
+bracketSpacing = true
+bracketSameLine = false
+arrowParens = "always"
+singleAttributePerLine = true
+endOfLine = "auto"
