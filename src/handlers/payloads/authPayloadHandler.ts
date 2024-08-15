@@ -37,7 +37,25 @@ export async function authPayloadHandler(
 		return;
 	}
 
+
 	const payload = payloadFromClientAsObject as AuthenticationPayload;
+	const allZeros = payload.version === undefined || payload.version.major === 0 && payload.version.minor === 0 && payload.version.patch === 0
+
+	if (allZeros) {
+		ws.send("Invalid authentication payload type. Type check not successful!");
+		console.error(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
+		);
+		await errorLogger.logError(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
+		);
+		ws.close(
+			1008,
+			"Invalid authentication payload type. Version is zero. Please update the client."
+		);
+		return;
+	}
+
 	const versionDetails = payload.version;
 
 	setVersionState({

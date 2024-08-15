@@ -187,3 +187,4 @@ prisma/migrations
 .nvim/.bookmarks
 .nvim/.bookmarks
 Session.vim
+nohup.out
