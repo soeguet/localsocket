@@ -65,10 +65,6 @@ export type ProfilePictureObject = {
 	imageHash: Hash;
 	data: ProfilePicture;
 };
-export type ClientUpdatePayloadV2 = {
-	payloadType: PayloadSubType.profileUpdateV2;
-} & ClientEntity;
-
 export type NewProfilePicturePayload = ProfilePictureObject & {
 	payloadType: PayloadSubType.newProfilePicture;
 };

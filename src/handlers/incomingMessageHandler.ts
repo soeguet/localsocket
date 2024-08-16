@@ -38,7 +38,9 @@ export async function processErrorLog(errorLog: Request) {
 
 	const validatedErrorLog = validateErrorLogPayload(errorLogObject);
 	if (validatedErrorLog === false) {
-		errorLogger.logError(new Error("Error validating error log payload"));
+		await errorLogger.logError(
+			new Error("Error validating error log payload")
+		);
 	}
 
 	const payload = errorLogObject as ErrorLog;
@@ -46,11 +48,14 @@ export async function processErrorLog(errorLog: Request) {
 	await persistErrorLogInDatabase(payload);
 }
 
-function parseInitialPayload(message: string, ws: ServerWebSocket<WebSocket>) {
+async function parseInitialPayload(
+	message: string,
+	ws: ServerWebSocket<WebSocket>
+) {
 	try {
 		return JSON.parse(message);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		ws.send(
 			"Error parsing message from client. Please check the message and try again. Probably not a JSON object."
 		);
@@ -63,11 +68,11 @@ export async function processIncomingMessage(
 	server: Server,
 	message: string
 ) {
-	const messageAsString = checkForDatabaseErrors(message);
-	const payloadFromClientAsUnknownObject = parseInitialPayload(
+	const messageAsString = await checkForDatabaseErrors(message);
+	const payloadFromClientAsUnknownObject = (await parseInitialPayload(
 		message,
 		ws
-	) as unknown;
+	)) as unknown;
 
 	if (!validateSimplePayload(payloadFromClientAsUnknownObject)) {
 		return;
@@ -252,7 +257,7 @@ export async function processIncomingMessage(
 			);
 			console.error("switch messageType default");
 			console.error("messageAsString", messageAsString);
-			errorLogger.logError(
+			await errorLogger.logError(
 				"Invalid message payload type. Type check not successful! switch case fallthrough!"
 			);
 			ws.close(

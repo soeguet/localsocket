@@ -2,9 +2,9 @@ import type { Server, ServerWebSocket } from "bun";
 import {
 	PayloadSubType,
 	type ClientEntity,
-	type ClientListPayload,
 	type ClientUpdatePayload,
 	type ProfilePictureObject,
+	type ClientListPayloadEnhanced,
 } from "../../types/payloadTypes";
 import {
 	fetchProfilePicture,
@@ -15,6 +15,7 @@ import {
 import { validateclientUpdatePayload } from "../typeHandler";
 import { generateUnixTimestampFnv1aHash } from "../../helper/hashGenerator";
 import { errorLogger } from "../../logger/errorLogger";
+import { getVersionState } from "../../state/versionState.ts";
 
 export async function profileUpdatePayloadHandlerV2(
 	payloadFromClientAsObject: unknown,
@@ -54,9 +55,9 @@ export async function profileUpdatePayloadHandlerV2(
 			};
 			// persist the picture
 			try {
-				persistProfilePicture(profilePictureObject);
+				await persistProfilePicture(profilePictureObject);
 			} catch (error) {
-				errorLogger.logError(error);
+				await errorLogger.logError(error);
 				return;
 			}
 
@@ -70,19 +71,20 @@ export async function profileUpdatePayloadHandlerV2(
 	try {
 		await updateClientProfileInformation(payload);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
-		errorLogger.logError(new Error("No users found"));
+		await errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
-	const clientListPayload: ClientListPayload = {
+	const clientListPayload: ClientListPayloadEnhanced = {
 		payloadType: PayloadSubType.clientList,
 		// TODO validate this
+		version: getVersionState(),
 		clients: allUsers as ClientEntity[],
 	};
 

@@ -25,7 +25,7 @@ export async function modifyBannerPayloadHandler(
 		console.error(
 			"VALIDATION OF MODIFY BANNER PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF MODIFY BANNER PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -50,7 +50,7 @@ async function removeBanner(payload: BannerPayload) {
 	try {
 		await deleteExistingBanner(payload.banner.id);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 }
@@ -59,7 +59,7 @@ async function updateBanner(payload: BannerPayload) {
 	try {
 		await updateExistingBanner(payload.banner);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 }

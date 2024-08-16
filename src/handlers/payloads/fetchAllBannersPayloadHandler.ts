@@ -1,4 +1,4 @@
-import type { Server, ServerWebSocket } from "bun";
+import type { Server } from "bun";
 import { retrieveAllBanners } from "../databaseHandler";
 import {
 	PayloadSubType,
@@ -39,7 +39,7 @@ export async function fetchAllBannersPayloadHandler(server: Server) {
 		});
 	}
 	if (banners === undefined || banners === null) {
-		errorLogger.logError(new Error("No banners found"));
+		await errorLogger.logError(new Error("No banners found"));
 		return;
 	}
 

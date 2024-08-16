@@ -27,7 +27,7 @@ export async function emergencyMessagePayloadHandler(
 		console.error(
 			"VALIDATION OF _EMERGENCY_MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF _EMERGENCY_MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -42,7 +42,7 @@ export async function emergencyMessagePayloadHandler(
 	try {
 		await persistEmergencyMessage(payload);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
@@ -52,13 +52,13 @@ export async function emergencyMessagePayloadHandler(
 			payload.messageDbId
 		);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
 	if (lastEmergencyMessage === undefined || lastEmergencyMessage === null) {
 		console.error("lastEmergencyMessage is undefined or null");
-		errorLogger.logError("lastEmergencyMessage is undefined or null");
+		await errorLogger.logError("lastEmergencyMessage is undefined or null");
 		return;
 	}
 

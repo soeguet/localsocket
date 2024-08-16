@@ -25,7 +25,7 @@ export async function deletePayloadHandler(
 		console.error(
 			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -38,7 +38,7 @@ export async function deletePayloadHandler(
 	try {
 		await deleteMessageStatus(payloadFromClientAsObject as DeleteEntity);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 

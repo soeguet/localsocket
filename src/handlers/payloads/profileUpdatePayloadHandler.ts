@@ -2,8 +2,8 @@ import type { Server, ServerWebSocket } from "bun";
 import {
 	PayloadSubType,
 	type ClientEntity,
-	type ClientListPayload,
 	type ClientUpdatePayload,
+	type ClientListPayloadEnhanced,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllRegisteredUsersFromDatabase,
@@ -11,6 +11,7 @@ import {
 } from "../databaseHandler";
 import { validateclientUpdatePayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { getVersionState } from "../../state/versionState.ts";
 
 export async function profileUpdatePayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -25,7 +26,7 @@ export async function profileUpdatePayloadHandler(
 		console.error(
 			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
@@ -42,21 +43,23 @@ export async function profileUpdatePayloadHandler(
 	try {
 		await updateClientProfileInformation(payload);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
-		errorLogger.logError(new Error("No users found"));
+		await errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
-	const clientListPayload: ClientListPayload = {
+	const clientListPayload: ClientListPayloadEnhanced = {
 		payloadType: PayloadSubType.clientList,
+		version: getVersionState(),
 		// TODO validate this
 		clients: allUsers as ClientEntity[],
 	};
+	console.log("clientListPayload", clientListPayload);
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }

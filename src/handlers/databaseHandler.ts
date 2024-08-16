@@ -15,16 +15,12 @@ import {
 	type ErrorLog,
 } from "../types/payloadTypes";
 
-export function checkForDatabaseErrors(message: string) {
+export async function checkForDatabaseErrors(message: string) {
 	// check for null values
 	if (prisma === undefined || prisma === null) {
 		errorLogger.logError(new Error("Database not found"));
 	}
-	if (
-		typeof message !== "string" ||
-		message === "" ||
-		message === undefined
-	) {
+	if (message === "" || message === undefined) {
 		errorLogger.logError(new Error("Invalid message type"));
 	}
 	return message;
@@ -147,7 +143,7 @@ export async function persistEmergencyMessage(
 			},
 		});
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 	}
 }
 
@@ -163,7 +159,7 @@ export async function retrieveLastEmergencyMessage(messageDbId: string) {
 			},
 		});
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 }
@@ -181,7 +177,7 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
 			},
 		});
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 	}
 }
 
@@ -365,3 +361,4 @@ export async function retrieveAllEmergencyMessages(emergencyChatId: string) {
 		},
 	});
 }
+

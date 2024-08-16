@@ -20,7 +20,5 @@ export function fnv1aHash(str: string): number {
 
 export function generateUnixTimestampFnv1aHash() {
 	const hashAsNumber = fnv1aHash(unixTimestamp());
-	const hashAsString = hashAsNumber.toString(16) as Hash;
-
-	return hashAsString;
+	return hashAsNumber.toString(16) as Hash;
 }

@@ -1,4 +1,4 @@
-import type { Serve, Server, ServerWebSocket } from "bun";
+import type { Server, ServerWebSocket } from "bun";
 import { validateNewProfilePicturePayload } from "../typeHandler";
 import { type NewProfilePicturePayload } from "../../types/payloadTypes";
 import {
@@ -10,13 +10,16 @@ import { errorLogger } from "../../logger/errorLogger";
 const errorMessage =
 	"Invalid new profile picture payload type. Type check not successful!";
 
-function sendErrorResponse(ws: ServerWebSocket<WebSocket>, payload: unknown) {
+async function sendErrorResponse(
+	ws: ServerWebSocket<WebSocket>,
+	payload: unknown
+) {
 	const payloadAsString = JSON.stringify(payload);
 	ws.send(`${errorMessage} ${payloadAsString}`);
 	console.error(
 		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
 	);
-	errorLogger.logError(
+	await errorLogger.logError(
 		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
 	);
 	ws.close(1008, errorMessage);
@@ -28,7 +31,7 @@ export async function newProfilePictureHandler(
 	server: Server
 ) {
 	if (!validateNewProfilePicturePayload(payloadFromClientAsObject)) {
-		sendErrorResponse(ws, payloadFromClientAsObject);
+		await sendErrorResponse(ws, payloadFromClientAsObject);
 		return;
 	}
 
@@ -38,7 +41,7 @@ export async function newProfilePictureHandler(
 		await persistProfilePicture(payload);
 	} catch (error) {
 		console.error("Error persisting profile picture", error);
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 
@@ -49,7 +52,7 @@ export async function newProfilePictureHandler(
 			payload.imageHash
 		);
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 

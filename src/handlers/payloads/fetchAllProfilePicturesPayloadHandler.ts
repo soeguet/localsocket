@@ -1,4 +1,4 @@
-import type { Serve, Server, ServerWebSocket } from "bun";
+import type { ServerWebSocket } from "bun";
 import {
 	type FetchAllProfilePicturesPayload,
 	PayloadSubType,
@@ -23,7 +23,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 		console.error(
 			"VALIDATION OF _FETCH_ALL_PROFILE_PICTURES_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		errorLogger.logError(
+		await errorLogger.logError(
 			"VALIDATION OF _FETCH_ALL_PROFILE_PICTURES_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -36,7 +36,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 	try {
 		const allProfilePictures = await fetchAllProfilePictures();
 		if (allProfilePictures === undefined || allProfilePictures === null) {
-			errorLogger.logError(new Error("No profile pictures found"));
+			await errorLogger.logError(new Error("No profile pictures found"));
 			return;
 		}
 
@@ -47,7 +47,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 
 		ws.send(JSON.stringify(fetchAllProfilePicturesPayload));
 	} catch (error) {
-		errorLogger.logError(error);
+		await errorLogger.logError(error);
 		return;
 	}
 }
