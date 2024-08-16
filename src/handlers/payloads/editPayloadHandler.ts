@@ -23,7 +23,7 @@ export async function editPayloadHandler(
 		console.error(
 			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -36,7 +36,7 @@ export async function editPayloadHandler(
 	try {
 		await editMessageContent(payloadFromClientAsObject as EditEntity);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -54,3 +54,4 @@ export async function editPayloadHandler(
 		JSON.stringify(updatedMessageWithPayloadType)
 	);
 }
+

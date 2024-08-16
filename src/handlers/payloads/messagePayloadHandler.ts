@@ -21,7 +21,7 @@ export async function messagePayloadHandler(
 			"VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		console.error("payloadFromClientAsObject", payloadFromClientAsObject);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _MESSAGE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.send("Invalid message payload type. Type check not successful!");
@@ -39,7 +39,7 @@ export async function messagePayloadHandler(
 			payloadFromClientAsObject as MessagePayload
 		);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -52,3 +52,4 @@ export async function messagePayloadHandler(
 
 	server.publish("the-group-chat", JSON.stringify(finalPayload));
 }
+

@@ -39,7 +39,7 @@ export async function fetchAllBannersPayloadHandler(server: Server) {
 		});
 	}
 	if (banners === undefined || banners === null) {
-		await errorLogger.logError(new Error("No banners found"));
+		errorLogger.logError(new Error("No banners found"));
 		return;
 	}
 
@@ -50,3 +50,4 @@ export async function fetchAllBannersPayloadHandler(server: Server) {
 
 	server.publish("the-group-chat", JSON.stringify(fetchAllBannersPayload));
 }
+

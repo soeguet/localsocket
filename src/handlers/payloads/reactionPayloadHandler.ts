@@ -25,7 +25,7 @@ export async function reactionPayloadHandler(
 		console.error(
 			"VALIDATION OF _REACTION_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _REACTION_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -40,7 +40,7 @@ export async function reactionPayloadHandler(
 	try {
 		await persistReactionToDatabase(payload);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -57,3 +57,4 @@ export async function reactionPayloadHandler(
 		JSON.stringify(updatedMessageWithPayloadType)
 	);
 }
+

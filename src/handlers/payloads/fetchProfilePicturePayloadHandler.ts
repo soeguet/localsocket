@@ -23,7 +23,7 @@ export async function fetchProfilePicturePayloadHandler(
 		console.error(
 			"VALIDATION OF _FETCH_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _FETCH_PROFILE_PICTURE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -38,7 +38,7 @@ export async function fetchProfilePicturePayloadHandler(
 	try {
 		const profilePicture = await fetchProfilePicture(payload.clientDbId);
 		if (profilePicture === undefined || profilePicture === null) {
-			await errorLogger.logError(new Error("No profile picture found"));
+			errorLogger.logError(new Error("No profile picture found"));
 			return;
 		}
 
@@ -49,6 +49,7 @@ export async function fetchProfilePicturePayloadHandler(
 
 		ws.send(JSON.stringify(fetchProfilePicturePayload));
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 	}
 }
+

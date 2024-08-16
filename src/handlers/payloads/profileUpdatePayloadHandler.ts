@@ -26,7 +26,7 @@ export async function profileUpdatePayloadHandler(
 		console.error(
 			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
@@ -43,13 +43,13 @@ export async function profileUpdatePayloadHandler(
 	try {
 		await updateClientProfileInformation(payload);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
-		await errorLogger.logError(new Error("No users found"));
+		errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
@@ -63,3 +63,4 @@ export async function profileUpdatePayloadHandler(
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
+

@@ -48,7 +48,7 @@ const server = Bun.serve<WebSocket>({
 					headers: corsHeaders,
 				});
 			} catch (error) {
-				await errorLogger.logError(error);
+				errorLogger.logError(error);
 				return new Response("Error parsing log", {
 					status: 500,
 					headers: corsHeaders,
@@ -85,7 +85,7 @@ const server = Bun.serve<WebSocket>({
 			if (typeof message === "string") {
 				await processIncomingMessage(ws, server, message);
 			} else {
-				await errorLogger.logError(new Error("Invalid message type"));
+				errorLogger.logError(new Error("Invalid message type"));
 			}
 		},
 	},
@@ -93,3 +93,4 @@ const server = Bun.serve<WebSocket>({
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);
+

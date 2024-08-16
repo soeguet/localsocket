@@ -25,7 +25,7 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 		console.error(
 			"VALIDATION OF _FETCH_CURRENT_CLIENT_PROFILE_PICTURE_HASH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _FETCH_CURRENT_CLIENT_PROFILE_PICTURE_HASH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -41,7 +41,7 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 	try {
 		const profilePicture = await fetchProfilePicture(payload.clientDbId);
 		if (profilePicture === undefined || profilePicture === null) {
-			await errorLogger.logError(new Error("No profile picture found"));
+			errorLogger.logError(new Error("No profile picture found"));
 			return;
 		}
 
@@ -55,7 +55,8 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 
 		ws.send(JSON.stringify(fetchCurrentClientProfilePictureHashPayload));
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 }
+

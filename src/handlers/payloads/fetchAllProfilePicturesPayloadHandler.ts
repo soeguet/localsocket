@@ -23,7 +23,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 		console.error(
 			"VALIDATION OF _FETCH_ALL_PROFILE_PICTURES_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _FETCH_ALL_PROFILE_PICTURES_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -36,7 +36,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 	try {
 		const allProfilePictures = await fetchAllProfilePictures();
 		if (allProfilePictures === undefined || allProfilePictures === null) {
-			await errorLogger.logError(new Error("No profile pictures found"));
+			errorLogger.logError(new Error("No profile pictures found"));
 			return;
 		}
 
@@ -47,7 +47,8 @@ export async function fetchAllProfilePicturesPayloadHandler(
 
 		ws.send(JSON.stringify(fetchAllProfilePicturesPayload));
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 }
+

@@ -143,7 +143,7 @@ export async function persistEmergencyMessage(
 			},
 		});
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 	}
 }
 
@@ -159,7 +159,7 @@ export async function retrieveLastEmergencyMessage(messageDbId: string) {
 			},
 		});
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 }
@@ -177,7 +177,7 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
 			},
 		});
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 	}
 }
 
@@ -361,4 +361,3 @@ export async function retrieveAllEmergencyMessages(emergencyChatId: string) {
 		},
 	});
 }
-

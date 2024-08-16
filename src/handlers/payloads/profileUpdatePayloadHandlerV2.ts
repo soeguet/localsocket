@@ -57,7 +57,7 @@ export async function profileUpdatePayloadHandlerV2(
 			try {
 				await persistProfilePicture(profilePictureObject);
 			} catch (error) {
-				await errorLogger.logError(error);
+				errorLogger.logError(error);
 				return;
 			}
 
@@ -71,13 +71,13 @@ export async function profileUpdatePayloadHandlerV2(
 	try {
 		await updateClientProfileInformation(payload);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
-		await errorLogger.logError(new Error("No users found"));
+		errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
@@ -90,3 +90,4 @@ export async function profileUpdatePayloadHandlerV2(
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
+

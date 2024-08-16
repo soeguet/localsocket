@@ -11,7 +11,7 @@ import { getVersionState } from "../../state/versionState";
 export async function clientListPayloadHandler(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
-		await errorLogger.logError(new Error("No users found"));
+		errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
@@ -30,3 +30,4 @@ export async function clientListPayloadHandler(server: Server) {
 	console.log("clientListPayload", clientListPayload);
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
+

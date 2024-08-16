@@ -19,7 +19,7 @@ async function sendErrorResponse(
 	console.error(
 		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
 	);
-	await errorLogger.logError(
+	errorLogger.logError(
 		`VALIDATION OF NEW_PROFILE_PICTURE PAYLOAD FAILED: ${payloadAsString}`
 	);
 	ws.close(1008, errorMessage);
@@ -41,7 +41,7 @@ export async function newProfilePictureHandler(
 		await persistProfilePicture(payload);
 	} catch (error) {
 		console.error("Error persisting profile picture", error);
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -52,9 +52,10 @@ export async function newProfilePictureHandler(
 			payload.imageHash
 		);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
 	server.publish("the-group-chat", JSON.stringify(payload));
 }
+

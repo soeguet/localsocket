@@ -30,7 +30,7 @@ export async function emergencyInitPayloadHandler(
 		console.error(
 			"VALIDATION OF _EMERGENCY_INIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _EMERGENCY_INIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 
@@ -87,3 +87,4 @@ export async function emergencyInitPayloadHandler(
 		ws.send(JSON.stringify(allExistingEmergencyMessagesWithPayloadType));
 	}
 }
+

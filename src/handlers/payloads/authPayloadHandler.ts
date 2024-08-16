@@ -27,7 +27,7 @@ export async function authPayloadHandler(
 		console.error(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
 		);
 		ws.close(
@@ -37,16 +37,21 @@ export async function authPayloadHandler(
 		return;
 	}
 
-
 	const payload = payloadFromClientAsObject as AuthenticationPayload;
-	const allZeros = payload.version === undefined || payload.version.major === 0 && payload.version.minor === 0 && payload.version.patch === 0
+	const allZeros =
+		payload.version === undefined ||
+		(payload.version.major === 0 &&
+			payload.version.minor === 0 &&
+			payload.version.patch === 0);
 
 	if (allZeros) {
-		ws.send("Invalid authentication payload type. Type check not successful!");
+		ws.send(
+			"Invalid authentication payload type. Type check not successful!"
+		);
 		console.error(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
 		);
-		await errorLogger.logError(
+		errorLogger.logError(
 			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
 		);
 		ws.close(
@@ -67,7 +72,7 @@ export async function authPayloadHandler(
 	try {
 		await registerUserInDatabse(payload);
 	} catch (error) {
-		await errorLogger.logError(error);
+		errorLogger.logError(error);
 		return;
 	}
 
@@ -75,7 +80,7 @@ export async function authPayloadHandler(
 
 	if (typeof allUsers === "undefined" || allUsers === null) {
 		console.error("No users found");
-		await errorLogger.logError("No users found");
+		errorLogger.logError("No users found");
 	}
 
 	const clientListPayload: ClientListPayloadEnhanced = {
