@@ -112,7 +112,7 @@ export async function persistProfilePictureHashForClient(
 			clientDbId: clientDbId,
 		},
 		data: {
-			clientProfileImage: imageHash,
+			clientProfilePictureHash: imageHash,
 		},
 	});
 }
@@ -184,6 +184,7 @@ export async function registerUserInDatabse(payload: AuthenticationPayload) {
 export async function retrieveAllRegisteredUsersFromDatabase() {
 	return prisma.client.findMany();
 }
+
 export async function editMessageContent(payload: EditEntity) {
 	await prisma.messagePayload.update({
 		where: {
@@ -254,22 +255,27 @@ export async function sendLast100MessagesToNewClient() {
 export async function updateClientProfileInformation(
 	payload: ClientUpdatePayload
 ) {
-	await prisma.client.upsert({
-		where: { clientDbId: payload.clientDbId },
-		update: {
-			clientUsername: payload.clientUsername,
-			clientProfileImage: payload.clientProfileImage,
-			clientColor: payload.clientColor,
-			availability: payload.availability,
-		},
-		create: {
-			clientDbId: payload.clientDbId,
-			clientUsername: payload.clientUsername,
-			clientProfileImage: payload.clientProfileImage,
-			clientColor: payload.clientColor,
-			availability: payload.availability,
-		},
-	});
+	try {
+		await prisma.client.upsert({
+			where: { clientDbId: payload.clientDbId },
+			update: {
+				clientUsername: payload.clientUsername,
+				clientProfilePictureHash: payload.clientProfilePictureHash,
+				clientColor: payload.clientColor,
+				availability: payload.availability,
+			},
+			create: {
+				clientDbId: payload.clientDbId,
+				clientUsername: payload.clientUsername,
+				clientProfilePictureHash: payload.clientProfilePictureHash,
+				clientColor: payload.clientColor,
+				availability: payload.availability,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return;
+	}
 }
 
 export async function retrieveLastMessageFromDatabase() {

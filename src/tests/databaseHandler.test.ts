@@ -25,7 +25,7 @@ describe("databaseHandler - updateClientProfileInformation", () => {
 			payloadType: PayloadSubType.profileUpdate,
 			clientDbId: "123",
 			clientUsername: "testuser",
-			clientProfileImage: "testimage.jpg",
+			clientProfilePictureHash: "testimage.jpg",
 			clientColor: "blue",
 			availability: true,
 		};
@@ -37,13 +37,13 @@ describe("databaseHandler - updateClientProfileInformation", () => {
 		//     where: { clientDbId: payload.clientDbId },
 		//     update: {
 		//         clientUsername: payload.clientUsername,
-		//         clientProfileImage: payload.clientProfileImage,
+		//         clientProfilePictureHash: payload.clientProfilePictureHash,
 		//         clientColor: payload.clientColor,
 		//     },
 		//     create: {
 		//         clientDbId: payload.clientDbId,
 		//         clientUsername: payload.clientUsername,
-		//         clientProfileImage: payload.clientProfileImage,
+		//         clientProfilePictureHash: payload.clientProfilePictureHash,
 		//         clientColor: payload.clientColor,
 		//     },
 		// });

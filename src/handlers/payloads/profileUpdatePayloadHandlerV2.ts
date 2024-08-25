@@ -3,17 +3,13 @@ import {
 	PayloadSubType,
 	type ClientEntity,
 	type ClientUpdatePayload,
-	type ProfilePictureObject,
 	type ClientListPayloadEnhanced,
 } from "../../types/payloadTypes";
 import {
-	fetchProfilePicture,
-	persistProfilePicture,
 	retrieveAllRegisteredUsersFromDatabase,
 	updateClientProfileInformation,
 } from "../databaseHandler";
 import { validateclientUpdatePayload } from "../typeHandler";
-import { generateUnixTimestampFnv1aHash } from "../../helper/hashGenerator";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState } from "../../state/versionState.ts";
 
@@ -22,59 +18,24 @@ export async function profileUpdatePayloadHandlerV2(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validMessagePayload = validateclientUpdatePayload(
+	const validation = profileUpdatePayloadHandlerV2Validation(
+		ws,
 		payloadFromClientAsObject
 	);
-
-	if (!validMessagePayload) {
-		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
-		ws.send(JSON.stringify(payloadFromClientAsObject));
-		ws.close(
-			1008,
-			"Invalid clientUpdatePayload type. Type check not successful!"
-		);
+	if (!validation) {
 		return;
 	}
 
-	// fetch bot versions of pictures
+	// TODO check if this method is viable
+	// const payload = await processProfileUpdatePayload(
+	// 	payloadFromClientAsObject
+	// );
 	const payload = payloadFromClientAsObject as ClientUpdatePayload;
-	const clientProfilePicture = await fetchProfilePicture(payload.clientDbId);
+	await updateClientProfileInformation(payload);
+	await sendRegisteredUserListToClients(server);
+}
 
-	// validate if the picture is the same as the one in the database
-	if (payload.clientProfileImage) {
-		if (
-			clientProfilePicture === undefined ||
-			clientProfilePicture === null ||
-			clientProfilePicture.data === "" ||
-			clientProfilePicture.data !== payload.clientProfileImage
-		) {
-			const profilePictureObject: ProfilePictureObject = {
-				clientDbId: payload.clientDbId,
-				imageHash: generateUnixTimestampFnv1aHash(),
-				data: payload.clientProfileImage,
-			};
-			// persist the picture
-			try {
-				await persistProfilePicture(profilePictureObject);
-			} catch (error) {
-				errorLogger.logError(error);
-				return;
-			}
-
-			// update the client profile picture hash
-			payload.clientProfileImage = generateUnixTimestampFnv1aHash();
-
-			// TODO inform all clients about the new picture
-		}
-	}
-
-	try {
-		await updateClientProfileInformation(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
+async function sendRegisteredUserListToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
 		errorLogger.logError(new Error("No users found"));
@@ -91,3 +52,66 @@ export async function profileUpdatePayloadHandlerV2(
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
 
+function profileUpdatePayloadHandlerV2Validation(
+	ws: ServerWebSocket<WebSocket>,
+	payloadFromClientAsObject: unknown
+) {
+	const validMessagePayload = validateclientUpdatePayload(
+		payloadFromClientAsObject
+	);
+
+	if (!validMessagePayload) {
+		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
+		ws.send(JSON.stringify(payloadFromClientAsObject));
+		ws.close(
+			1008,
+			"Invalid clientUpdatePayload type. Type check not successful!"
+		);
+		return false;
+	}
+	return true;
+}
+
+async function processProfileUpdatePayload(
+	payloadFromClientAsObject: unknown
+): Promise<ClientUpdatePayload> {
+	// fetch both versions of pictures
+	const payload = payloadFromClientAsObject as ClientUpdatePayload;
+
+
+	/// THIS CANNOT WORK - need to send picture seperately since only the hash is sent
+	///
+	// const clientProfilePicture = await fetchProfilePicture(payload.clientDbId);
+	//
+	// // early returns
+	// if (!payload.clientProfilePictureHash) {
+	// 	return payload;
+	// }
+	//
+	// if (clientProfilePicture === null || clientProfilePicture.data === "") {
+	// 	return payload;
+	// }
+	//
+	// if (clientProfilePicture.data === payload.clientProfilePictureHash) {
+	// 	return payload;
+	// }
+	//
+	// const profilePictureObject: ProfilePictureObject = {
+	// 	clientDbId: payload.clientDbId,
+	// 	imageHash: payload.clientProfilePictureHash,
+	// 	data: payload.clientProfilePictureHash,
+	// };
+	// // persist the picture
+	// try {
+	// 	await persistProfilePicture(profilePictureObject);
+	// } catch (error) {
+	// 	errorLogger.logError(error);
+	// }
+	//
+	// // update the client profile picture hash
+	// //payload.clientProfilePictureHash = generateUnixTimestampFnv1aHash();
+	//
+	// // TODO inform all clients about the new picture
+
+	return payload;
+}

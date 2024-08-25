@@ -521,7 +521,7 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 				clientDbId: "test",
 				clientUsername: "test",
 				clientColor: "test",
-				clientProfileImage: "test",
+				clientProfilePictureHash: "test",
 				availability: true,
 			})
 		).toBe(true);
@@ -578,7 +578,7 @@ describe("ajvValidator tests - profileUpdateValidator", () => {
 				clientDbId: "test",
 				clientUsername: "test",
 				clientColor: undefined,
-				clientProfileImage: undefined,
+				clientProfilePictureHash: undefined,
 				availability: true,
 			})
 		).toBe(true);

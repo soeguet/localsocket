@@ -570,7 +570,7 @@ ajvValidator.addSchema(
 			clientColor: {
 				type: "string",
 			},
-			clientProfileImage: {
+			clientProfilePictureHash: {
 				type: "string",
 			},
 			availability: {

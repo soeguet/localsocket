@@ -18,6 +18,22 @@ export async function profileUpdatePayloadHandler(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
+	const validation = profileUpdateValidation(payloadFromClientAsObject, ws);
+	if (!validation) {
+		return;
+	}
+
+	await updateClientProfileInformation(
+		payloadFromClientAsObject as ClientUpdatePayload
+	);
+
+	await sendClientListPayloadToClients(server);
+}
+
+function profileUpdateValidation(
+	payloadFromClientAsObject: unknown,
+	ws: ServerWebSocket<WebSocket>
+) {
 	const validMessagePayload = validateclientUpdatePayload(
 		payloadFromClientAsObject
 	);
@@ -35,23 +51,13 @@ export async function profileUpdatePayloadHandler(
 			1008,
 			"Invalid clientUpdatePayload type. Type check not successful!"
 		);
-		return;
+		return false;
 	}
+	return true;
+}
 
-	const payload = payloadFromClientAsObject as ClientUpdatePayload;
-
-	try {
-		await updateClientProfileInformation(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
+async function sendClientListPayloadToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
-	if (allUsers === undefined || allUsers === null) {
-		errorLogger.logError(new Error("No users found"));
-		return;
-	}
 
 	const clientListPayload: ClientListPayloadEnhanced = {
 		payloadType: PayloadSubType.clientList,
@@ -59,8 +65,6 @@ export async function profileUpdatePayloadHandler(
 		// TODO validate this
 		clients: allUsers as ClientEntity[],
 	};
-	console.log("clientListPayload", clientListPayload);
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
-

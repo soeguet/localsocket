@@ -19,21 +19,21 @@ const mockServer = {
 //  *    clientDbId: string;
 //  *    clientUsername: string;
 //  *    clientColor?: string;
-//  *    clientProfileImage?: string;
+//  *    clientProfilePictureHash?: string;
 //  *    availability: boolean;
 //  * };
 //  *
 //  * @param {string} clientDbId
 //  * @param {string} clientUsername
 //  * @param {string} clientColor
-//  * @param {string} clientProfileImage
+//  * @param {string} clientProfilePictureHash
 //  * @param {boolean} availability
 //  */
 // export type ClientEntity = {
 //     clientDbId: string;
 //     clientUsername: string;
 //     clientColor?: string;
-//     clientProfileImage?: string;
+//     clientProfilePictureHash?: string;
 //     availability: boolean;
 // };
 vi.mock("../handlers/databaseHandler", () => ({
@@ -1337,7 +1337,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1356,7 +1356,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: null,
 			clientUsername: "Test",
 			clientColor: "red",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1376,7 +1376,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "",
 			clientUsername: "Test",
 			clientColor: "red",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1396,7 +1396,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "asdasd",
 			clientUsername: null,
 			clientColor: "red",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1416,7 +1416,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "asdasd",
 			clientUsername: "",
 			clientColor: "red",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1436,7 +1436,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: null,
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1456,7 +1456,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "",
-			clientProfileImage: "image",
+			clientProfilePictureHash: "image",
 			availability: true,
 		});
 
@@ -1469,13 +1469,13 @@ describe("incomingMessages - profileUpdatePayload", () => {
 		expect(mockServer.publish).toBeCalledTimes(1);
 	});
 
-	test("invalid profileUpdatePayload - null value clientProfileImage", async () => {
+	test("invalid profileUpdatePayload - null value clientProfilePictureHash", async () => {
 		const invalidPayload = JSON.stringify({
 			payloadType: PayloadSubType.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",
-			clientProfileImage: null,
+			clientProfilePictureHash: null,
 			availability: true,
 		});
 
@@ -1489,13 +1489,13 @@ describe("incomingMessages - profileUpdatePayload", () => {
 		expect(mockWebsocketConnection.close).toBeCalledTimes(1);
 	});
 
-	test("valid profileUpdatePayload - empty string clientProfileImage", async () => {
+	test("valid profileUpdatePayload - empty string clientProfilePictureHash", async () => {
 		const invalidPayload = JSON.stringify({
 			payloadType: PayloadSubType.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",
-			clientProfileImage: "",
+			clientProfilePictureHash: "",
 			availability: true,
 		});
 

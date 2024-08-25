@@ -20,7 +20,6 @@ import { fetchProfilePicturePayloadHandler } from "./payloads/fetchProfilePictur
 import { messageListPayloadHandler } from "./payloads/messageListPayloadHandler";
 import { messagePayloadHandler } from "./payloads/messagePayloadHandler";
 import { newProfilePictureHandler } from "./payloads/newProfilePicturePayloadHandler";
-import { profileUpdatePayloadHandler } from "./payloads/profileUpdatePayloadHandler";
 import { profileUpdatePayloadHandlerV2 } from "./payloads/profileUpdatePayloadHandlerV2";
 import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
 import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
@@ -105,13 +104,15 @@ export async function processIncomingMessage(
 		}
 
 		case PayloadSubType.profileUpdate: {
+			throw new Error("ProfileUpdate !old! not implemented");
 			// PayloadSubType.profileUpdate == 3
-			await profileUpdatePayloadHandler(
-				payloadFromClientAsUnknownObject,
-				ws,
-				server
-			);
-			break;
+
+			// await profileUpdatePayloadHandler(
+			// 	payloadFromClientAsUnknownObject,
+			// 	ws,
+			// 	server
+			// );
+			// break;
 		}
 
 		case PayloadSubType.profileUpdateV2: {
@@ -266,4 +267,3 @@ export async function processIncomingMessage(
 		}
 	}
 }
-

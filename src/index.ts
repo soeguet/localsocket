@@ -10,7 +10,7 @@ const allowedOrigins = new Set([
 	"http://localhost",
 	"http://127.0.0.1",
 	"wails://wails.localhost:34115",
-	"null", // Allow null origin for local file URLs and other special cases
+	"null",
 ]);
 
 const isInternalIp = (origin: string) => {
@@ -93,4 +93,3 @@ const server = Bun.serve<WebSocket>({
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);
-

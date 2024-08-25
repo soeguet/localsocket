@@ -149,7 +149,7 @@ export type ClientEntity = {
 	clientDbId: ClientId;
 	clientUsername: string;
 	clientColor?: string;
-	clientProfileImage?: string;
+	clientProfilePictureHash?: string;
 	availability: boolean;
 };
 
