@@ -1,15 +1,15 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
+	AuthenticationPayloadSchema,
 	type ClientEntity,
 	type ClientListPayloadEnhanced,
-	type ClientUpdatePayloadV2,
+	type ClientUpdatePayloadV2, ClientUpdatePayloadV2Schema,
 	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllRegisteredUsersFromDatabase,
 	updateClientProfileInformation,
 } from "../databaseHandler";
-import { validateclientUpdatePayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState } from "../../state/versionState.ts";
 
@@ -18,11 +18,8 @@ export async function profileUpdatePayloadHandlerV2(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validation = profileUpdatePayloadHandlerV2Validation(
-		ws,
-		payloadFromClientAsObject
-	);
-	if (!validation) {
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
 		return;
 	}
 
@@ -48,22 +45,23 @@ async function sendRegisteredUserListToClients(server: Server) {
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
 
-function profileUpdatePayloadHandlerV2Validation(
-	ws: ServerWebSocket<WebSocket>,
-	payloadFromClientAsObject: unknown
-) {
-	const validMessagePayload = validateclientUpdatePayload(
-		payloadFromClientAsObject
-	);
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = ClientUpdatePayloadV2Schema.safeParse(payload);
 
-	if (!validMessagePayload) {
-		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
-		ws.send(JSON.stringify(payloadFromClientAsObject));
+	if (!validAuthPayload.success) {
+		ws.send(
+			"Invalid authentication payload type. Type check not successful!"
+		);
+		console.error(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
 		ws.close(
 			1008,
-			"Invalid clientUpdatePayload type. Type check not successful!"
+			"Invalid authentication payload type. Type check not successful!"
 		);
-		return false;
 	}
-	return true;
+	return validAuthPayload;
 }

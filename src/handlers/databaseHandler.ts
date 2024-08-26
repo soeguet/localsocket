@@ -2,16 +2,16 @@ import prisma from "../db/db";
 import { errorLogger } from "../logger/errorLogger";
 import {
 	type AuthenticationPayload,
+	type BannerObject,
+	type ClientUpdatePayloadV2,
+	type DeleteEntity,
+	type EditEntity,
+	type EmergencyMessagePayload,
 	type MessageListPayload,
 	type MessagePayload,
-	type EmergencyMessagePayload,
-	type ProfilePictureObject,
-	type BannerObject,
-	type EditEntity,
-	type DeleteEntity,
-	type ReactionPayload,
 	PayloadSubTypeEnum,
-	type ClientUpdatePayloadV2,
+	type ProfilePictureObject,
+	type ReactionPayload,
 } from "../types/payloadTypes";
 import type { ErrorLog } from "@prisma/client";
 
@@ -40,20 +40,26 @@ export async function persistErrorLogInDatabase(errorLog: ErrorLog) {
 }
 
 export async function persistProfilePicture(payload: ProfilePictureObject) {
-	await prisma.profilePictures.upsert({
-		where: {
-			clientDbId: payload.clientDbId,
-		},
-		update: {
-			imageHash: payload.imageHash,
-			data: payload.data,
-		},
-		create: {
-			clientDbId: payload.clientDbId,
-			imageHash: payload.imageHash,
-			data: payload.data,
-		},
-	});
+	try {
+		await prisma.profilePictures.upsert({
+			where: {
+				clientDbId: payload.clientDbId,
+			},
+			update: {
+				imageHash: payload.imageHash,
+				data: payload.data,
+			},
+			create: {
+				clientDbId: payload.clientDbId,
+				imageHash: payload.imageHash,
+				data: payload.data,
+			},
+		});
+	} catch (error) {
+		console.error("Error persisting profile picture", error);
+		errorLogger.logError(error);
+		return;
+	}
 }
 
 export async function fetchAllProfilePictureHashes() {
@@ -102,7 +108,6 @@ export async function deleteExistingBanner(id: string) {
 
 export async function updateExistingBanner(payload: BannerObject) {
 	try {
-
 		await prisma.banners.update({
 			where: {
 				id: payload.id,
@@ -114,9 +119,7 @@ export async function updateExistingBanner(payload: BannerObject) {
 				hidden: payload.hidden,
 			},
 		});
-
 	} catch (error) {
-
 		errorLogger.logError(error);
 		return;
 	}
@@ -130,14 +133,19 @@ export async function persistProfilePictureHashForClient(
 	clientDbId: string,
 	imageHash: string
 ) {
-	await prisma.client.update({
-		where: {
-			clientDbId: clientDbId,
-		},
-		data: {
-			clientProfilePictureHash: imageHash,
-		},
-	});
+	try {
+		await prisma.client.update({
+			where: {
+				clientDbId: clientDbId,
+			},
+			data: {
+				clientProfilePictureHash: imageHash,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return;
+	}
 }
 
 export async function fetchProfilePicture(clientDbId: string) {
@@ -266,14 +274,19 @@ export async function deleteMessageStatus(payload: DeleteEntity) {
 }
 
 export async function persistReactionToDatabase(payload: ReactionPayload) {
-	await prisma.reactionType.create({
-		data: {
-			reactionDbId: payload.reactionDbId,
-			reactionMessageId: payload.reactionMessageId,
-			reactionContext: payload.reactionContext,
-			reactionClientId: payload.reactionClientId,
-		},
-	});
+	try {
+		await prisma.reactionType.create({
+			data: {
+				reactionDbId: payload.reactionDbId,
+				reactionMessageId: payload.reactionMessageId,
+				reactionContext: payload.reactionContext,
+				reactionClientId: payload.reactionClientId,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
 }
 
 export async function sendLast100MessagesToNewClient() {

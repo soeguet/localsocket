@@ -1,13 +1,15 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
+	AuthenticationPayloadSchema,
 	type ClientEntity,
-	type ClientListPayloadEnhanced, type ClientUpdatePayloadV2, PayloadSubTypeEnum,
+	type ClientListPayloadEnhanced,
+	type ClientUpdatePayloadV2, ClientUpdatePayloadV2Schema,
+	PayloadSubTypeEnum, ProfilePicturePayloadSchema,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllRegisteredUsersFromDatabase,
 	updateClientProfileInformation,
 } from "../databaseHandler";
-import { validateclientUpdatePayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState } from "../../state/versionState.ts";
 
@@ -16,8 +18,8 @@ export async function profileUpdatePayloadHandler(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validation = profileUpdateValidation(payloadFromClientAsObject, ws);
-	if (!validation) {
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
 		return;
 	}
 
@@ -28,31 +30,6 @@ export async function profileUpdatePayloadHandler(
 	await sendClientListPayloadToClients(server);
 }
 
-function profileUpdateValidation(
-	payloadFromClientAsObject: unknown,
-	ws: ServerWebSocket<WebSocket>
-) {
-	const validMessagePayload = validateclientUpdatePayload(
-		payloadFromClientAsObject
-	);
-
-	if (!validMessagePayload) {
-		console.error(
-			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		errorLogger.logError(
-			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
-		ws.send(JSON.stringify(payloadFromClientAsObject));
-		ws.close(
-			1008,
-			"Invalid clientUpdatePayload type. Type check not successful!"
-		);
-		return false;
-	}
-	return true;
-}
 
 async function sendClientListPayloadToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
@@ -65,4 +42,25 @@ async function sendClientListPayloadToClients(server: Server) {
 	};
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	// TODO is this right
+	const validAuthPayload = ClientUpdatePayloadV2Schema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
+		console.error(
+			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _CLIENT_UPDATE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
+		ws.send(JSON.stringify(payload));
+		ws.close(
+			1008,
+			"Invalid clientUpdatePayload type. Type check not successful!"
+		);
+	}
+	return validAuthPayload;
 }

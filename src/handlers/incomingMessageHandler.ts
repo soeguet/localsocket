@@ -1,10 +1,11 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
+	ErrorLogSchema,
 	type PayloadSubType,
 	PayloadSubTypeEnum, type SimplePayload,
 } from "../types/payloadTypes";
 import {
-	checkForDatabaseErrors,
+	checkForDatabaseErrors, persistErrorLogInDatabase,
 } from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
@@ -24,23 +25,23 @@ import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayload
 import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
 import { fetchAllProfilePictureHashesPayloadHandler } from "./payloads/fetchAllProfilePictureHashesPayloadHandler";
 import { errorLogger } from "../logger/errorLogger";
+import type { ErrorLog } from "@prisma/client";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
 }
 
-// export async function processErrorLog(errorLog: Request) {
-// 	const errorLogObject = await errorLog.json();
-//
-// 	const validatedErrorLog = validateErrorLogPayload(errorLogObject);
-// 	if (validatedErrorLog === false) {
-// 		errorLogger.logError(new Error("Error validating error log payload"));
-// 	}
-//
-// 	const payload = errorLogObject as ErrorLog;
-//
-// 	await persistErrorLogInDatabase(payload);
-// }
+export async function processErrorLog(errorLog: Request) {
+	const errorLogObject = await errorLog.json();
+
+	const validatedErrorLog = ErrorLogSchema.safeParse(errorLogObject);
+	if (!validatedErrorLog.success) {
+		errorLogger.logError(new Error("Error validating error log payload"));
+		return
+	}
+
+	await persistErrorLogInDatabase(validatedErrorLog.data as ErrorLog);
+}
 
 async function parseInitialPayload(
 	message: string,

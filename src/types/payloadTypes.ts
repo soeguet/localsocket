@@ -322,3 +322,37 @@ export const ReactionPayloadSchema = ReactionEntitySchema.extend({
 	payloadType: z.literal(PayloadSubTypeEnum.enum.reaction),
 });
 export type ReactionPayload = z.infer<typeof ReactionPayloadSchema>;
+
+// ajvValidator.addSchema(
+// 	{
+// 		type: "object",
+// 		properties: {
+// 			title: { type: "string", minLength: 1 },
+// 			message: { type: "string", minLength: 1 },
+// 			stack: { type: "string", minLength: 1 },
+// 			time: { type: "string", minLength: 1 },
+// 			clientDbId: { type: "string", minLength: 1 },
+// 			clientUsername: { type: "string", minLength: 1 },
+// 		},
+// 		required: [
+// 			"title",
+// 			"message",
+// 			"stack",
+// 			"time",
+// 			"clientDbId",
+// 			"clientUsername",
+// 		],
+// 		additionalProperties: false,
+// 	},
+// 	"errorLogValidator"
+// );
+
+export const ErrorLogSchema = z.object({
+	title: z.string(),
+	message: z.string(),
+	stack: z.string(),
+	time: z.string(),
+	clientDbId: ClientIdSchema,
+	clientUsername: z.string(),
+});
+export type ErrorLog = z.infer<typeof ErrorLogSchema>;
