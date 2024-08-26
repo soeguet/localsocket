@@ -1,20 +1,22 @@
 import type { ServerWebSocket } from "bun";
 import {
-	type AllProfilePictureHashesPayload, PayloadSubTypeEnum, type ProfilePicturesHash,
+	type AllProfilePictureHashesPayload,
+	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import { fetchAllProfilePictureHashes } from "../databaseHandler";
 
 export async function fetchAllProfilePictureHashesPayloadHandler(
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const allProfilePictureHashes: ProfilePicturesHash[] =
-		await fetchAllProfilePictureHashes();
+	const hashes = await fetchAllProfilePictureHashes();
+	if (hashes === null) {
+		return;
+	}
 
-	const fetchAllProfilePictureHashesPayload: AllProfilePictureHashesPayload =
-	{
+	const payload: AllProfilePictureHashesPayload = {
 		payloadType: PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes,
-		profilePictureHashes: allProfilePictureHashes,
+		profilePictureHashes: hashes,
 	};
 
-	ws.send(JSON.stringify(fetchAllProfilePictureHashesPayload));
+	ws.send(JSON.stringify(payload));
 }

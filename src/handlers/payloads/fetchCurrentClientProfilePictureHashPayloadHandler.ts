@@ -1,23 +1,32 @@
 import type { ServerWebSocket } from "bun";
 
 import { fetchProfilePicture } from "../databaseHandler";
-import { validateFetchCurrentClientProfilePictureHashPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
-import { type FetchCurrentClientProfilePictureHashPayload, PayloadSubTypeEnum } from "../../types/payloadTypes.ts";
+import {
+	type FetchCurrentClientProfilePictureHashPayload,
+	FetchCurrentClientProfilePictureHashPayloadSchema,
+	PayloadSubTypeEnum,
+} from "../../types/payloadTypes.ts";
 
 export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const validatedFetchCurrentClientProfilePictureHashPayload =
-		validateFetchCurrentClientProfilePictureHashPayload(
-			payloadFromClientAsObject
-		);
+	const validPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validPayload.success) {
+		return;
+	}
+	await sendProfilePictureHashesToClients(validPayload.data, ws);
+}
 
-	if (!validatedFetchCurrentClientProfilePictureHashPayload) {
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validHashesPayload =
+		FetchCurrentClientProfilePictureHashPayloadSchema.safeParse(payload);
+
+	if (!validHashesPayload.success) {
 		ws.send(
 			`Invalid fetch current client profile picture hash payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
+				payload
 			)}`
 		);
 		console.error(
@@ -30,30 +39,26 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 			1008,
 			"Invalid fetch current client profile picture hash payload type. Type check not successful!"
 		);
+	}
+	return validHashesPayload;
+}
+
+async function sendProfilePictureHashesToClients(
+	payload: FetchCurrentClientProfilePictureHashPayload,
+	ws: ServerWebSocket<WebSocket>
+) {
+	const profilePicture = await fetchProfilePicture(payload.clientDbId);
+	if (profilePicture === null) {
 		return;
 	}
 
-	const payload =
-		payloadFromClientAsObject as FetchCurrentClientProfilePictureHashPayload;
+	const fetchCurrentClientProfilePictureHashPayload: FetchCurrentClientProfilePictureHashPayload =
+		{
+			clientProfilePictureHash: profilePicture.imageHash,
+			clientDbId: payload.clientDbId,
+			payloadType:
+				PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash,
+		};
 
-	try {
-		const profilePicture = await fetchProfilePicture(payload.clientDbId);
-		if (profilePicture === undefined || profilePicture === null) {
-			errorLogger.logError(new Error("No profile picture found"));
-			return;
-		}
-
-		const fetchCurrentClientProfilePictureHashPayload: FetchCurrentClientProfilePictureHashPayload =
-			{
-				clientProfilePictureHash: profilePicture.imageHash,
-				clientDbId: payload.clientDbId,
-				payloadType:
-					PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash,
-			};
-
-		ws.send(JSON.stringify(fetchCurrentClientProfilePictureHashPayload));
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
+	ws.send(JSON.stringify(fetchCurrentClientProfilePictureHashPayload));
 }

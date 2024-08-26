@@ -1,6 +1,5 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
-	type AuthenticationPayload,
 	AuthenticationPayloadSchema,
 	type ClientEntity,
 	type ClientListPayloadEnhanced,
@@ -20,13 +19,11 @@ export async function authPayloadHandler(
 	server: Server
 ) {
 	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
-
 	if (!validAuthPayload.success) {
 		return;
 	}
 
 	const versionDetails = validAuthPayload.data.version;
-
 	if (!checkIfVersionIsZero(versionDetails, ws)) {
 		return;
 	}
@@ -38,25 +35,7 @@ export async function authPayloadHandler(
 	});
 
 	await registerUserInDatabase(validAuthPayload.data);
-
 	await sendListOfAllRegisteredUsersToClients(server);
-}
-
-async function sendListOfAllRegisteredUsersToClients(server: Server) {
-	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
-
-	if (typeof allUsers === "undefined" || allUsers === null) {
-		console.error("No users found");
-		errorLogger.logError("No users found");
-	}
-
-	const clientListPayload: ClientListPayloadEnhanced = {
-		payloadType: PayloadSubTypeEnum.enum.clientList,
-		version: getVersionState(),
-		clients: allUsers as ClientEntity[],
-	};
-
-	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
 
 function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
@@ -78,6 +57,23 @@ function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
 		);
 	}
 	return validAuthPayload;
+}
+
+async function sendListOfAllRegisteredUsersToClients(server: Server) {
+	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+
+	if (typeof allUsers === "undefined" || allUsers === null) {
+		console.error("No users found");
+		errorLogger.logError("No users found");
+	}
+
+	const clientListPayload: ClientListPayloadEnhanced = {
+		payloadType: PayloadSubTypeEnum.enum.clientList,
+		version: getVersionState(),
+		clients: allUsers as ClientEntity[],
+	};
+
+	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
 
 function checkIfVersionIsZero(

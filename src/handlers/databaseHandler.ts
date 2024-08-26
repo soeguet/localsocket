@@ -57,46 +57,69 @@ export async function persistProfilePicture(payload: ProfilePictureObject) {
 }
 
 export async function fetchAllProfilePictureHashes() {
-	return prisma.profilePictures.findMany({
-		select: {
-			clientDbId: true,
-			imageHash: true,
-		},
-	});
+	try {
+		return prisma.profilePictures.findMany({
+			select: {
+				clientDbId: true,
+				imageHash: true,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
 }
 
 export async function persistBanner(payload: BannerObject) {
-	await prisma.banners.create({
-		data: {
-			id: payload.id,
-			title: payload.title,
-			message: payload.message,
-			priority: payload.priority,
-			hidden: payload.hidden,
-		},
-	});
+	try {
+		await prisma.banners.create({
+			data: {
+				id: payload.id,
+				title: payload.title,
+				message: payload.message,
+				priority: payload.priority,
+				hidden: payload.hidden,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return;
+	}
 }
 
 export async function deleteExistingBanner(id: string) {
-	await prisma.banners.delete({
-		where: {
-			id: id,
-		},
-	});
+	try {
+		await prisma.banners.delete({
+			where: {
+				id: id,
+			},
+		});
+	} catch (e) {
+		errorLogger.logError(e);
+		return null;
+	}
 }
 
 export async function updateExistingBanner(payload: BannerObject) {
-	await prisma.banners.update({
-		where: {
-			id: payload.id,
-		},
-		data: {
-			title: payload.title,
-			message: payload.message,
-			priority: payload.priority,
-			hidden: payload.hidden,
-		},
-	});
+	try {
+
+		await prisma.banners.update({
+			where: {
+				id: payload.id,
+			},
+			data: {
+				title: payload.title,
+				message: payload.message,
+				priority: payload.priority,
+				hidden: payload.hidden,
+			},
+		});
+
+	} catch (error) {
+
+		errorLogger.logError(error);
+		return;
+	}
 }
 
 export async function retrieveAllBanners() {
@@ -118,15 +141,25 @@ export async function persistProfilePictureHashForClient(
 }
 
 export async function fetchProfilePicture(clientDbId: string) {
-	return prisma.profilePictures.findFirst({
-		where: {
-			clientDbId: clientDbId,
-		},
-	});
+	try {
+		return prisma.profilePictures.findFirst({
+			where: {
+				clientDbId: clientDbId,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
 }
 
 export async function fetchAllProfilePictures() {
-	return prisma.profilePictures.findMany();
+	try {
+		return prisma.profilePictures.findMany();
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
 }
 
 export async function persistEmergencyMessage(
@@ -142,9 +175,7 @@ export async function persistEmergencyMessage(
 				message: payload.message,
 			},
 		});
-
 	} catch (error) {
-
 		errorLogger.logError(error);
 		return false;
 	}
@@ -205,9 +236,7 @@ export async function editMessageContent(payload: EditEntity) {
 				},
 			},
 		});
-
 	} catch (error) {
-
 		errorLogger.logError(error);
 		return false;
 	}
@@ -319,39 +348,45 @@ export async function retrieveLastMessageFromDatabase() {
 }
 
 export async function persistMessageInDatabase(payload: MessagePayload) {
-	await prisma.messagePayload.create({
-		data: {
-			messagePayloadDbId: payload.messageType.messageDbId,
-			messageType: {
-				create: {
-					messageContext: payload.messageType.messageContext,
-					messageTime: payload.messageType.messageTime,
-					messageDate: payload.messageType.messageDate,
-					deleted: payload.messageType.deleted,
-					edited: payload.messageType.edited,
+	try {
+		await prisma.messagePayload.create({
+			data: {
+				messagePayloadDbId: payload.messageType.messageDbId,
+				messageType: {
+					create: {
+						messageContext: payload.messageType.messageContext,
+						messageTime: payload.messageType.messageTime,
+						messageDate: payload.messageType.messageDate,
+						deleted: payload.messageType.deleted,
+						edited: payload.messageType.edited,
+					},
+				},
+				clientType: {
+					connect: {
+						clientDbId: payload.clientType.clientDbId,
+					},
+				},
+				quoteType: {
+					create: {
+						quoteClientId: payload.quoteType?.quoteClientId,
+						quoteDate: payload.quoteType?.quoteDate,
+						quoteMessageContext:
+							payload.quoteType?.quoteMessageContext,
+						quoteTime: payload.quoteType?.quoteTime,
+					},
+				},
+				imageType: {
+					create: {
+						data: payload.imageType?.data,
+						type: payload.imageType?.type,
+					},
 				},
 			},
-			clientType: {
-				connect: {
-					clientDbId: payload.clientType.clientDbId,
-				},
-			},
-			quoteType: {
-				create: {
-					quoteClientId: payload.quoteType?.quoteClientId,
-					quoteDate: payload.quoteType?.quoteDate,
-					quoteMessageContext: payload.quoteType?.quoteMessageContext,
-					quoteTime: payload.quoteType?.quoteTime,
-				},
-			},
-			imageType: {
-				create: {
-					data: payload.imageType?.data,
-					type: payload.imageType?.type,
-				},
-			},
-		},
-	});
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
 }
 
 export async function retrieveUpdatedMessageFromDatabase(messageDbId: string) {

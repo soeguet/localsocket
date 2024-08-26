@@ -4,7 +4,8 @@ import {
 	type MessageListPayload,
 	type EmergencyInitPayload,
 	type AllEmergencyMessagesPayload,
-	type EmergencyMessage, PayloadSubTypeEnum,
+	type EmergencyMessage,
+	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllEmergencyMessages,
@@ -14,24 +15,35 @@ import {
 export async function messageListPayloadHandler(
 	ws: ServerWebSocket<WebSocket>
 ) {
+	await sendLastMessagesToClient(ws);
+
+	const emergencyChat = sendActiveEmergencyChatInfoToClient(ws);
+	if (!emergencyChat.active) {
+		return;
+	}
+	await sendEmergencyChatMessagesToClient(emergencyChat, ws);
+}
+
+async function sendLastMessagesToClient(ws: ServerWebSocket<WebSocket>) {
 	const messageListPayload: MessageListPayload =
 		await sendLast100MessagesToNewClient();
 
 	ws.send(JSON.stringify(messageListPayload));
+}
 
-	//
-	// also send information about active emergency chats
+function sendActiveEmergencyChatInfoToClient(ws: ServerWebSocket<WebSocket>) {
 	const emergencyChat: EmergencyInitPayload = {
 		payloadType: PayloadSubTypeEnum.enum.emergencyInit,
 		...emergencyChatState,
 	};
 	ws.send(JSON.stringify(emergencyChat));
+	return emergencyChat;
+}
 
-	// additionally send out all messages for this emergency chat to all clients
-	if (!emergencyChat.active) {
-		return;
-	}
-
+async function sendEmergencyChatMessagesToClient(
+	emergencyChat: EmergencyInitPayload,
+	ws: ServerWebSocket<WebSocket>
+) {
 	const allEmergencyMessages: EmergencyMessage[] =
 		await retrieveAllEmergencyMessages(emergencyChat.emergencyChatId);
 	const allEmergencyMessagesWithPayloadType: AllEmergencyMessagesPayload = {
