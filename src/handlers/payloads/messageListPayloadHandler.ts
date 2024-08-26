@@ -3,9 +3,8 @@ import emergencyChatState from "../../state/emergencyChatState";
 import {
 	type MessageListPayload,
 	type EmergencyInitPayload,
-	PayloadSubType,
 	type AllEmergencyMessagesPayload,
-	type EmergencyMessage,
+	type EmergencyMessage, PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllEmergencyMessages,
@@ -23,7 +22,7 @@ export async function messageListPayloadHandler(
 	//
 	// also send information about active emergency chats
 	const emergencyChat: EmergencyInitPayload = {
-		payloadType: PayloadSubType.emergencyInit,
+		payloadType: PayloadSubTypeEnum.enum.emergencyInit,
 		...emergencyChatState,
 	};
 	ws.send(JSON.stringify(emergencyChat));
@@ -36,7 +35,7 @@ export async function messageListPayloadHandler(
 	const allEmergencyMessages: EmergencyMessage[] =
 		await retrieveAllEmergencyMessages(emergencyChat.emergencyChatId);
 	const allEmergencyMessagesWithPayloadType: AllEmergencyMessagesPayload = {
-		payloadType: PayloadSubType.allEmergencyMessages,
+		payloadType: PayloadSubTypeEnum.enum.allEmergencyMessages,
 		emergencyMessages: allEmergencyMessages,
 		emergencyChatId: emergencyChat.emergencyChatId,
 	};

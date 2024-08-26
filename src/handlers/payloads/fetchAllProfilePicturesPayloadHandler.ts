@@ -1,7 +1,6 @@
 import type { ServerWebSocket } from "bun";
 import {
-	type FetchAllProfilePicturesPayload,
-	PayloadSubType,
+	type FetchAllProfilePicturesPayload, PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import { fetchAllProfilePictures } from "../databaseHandler";
 import { validateFetchAllProfilePicturesPayload } from "../typeHandler";
@@ -41,7 +40,7 @@ export async function fetchAllProfilePicturesPayloadHandler(
 		}
 
 		const fetchAllProfilePicturesPayload: FetchAllProfilePicturesPayload = {
-			payloadType: PayloadSubType.fetchAllProfilePictures,
+			payloadType: PayloadSubTypeEnum.enum.fetchAllProfilePictures,
 			profilePictures: allProfilePictures,
 		};
 
@@ -51,4 +50,3 @@ export async function fetchAllProfilePicturesPayloadHandler(
 		return;
 	}
 }
-

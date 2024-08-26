@@ -1,15 +1,16 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
 	type AuthenticationPayload,
-	PayloadSubType,
+	AuthenticationPayloadSchema,
 	type ClientEntity,
 	type ClientListPayloadEnhanced,
+	PayloadSubTypeEnum,
+	type VersionEntity,
 } from "../../types/payloadTypes";
 import {
-	registerUserInDatabse,
+	registerUserInDatabase,
 	retrieveAllRegisteredUsersFromDatabase,
 } from "../databaseHandler";
-import { validateAuthPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState, setVersionState } from "../../state/versionState.ts";
 
@@ -18,50 +19,17 @@ export async function authPayloadHandler(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validAuthPayload = validateAuthPayload(payloadFromClientAsObject);
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
 
-	if (!validAuthPayload) {
-		ws.send(
-			"Invalid authentication payload type. Type check not successful!"
-		);
-		console.error(
-			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		errorLogger.logError(
-			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		ws.close(
-			1008,
-			"Invalid authentication payload type. Type check not successful!"
-		);
+	if (!validAuthPayload.success) {
 		return;
 	}
 
-	const payload = payloadFromClientAsObject as AuthenticationPayload;
-	const allZeros =
-		payload.version === undefined ||
-		(payload.version.major === 0 &&
-			payload.version.minor === 0 &&
-			payload.version.patch === 0);
+	const versionDetails = validAuthPayload.data.version;
 
-	if (allZeros) {
-		ws.send(
-			"Invalid authentication payload type. Type check not successful!"
-		);
-		console.error(
-			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
-		);
-		errorLogger.logError(
-			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
-		);
-		ws.close(
-			1008,
-			"Invalid authentication payload type. Version is zero. Please update the client."
-		);
+	if (!checkIfVersionIsZero(versionDetails, ws)) {
 		return;
 	}
-
-	const versionDetails = payload.version;
 
 	setVersionState({
 		major: versionDetails.major,
@@ -69,13 +37,12 @@ export async function authPayloadHandler(
 		patch: versionDetails.patch,
 	});
 
-	try {
-		await registerUserInDatabse(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
+	await registerUserInDatabase(validAuthPayload.data);
 
+	await sendListOfAllRegisteredUsersToClients(server);
+}
+
+async function sendListOfAllRegisteredUsersToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 
 	if (typeof allUsers === "undefined" || allUsers === null) {
@@ -84,11 +51,58 @@ export async function authPayloadHandler(
 	}
 
 	const clientListPayload: ClientListPayloadEnhanced = {
-		payloadType: PayloadSubType.clientList,
+		payloadType: PayloadSubTypeEnum.enum.clientList,
 		version: getVersionState(),
-		// TODO validate this
 		clients: allUsers as ClientEntity[],
 	};
 
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = AuthenticationPayloadSchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
+		ws.send(
+			"Invalid authentication payload type. Type check not successful!"
+		);
+		console.error(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		ws.close(
+			1008,
+			"Invalid authentication payload type. Type check not successful!"
+		);
+	}
+	return validAuthPayload;
+}
+
+function checkIfVersionIsZero(
+	version: VersionEntity,
+	ws: ServerWebSocket<WebSocket>
+) {
+	const allZeros =
+		version.major === 0 && version.minor === 0 && version.patch === 0;
+
+	if (allZeros) {
+		ws.send(
+			"Invalid authentication validAuthPayload.data type. Type check not successful!"
+		);
+		console.error(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. VERSION IS ZERO. PLEASE UPDATE THE CLIENT."
+		);
+		ws.close(
+			1008,
+			"Invalid authentication validAuthPayload.data type. Version is zero. Please update the client."
+		);
+		return false;
+	}
+
+	return true;
 }

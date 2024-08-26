@@ -1,9 +1,7 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
-	PayloadSubType,
 	type ClientEntity,
-	type ClientUpdatePayload,
-	type ClientListPayloadEnhanced,
+	type ClientListPayloadEnhanced, type ClientUpdatePayloadV2, PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
 	retrieveAllRegisteredUsersFromDatabase,
@@ -24,7 +22,7 @@ export async function profileUpdatePayloadHandler(
 	}
 
 	await updateClientProfileInformation(
-		payloadFromClientAsObject as ClientUpdatePayload
+		payloadFromClientAsObject as ClientUpdatePayloadV2
 	);
 
 	await sendClientListPayloadToClients(server);
@@ -60,7 +58,7 @@ async function sendClientListPayloadToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 
 	const clientListPayload: ClientListPayloadEnhanced = {
-		payloadType: PayloadSubType.clientList,
+		payloadType: PayloadSubTypeEnum.enum.clientList,
 		version: getVersionState(),
 		// TODO validate this
 		clients: allUsers as ClientEntity[],

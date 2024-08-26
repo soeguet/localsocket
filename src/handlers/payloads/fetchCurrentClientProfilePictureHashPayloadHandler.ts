@@ -1,11 +1,9 @@
 import type { ServerWebSocket } from "bun";
-import {
-	type FetchCurrentClientProfilePictureHashPayload,
-	PayloadSubType,
-} from "../../types/payloadTypes";
+
 import { fetchProfilePicture } from "../databaseHandler";
 import { validateFetchCurrentClientProfilePictureHashPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { type FetchCurrentClientProfilePictureHashPayload, PayloadSubTypeEnum } from "../../types/payloadTypes.ts";
 
 export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -50,7 +48,7 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 				clientProfilePictureHash: profilePicture.imageHash,
 				clientDbId: payload.clientDbId,
 				payloadType:
-					PayloadSubType.fetchCurrentClientProfilePictureHash,
+					PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash,
 			};
 
 		ws.send(JSON.stringify(fetchCurrentClientProfilePictureHashPayload));
@@ -59,4 +57,3 @@ export async function fetchCurrentClientProfilePictureHashPayloadHandler(
 		return;
 	}
 }
-

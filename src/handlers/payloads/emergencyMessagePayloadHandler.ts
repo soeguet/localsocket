@@ -1,13 +1,13 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
 	type EmergencyMessagePayload,
-	PayloadSubType,
+	EmergencyMessagePayloadSchema,
+	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
 	persistEmergencyMessage,
 	retrieveLastEmergencyMessage,
 } from "../databaseHandler";
-import { validateEmergencyMessagePayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
 
 export async function emergencyMessagePayloadHandler(
@@ -15,13 +15,27 @@ export async function emergencyMessagePayloadHandler(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validatedEmergencyPayload = validateEmergencyMessagePayload(
-		payloadFromClientAsObject
+	const validatedEmergencyPayload = validatePayload(
+		payloadFromClientAsObject,
+		ws
 	);
-	if (!validatedEmergencyPayload) {
+
+	const payload = validatedEmergencyPayload.data as EmergencyMessagePayload;
+
+	const persistSuccessful = await persistEmergencyMessage(payload);
+	if (!persistSuccessful) {
+		return;
+	}
+	await sendLastEmergencyMessagesToAllClients(payload, server);
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = EmergencyMessagePayloadSchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
 		ws.send(
 			`Invalid emergency payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
+				payload
 			)}`
 		);
 		console.error(
@@ -34,37 +48,21 @@ export async function emergencyMessagePayloadHandler(
 			1008,
 			"Invalid emergency payload type. Type check not successful!"
 		);
-		return;
 	}
+	return validAuthPayload;
+}
 
-	const payload = payloadFromClientAsObject as EmergencyMessagePayload;
-
-	try {
-		await persistEmergencyMessage(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
-	let lastEmergencyMessage;
-	try {
-		lastEmergencyMessage = await retrieveLastEmergencyMessage(
-			payload.messageDbId
-		);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
-	if (lastEmergencyMessage === undefined || lastEmergencyMessage === null) {
-		console.error("lastEmergencyMessage is undefined or null");
-		errorLogger.logError("lastEmergencyMessage is undefined or null");
+async function sendLastEmergencyMessagesToAllClients(payload: EmergencyMessagePayload, server: Server) {
+	const lastEmergencyMessage = await retrieveLastEmergencyMessage(
+		payload.messageDbId
+	);
+	if (lastEmergencyMessage === null) {
 		return;
 	}
 
 	const updatedMessageWithPayloadType = {
 		...lastEmergencyMessage,
-		payloadType: PayloadSubType.emergencyMessage,
+		payloadType: PayloadSubTypeEnum.enum.emergencyMessage,
 	};
 
 	server.publish(
@@ -72,4 +70,3 @@ export async function emergencyMessagePayloadHandler(
 		JSON.stringify(updatedMessageWithPayloadType)
 	);
 }
-

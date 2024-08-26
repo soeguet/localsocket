@@ -1,8 +1,6 @@
 import type { ServerWebSocket } from "bun";
 import {
-	PayloadSubType,
-	type AllProfilePictureHashesPayload,
-	type ProfilePicturesHash,
+	type AllProfilePictureHashesPayload, PayloadSubTypeEnum, type ProfilePicturesHash,
 } from "../../types/payloadTypes";
 import { fetchAllProfilePictureHashes } from "../databaseHandler";
 
@@ -14,7 +12,7 @@ export async function fetchAllProfilePictureHashesPayloadHandler(
 
 	const fetchAllProfilePictureHashesPayload: AllProfilePictureHashesPayload =
 	{
-		payloadType: PayloadSubType.fetchAllProfilePictureHashes,
+		payloadType: PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes,
 		profilePictureHashes: allProfilePictureHashes,
 	};
 

@@ -1,26 +1,57 @@
 import type { ServerWebSocket, Server } from "bun";
-import { type DeleteEntity, PayloadSubType } from "../../types/payloadTypes";
 import {
 	deleteMessageStatus,
 	retrieveUpdatedMessageFromDatabase,
 } from "../databaseHandler";
-import { validateDeletePayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { type DeleteEntity, DeleteEntitySchema, PayloadSubTypeEnum } from "../../types/payloadTypes.ts";
 
 export async function deletePayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validatedDeletePayload = validateDeletePayload(
-		payloadFromClientAsObject
+	const validatedDeletePayload = validatePayload(
+		payloadFromClientAsObject,
+		ws
 	);
 
-	if (!validatedDeletePayload) {
+	if (!validatedDeletePayload.success) {
+		return;
+	}
+
+	const deleteSuccessful = await deleteMessageStatus(payloadFromClientAsObject as DeleteEntity);
+	if (!deleteSuccessful) {
+		return;
+	}
+
+	await sendUpdatedMessageToClients(validatedDeletePayload.data,server);
+}
+
+async function sendUpdatedMessageToClients(payload: DeleteEntity, server: Server) {
+
+	const updatedMessage = await retrieveUpdatedMessageFromDatabase(
+		payload.messageDbId
+	);
+
+	const updatedMessageWithPayloadType = {
+		...updatedMessage,
+		payloadType: PayloadSubTypeEnum.enum.delete,
+	};
+
+	server.publish(
+		"the-group-chat",
+		JSON.stringify(updatedMessageWithPayloadType)
+	);
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+
+	const validAuthPayload = DeleteEntitySchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
 		ws.send(
-			`Invalid delete payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
-			)}`
+			"Invalid delete payload type. Type check not successful!"
 		);
 		console.error(
 			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
@@ -32,28 +63,6 @@ export async function deletePayloadHandler(
 			1008,
 			"Invalid delete payload type. Type check not successful!"
 		);
-		return;
 	}
-
-	try {
-		await deleteMessageStatus(payloadFromClientAsObject as DeleteEntity);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
-	const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-		(payloadFromClientAsObject as DeleteEntity).messageDbId
-	);
-
-	const updatedMessageWithPayloadType = {
-		...updatedMessage,
-		payloadType: PayloadSubType.delete,
-	};
-
-	server.publish(
-		"the-group-chat",
-		JSON.stringify(updatedMessageWithPayloadType)
-	);
+	return validAuthPayload;
 }
-

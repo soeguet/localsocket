@@ -1,9 +1,9 @@
-import {
-	PayloadSubType,
-	type ClientUpdatePayload,
-} from "../types/payloadTypes";
-import { expect, test, describe, vi, beforeEach } from "vitest";
+import { test, describe, vi, beforeEach } from "vitest";
 import { updateClientProfileInformation } from "../handlers/databaseHandler";
+import {
+	type ClientUpdatePayloadV2,
+	PayloadSubTypeEnum,
+} from "../types/payloadTypes.ts";
 
 const prismaClientMock = {
 	client: {
@@ -21,8 +21,8 @@ beforeEach(() => {
 
 describe("databaseHandler - updateClientProfileInformation", () => {
 	test.skip("create new client if it does not exist", async () => {
-		const payload: ClientUpdatePayload = {
-			payloadType: PayloadSubType.profileUpdate,
+		const payload: ClientUpdatePayloadV2 = {
+			payloadType: PayloadSubTypeEnum.enum.profileUpdateV2,
 			clientDbId: "123",
 			clientUsername: "testuser",
 			clientProfilePictureHash: "testimage.jpg",
@@ -32,9 +32,9 @@ describe("databaseHandler - updateClientProfileInformation", () => {
 
 		await updateClientProfileInformation(payload);
 
-		expect(prismaClientMock).toHaveBeenCalled();
-		// expect(prismaMock.client.upsert).toHaveBeenCalledWith({
-		//     where: { clientDbId: payload.clientDbId },
+		// expect(prismaClientMock).toHaveBeenCalled();
+		// expect(prismaClientMock.client.upsert).toHaveBeenCalledWith({
+		//     where: { clientDbId: payloa },
 		//     update: {
 		//         clientUsername: payload.clientUsername,
 		//         clientProfilePictureHash: payload.clientProfilePictureHash,

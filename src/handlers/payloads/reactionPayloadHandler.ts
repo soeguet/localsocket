@@ -1,11 +1,11 @@
 import type { ServerWebSocket, Server } from "bun";
-import { type ReactionPayload, PayloadSubType } from "../../types/payloadTypes";
 import {
 	persistReactionToDatabase,
 	retrieveUpdatedMessageFromDatabase,
 } from "../databaseHandler";
 import { validateReactionPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import { PayloadSubTypeEnum, type ReactionPayload } from "../../types/payloadTypes.ts";
 
 export async function reactionPayloadHandler(
 	payloadFromClientAsObject: unknown,
@@ -49,7 +49,7 @@ export async function reactionPayloadHandler(
 	);
 	const updatedMessageWithPayloadType = {
 		...updatedMessage,
-		payloadType: PayloadSubType.reaction,
+		payloadType: PayloadSubTypeEnum.enum.reaction,
 	};
 
 	server.publish(
@@ -57,4 +57,3 @@ export async function reactionPayloadHandler(
 		JSON.stringify(updatedMessageWithPayloadType)
 	);
 }
-

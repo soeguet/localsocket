@@ -1,5 +1,5 @@
 import type { Server, ServerWebSocket } from "bun";
-import { PayloadSubType, type MessagePayload } from "../../types/payloadTypes";
+import { type MessagePayload, PayloadSubTypeEnum } from "../../types/payloadTypes";
 import {
 	persistMessageInDatabase,
 	retrieveLastMessageFromDatabase,
@@ -47,9 +47,8 @@ export async function messagePayloadHandler(
 
 	const finalPayload = {
 		...lastMessagesFromDatabase,
-		payloadType: PayloadSubType.message,
+		payloadType: PayloadSubTypeEnum.enum.message,
 	};
 
 	server.publish("the-group-chat", JSON.stringify(finalPayload));
 }
-

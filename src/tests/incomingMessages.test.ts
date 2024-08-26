@@ -1,6 +1,6 @@
 import { vi, afterEach, describe, test, expect } from "vitest";
 import { processIncomingMessage } from "../handlers/incomingMessageHandler";
-import { PayloadSubType } from "../types/payloadTypes";
+import { PayloadSubTypeEnum } from "../types/payloadTypes";
 
 const mockWebsocketConnection = {
 	send: vi.fn(),
@@ -66,7 +66,7 @@ afterEach(() => {
 describe("incomingMessages - AuthPayload", () => {
 	test("valid AuthPayload", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientUsername: "Test",
 			clientDbId: "asdasd",
 		});
@@ -82,7 +82,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("invalid AuthPayload - null value clientUsername", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientUsername: null,
 			clientDbId: "asdasd",
 		});
@@ -98,7 +98,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("valid AuthPayload - empty string clientUsername", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientUsername: "",
 			clientDbId: "asdasd",
 		});
@@ -114,7 +114,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("invalid AuthPayload - empty string clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientUsername: "Test",
 			clientDbId: "",
 			availability: true,
@@ -131,7 +131,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("invalid AuthPayload - null value clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientUsername: "Test",
 			clientDbId: null,
 		});
@@ -147,7 +147,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("invalid AuthPayload - missing clientUsername", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientDbId: "asdasd",
 		});
 		await processIncomingMessage(
@@ -162,7 +162,7 @@ describe("incomingMessages - AuthPayload", () => {
 
 	test("invalid AuthPayload - missing clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.auth,
+			payloadType: PayloadSubTypeEnum.enum.auth,
 			clientDbId: "asdasd",
 		});
 		await processIncomingMessage(
@@ -180,7 +180,7 @@ describe("incomingMessages - MessagePayload", () => {
 	/**
 	 * [[ RESULTING TYPE ]]
 	 * export type MessagePayload = {
-	 *      payloadType: PayloadSubType.message;
+	 *      payloadType: PayloadSubTypeEnum.enum.message;
 	 *      messageType: {
 	 *          messageDbId: string;
 	 *          messageContext: string;
@@ -208,7 +208,7 @@ describe("incomingMessages - MessagePayload", () => {
 	 */
 	test("valid MessagePayload", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -233,7 +233,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value messageDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: null,
 				messageContext: "Test",
@@ -259,7 +259,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value messageContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: null,
@@ -285,7 +285,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value messageTime", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -311,7 +311,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value messageDate", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -337,7 +337,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -363,7 +363,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing messageType", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			clientType: {
 				clientDbId: "asdasd",
 			},
@@ -381,7 +381,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing clientType", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -402,7 +402,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing messageType.messageDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageContext: "Test",
 				messageTime: "12:00",
@@ -425,7 +425,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - empty string messageType.messageDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "",
 				messageContext: "Test",
@@ -449,7 +449,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("valid MessagePayload - quoteType added", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -481,7 +481,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value quoteDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -512,7 +512,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value quoteClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -543,7 +543,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value quoteMessageContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -574,7 +574,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value quoteTime", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -605,7 +605,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value quoteDate", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -636,7 +636,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("valid MessagePayload - reactionType added", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -669,7 +669,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value reactionDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -701,7 +701,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value reactionMessageId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -733,7 +733,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value reactionContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -765,7 +765,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - null value reactionClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -797,7 +797,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing reactionClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -828,7 +828,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing reactionContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -859,7 +859,7 @@ describe("incomingMessages - MessagePayload", () => {
 
 	test("invalid MessagePayload - missing reactionMessageId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -893,7 +893,7 @@ describe("incomingMessages - ReactionPayload", () => {
 	// /**
 	//  * [[ RESULTING TYPE ]]
 	//  *  export type ReactionEntity = {
-	//  *     payloadType: PayloadSubType.reaction;
+	//  *     payloadType: PayloadSubTypeEnum.enum.reaction;
 	//  *	 reactionDbId: string;
 	//  *     reactionMessageId: string;
 	//  *     reactionContext: string;
@@ -907,7 +907,7 @@ describe("incomingMessages - ReactionPayload", () => {
 	//  * @param {string} reactionClientId
 	//  */
 	// export type ReactionPayload = Omit<ReactionEntity, "reactionDbId"> & {
-	//     payloadType: PayloadSubType.reaction;
+	//     payloadType: PayloadSubTypeEnum.enum.reaction;
 	// };
 
 	// properties: {
@@ -932,7 +932,7 @@ describe("incomingMessages - ReactionPayload", () => {
 	// },
 	test("valid ReactionPayload", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -950,7 +950,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - null value reactionDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: null,
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -969,7 +969,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - null value reactionMessageId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: null,
 			reactionContext: "Test",
@@ -988,7 +988,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - null value reactionContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: null,
@@ -1007,7 +1007,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - null value reactionClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -1026,7 +1026,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - missing reactionClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -1044,7 +1044,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - missing reactionContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionClientId: "asdasd",
@@ -1062,7 +1062,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - missing reactionMessageId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionContext: "Test",
 			reactionClientId: "asdasd",
@@ -1080,7 +1080,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - missing reactionDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
 			reactionClientId: "asdasd",
@@ -1098,7 +1098,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - empty string reactionDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "",
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -1117,7 +1117,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - empty string reactionMessageId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "",
 			reactionContext: "Test",
@@ -1136,7 +1136,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - empty string reactionContext", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: "",
@@ -1155,7 +1155,7 @@ describe("incomingMessages - ReactionPayload", () => {
 
 	test("invalid ReactionPayload - empty string reactionClientId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.reaction,
+			payloadType: PayloadSubTypeEnum.enum.reaction,
 			reactionDbId: "asdasd",
 			reactionMessageId: "asdasd",
 			reactionContext: "Test",
@@ -1219,7 +1219,7 @@ describe("incomingMessages - invalid PayloadType", () => {
 describe("incomingMessages - typing and force payloadType", () => {
 	test("valid typing PayloadType", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.typing,
+			payloadType: PayloadSubTypeEnum.enum.typing,
 		});
 
 		await processIncomingMessage(
@@ -1233,7 +1233,7 @@ describe("incomingMessages - typing and force payloadType", () => {
 
 	test("valid force PayloadType", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.force,
+			payloadType: PayloadSubTypeEnum.enum.force,
 		});
 
 		await processIncomingMessage(
@@ -1290,7 +1290,7 @@ describe("incomingMessages - typing and force payloadType", () => {
 
 	test("simple return of message", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.message,
+			payloadType: PayloadSubTypeEnum.enum.message,
 			messageType: {
 				messageDbId: "asdasd",
 				messageContext: "Test",
@@ -1317,7 +1317,7 @@ describe("incomingMessages - typing and force payloadType", () => {
 describe("incomingMessages - clientListPayload", () => {
 	test("valid clientListPayload", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.clientList,
+			payloadType: PayloadSubTypeEnum.enum.clientList,
 		});
 
 		await processIncomingMessage(
@@ -1333,7 +1333,7 @@ describe("incomingMessages - clientListPayload", () => {
 describe("incomingMessages - profileUpdatePayload", () => {
 	test("valid profileUpdatePayload", async () => {
 		const payload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",
@@ -1352,7 +1352,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("invalid profileUpdatePayload - null value clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: null,
 			clientUsername: "Test",
 			clientColor: "red",
@@ -1372,7 +1372,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("invalid profileUpdatePayload - empty string clientDbId", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "",
 			clientUsername: "Test",
 			clientColor: "red",
@@ -1392,7 +1392,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("invalid profileUpdatePayload - null value clientUsername", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: null,
 			clientColor: "red",
@@ -1412,7 +1412,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("invalid profileUpdatePayload - empty string clientUsername", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "",
 			clientColor: "red",
@@ -1432,7 +1432,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 	test("invalid profileUpdatePayload - null value clientColor", async () => {
 
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: null,
@@ -1452,7 +1452,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("valid profileUpdatePayload - empty string clientColor", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "",
@@ -1471,7 +1471,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("invalid profileUpdatePayload - null value clientProfilePictureHash", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",
@@ -1491,7 +1491,7 @@ describe("incomingMessages - profileUpdatePayload", () => {
 
 	test("valid profileUpdatePayload - empty string clientProfilePictureHash", async () => {
 		const invalidPayload = JSON.stringify({
-			payloadType: PayloadSubType.profileUpdate,
+			payloadType: PayloadSubTypeEnum.enum.profileUpdate,
 			clientDbId: "asdasd",
 			clientUsername: "Test",
 			clientColor: "red",

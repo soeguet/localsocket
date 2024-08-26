@@ -1,33 +1,26 @@
 import type { Server } from "bun";
 import {
-	PayloadSubType,
 	type ClientEntity,
-	type ClientListPayloadEnhanced,
+	type ClientListPayloadEnhanced, PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import { retrieveAllRegisteredUsersFromDatabase } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState } from "../../state/versionState";
 
 export async function clientListPayloadHandler(server: Server) {
+
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
+
 	if (allUsers === undefined || allUsers === null) {
 		errorLogger.logError(new Error("No users found"));
 		return;
 	}
 
-	//const clientListPayload: ClientListPayload = {
-	//	payloadType: PayloadSubType.clientList,
-	//	// TODO validate this
-	//	clients: allUsers as ClientEntity[],
-	//};
-
 	const clientListPayload: ClientListPayloadEnhanced = {
-		payloadType: PayloadSubType.clientList,
+		payloadType: PayloadSubTypeEnum.enum.clientList,
 		version: getVersionState(),
 		clients: allUsers as ClientEntity[],
 	};
 
-	console.log("clientListPayload", clientListPayload);
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
-

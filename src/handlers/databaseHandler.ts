@@ -2,18 +2,18 @@ import prisma from "../db/db";
 import { errorLogger } from "../logger/errorLogger";
 import {
 	type AuthenticationPayload,
-	type ClientUpdatePayload,
 	type MessageListPayload,
 	type MessagePayload,
-	PayloadSubType,
-	type ReactionPayload,
-	type DeleteEntity,
-	type EditEntity,
 	type EmergencyMessagePayload,
 	type ProfilePictureObject,
 	type BannerObject,
-	type ErrorLog,
+	type EditEntity,
+	type DeleteEntity,
+	type ReactionPayload,
+	PayloadSubTypeEnum,
+	type ClientUpdatePayloadV2,
 } from "../types/payloadTypes";
+import type { ErrorLog } from "@prisma/client";
 
 export async function checkForDatabaseErrors(message: string) {
 	// check for null values
@@ -142,9 +142,14 @@ export async function persistEmergencyMessage(
 				message: payload.message,
 			},
 		});
+
 	} catch (error) {
+
 		errorLogger.logError(error);
+		return false;
 	}
+
+	return true;
 }
 
 export async function retrieveLastEmergencyMessage(messageDbId: string) {
@@ -160,11 +165,11 @@ export async function retrieveLastEmergencyMessage(messageDbId: string) {
 		});
 	} catch (error) {
 		errorLogger.logError(error);
-		return;
+		return null;
 	}
 }
 
-export async function registerUserInDatabse(payload: AuthenticationPayload) {
+export async function registerUserInDatabase(payload: AuthenticationPayload) {
 	try {
 		await prisma.client.upsert({
 			where: {
@@ -186,34 +191,49 @@ export async function retrieveAllRegisteredUsersFromDatabase() {
 }
 
 export async function editMessageContent(payload: EditEntity) {
-	await prisma.messagePayload.update({
-		where: {
-			messagePayloadDbId: payload.messageDbId,
-		},
-		data: {
-			messageType: {
-				update: {
-					edited: true,
-					messageContext: payload.messageContext,
+	try {
+		await prisma.messagePayload.update({
+			where: {
+				messagePayloadDbId: payload.messageDbId,
+			},
+			data: {
+				messageType: {
+					update: {
+						edited: true,
+						messageContext: payload.messageContext,
+					},
 				},
 			},
-		},
-	});
+		});
+
+	} catch (error) {
+
+		errorLogger.logError(error);
+		return false;
+	}
+	return true;
 }
 
 export async function deleteMessageStatus(payload: DeleteEntity) {
-	await prisma.messagePayload.update({
-		where: {
-			messagePayloadDbId: payload.messageDbId,
-		},
-		data: {
-			messageType: {
-				update: {
-					deleted: true,
+	try {
+		await prisma.messagePayload.update({
+			where: {
+				messagePayloadDbId: payload.messageDbId,
+			},
+			data: {
+				messageType: {
+					update: {
+						deleted: true,
+					},
 				},
 			},
-		},
-	});
+		});
+
+		return true;
+	} catch (error) {
+		errorLogger.logError(error);
+		return false;
+	}
 }
 
 export async function persistReactionToDatabase(payload: ReactionPayload) {
@@ -247,13 +267,13 @@ export async function sendLast100MessagesToNewClient() {
 		},
 	});
 	return {
-		payloadType: PayloadSubType.messageList,
+		payloadType: PayloadSubTypeEnum.enum.messageList,
 		messageList: messageList,
 	} as MessageListPayload;
 }
 
 export async function updateClientProfileInformation(
-	payload: ClientUpdatePayload
+	payload: ClientUpdatePayloadV2
 ) {
 	try {
 		await prisma.client.upsert({
