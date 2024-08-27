@@ -2,7 +2,7 @@ import type { Server, ServerWebSocket } from "bun";
 import { NewProfilePicturePayloadSchema } from "../../types/payloadTypes";
 import {
 	persistProfilePicture,
-	persistProfilePictureHashForClient,
+	persistPictureHashForClient,
 } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
 
@@ -17,7 +17,7 @@ export async function newProfilePictureHandler(
 	}
 
 	await persistProfilePicture(validAuthPayload.data);
-	await persistProfilePictureHashForClient(
+	await persistPictureHashForClient(
 		validAuthPayload.data.clientDbId,
 		validAuthPayload.data.imageHash
 	);

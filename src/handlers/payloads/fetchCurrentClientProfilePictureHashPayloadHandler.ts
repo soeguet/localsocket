@@ -1,6 +1,6 @@
 import type { ServerWebSocket } from "bun";
 
-import { fetchProfilePicture } from "../databaseHandler";
+import { fetchPictureByHash } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
 import {
 	type FetchCurrentClientProfilePictureHashPayload,
@@ -47,7 +47,7 @@ async function sendProfilePictureHashesToClients(
 	payload: FetchCurrentClientProfilePictureHashPayload,
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const profilePicture = await fetchProfilePicture(payload.clientDbId);
+	const profilePicture = await fetchPictureByHash(payload.clientDbId);
 	if (profilePicture === null) {
 		return;
 	}

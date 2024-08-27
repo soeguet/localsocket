@@ -4,29 +4,40 @@ import {
 	type FetchAllProfilePicturesPayload,
 	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
-import { fetchAllProfilePictures } from "../databaseHandler";
+import { fetchAllPictures } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
 
 export async function fetchAllProfilePicturesPayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
-	if (!validAuthPayload.success) {
-		return;
-	}
 
-	const allProfilePictures = await fetchAllProfilePictures();
-	if (allProfilePictures === null) {
-		return;
-	}
+	throw new Error("REVISIT IF NEEDED -- fetchAllProfilePicturesPayloadHandler");
 
-	const fetchAllProfilePicturesPayload: FetchAllProfilePicturesPayload = {
-		payloadType: PayloadSubTypeEnum.enum.fetchAllProfilePictures,
-		profilePictures: allProfilePictures,
-	};
-
-	ws.send(JSON.stringify(fetchAllProfilePicturesPayload));
+	// const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	// if (!validAuthPayload.success) {
+	// 	return;
+	// }
+	//
+	// const allProfilePictures = await fetchAllPictures();
+	// if (allProfilePictures === null) {
+	// 	return;
+	// }
+	//
+	// const profilePictures: ProfilePictureObject[] = [];
+	// for (const picture of allProfilePictures) {
+	// 	profilePictures.push({
+	// 		imageHash: picture.imageHash,
+	// 		data: picture.data,
+	// 	});
+	// }
+	//
+	// const fetchAllProfilePicturesPayload: FetchAllProfilePicturesPayload = {
+	// 	payloadType: PayloadSubTypeEnum.enum.fetchAllProfilePictures,
+	// 	profilePictures: allProfilePictures,
+	// };
+	//
+	// ws.send(JSON.stringify(fetchAllProfilePicturesPayload));
 }
 
 function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {

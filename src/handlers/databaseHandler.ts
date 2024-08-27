@@ -40,34 +40,31 @@ export async function persistErrorLogInDatabase(errorLog: ErrorLog) {
 }
 
 export async function persistProfilePicture(payload: ProfilePictureObject) {
-	try {
-		await prisma.profilePictures.upsert({
-			where: {
-				clientDbId: payload.clientDbId,
-			},
-			update: {
-				imageHash: payload.imageHash,
-				data: payload.data,
-			},
-			create: {
-				clientDbId: payload.clientDbId,
+
+	const existingRecord = await prisma.pictures.findUnique({
+		where: {
+			imageHash: payload.imageHash,
+		},
+	});
+
+	if (!existingRecord) {
+		await prisma.pictures.create({
+			data: {
 				imageHash: payload.imageHash,
 				data: payload.data,
 			},
 		});
-	} catch (error) {
-		console.error("Error persisting profile picture", error);
-		errorLogger.logError(error);
 		return;
 	}
 }
 
+// TODO this needs to be changed/updated
 export async function fetchAllProfilePictureHashes() {
 	try {
-		return prisma.profilePictures.findMany({
+		return prisma.client.findMany({
 			select: {
-				clientDbId: true,
-				imageHash: true,
+				clientProfilePictureHash: true,
+				clientDbId: true
 			},
 		});
 	} catch (error) {
@@ -129,7 +126,7 @@ export async function retrieveAllBanners() {
 	return prisma.banners.findMany();
 }
 
-export async function persistProfilePictureHashForClient(
+export async function persistPictureHashForClient(
 	clientDbId: string,
 	imageHash: string
 ) {
@@ -148,11 +145,11 @@ export async function persistProfilePictureHashForClient(
 	}
 }
 
-export async function fetchProfilePicture(clientDbId: string) {
+export async function fetchPictureByHash(imageHash: string) {
 	try {
-		return prisma.profilePictures.findFirst({
+		return prisma.pictures.findFirst({
 			where: {
-				clientDbId: clientDbId,
+				imageHash: imageHash
 			},
 		});
 	} catch (error) {
@@ -161,9 +158,9 @@ export async function fetchProfilePicture(clientDbId: string) {
 	}
 }
 
-export async function fetchAllProfilePictures() {
+export async function fetchAllPictures() {
 	try {
-		return prisma.profilePictures.findMany();
+		return prisma.pictures.findMany();
 	} catch (error) {
 		errorLogger.logError(error);
 		return null;
