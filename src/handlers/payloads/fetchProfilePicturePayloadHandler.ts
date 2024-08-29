@@ -1,23 +1,49 @@
 import type { ServerWebSocket } from "bun";
+
+import { fetchPictureByHash } from "../databaseHandler";
+import { errorLogger } from "../../logger/errorLogger";
 import {
 	type FetchProfilePicturePayload,
-	PayloadSubType,
-} from "../../types/payloadTypes";
-import { fetchProfilePicture } from "../databaseHandler";
-import { validateFetchProfilePicturePayload } from "../typeHandler";
-import { errorLogger } from "../../logger/errorLogger";
+	FetchProfilePicturePayloadSchema,
+	PayloadSubTypeEnum,
+} from "../../types/payloadTypes.ts";
 
 export async function fetchProfilePicturePayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const validatedFetchProfilePicturePayload =
-		validateFetchProfilePicturePayload(payloadFromClientAsObject);
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
+		return;
+	}
 
-	if (!validatedFetchProfilePicturePayload) {
+	await sendProfilePicturePayloadToClients(validAuthPayload.data, ws);
+}
+
+async function sendProfilePicturePayloadToClients(
+	payload: FetchProfilePicturePayload,
+	ws: ServerWebSocket<WebSocket>
+) {
+	const profilePicture = await fetchPictureByHash(payload.clientDbId);
+	if (profilePicture === null) {
+		return;
+	}
+	const fetchProfilePicturePayload = {
+		...profilePicture,
+		payloadType: PayloadSubTypeEnum.enum.fetchProfilePicture,
+	};
+
+	ws.send(JSON.stringify(fetchProfilePicturePayload));
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload =
+		FetchProfilePicturePayloadSchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
 		ws.send(
 			`Invalid fetch profile picture payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
+				validAuthPayload
 			)}`
 		);
 		console.error(
@@ -30,26 +56,6 @@ export async function fetchProfilePicturePayloadHandler(
 			1008,
 			"Invalid fetch profile picture payload type. Type check not successful!"
 		);
-		return;
 	}
-
-	const payload = payloadFromClientAsObject as FetchProfilePicturePayload;
-
-	try {
-		const profilePicture = await fetchProfilePicture(payload.clientDbId);
-		if (profilePicture === undefined || profilePicture === null) {
-			errorLogger.logError(new Error("No profile picture found"));
-			return;
-		}
-
-		const fetchProfilePicturePayload = {
-			...profilePicture,
-			payloadType: PayloadSubType.fetchProfilePicture,
-		};
-
-		ws.send(JSON.stringify(fetchProfilePicturePayload));
-	} catch (error) {
-		errorLogger.logError(error);
-	}
+	return validAuthPayload;
 }
-

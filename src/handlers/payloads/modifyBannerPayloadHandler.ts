@@ -1,25 +1,46 @@
 import type { ServerWebSocket } from "bun";
-import { validateBannerPayload } from "../typeHandler";
 import {
 	deleteExistingBanner,
 	persistBanner,
 	updateExistingBanner,
 } from "../databaseHandler";
-import type { BannerPayload } from "../../types/payloadTypes";
+import {
+	BannerPayloadSchema,
+} from "../../types/payloadTypes";
 import { errorLogger } from "../../logger/errorLogger";
 
 export async function modifyBannerPayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>
 ) {
-	const validatedModifyBannerPayload = validateBannerPayload(
-		payloadFromClientAsObject
-	);
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
+		return;
+	}
 
-	if (!validatedModifyBannerPayload) {
+	switch (validAuthPayload.data.action) {
+		case "add": {
+			await persistBanner(validAuthPayload.data.banner);
+			break;
+		}
+		case "remove": {
+			await deleteExistingBanner(validAuthPayload.data.banner.id);
+			break;
+		}
+		case "update": {
+			await updateExistingBanner(validAuthPayload.data.banner);
+			break;
+		}
+	}
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = BannerPayloadSchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
 		ws.send(
 			`Invalid modify banner payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
+				payload
 			)}`
 		);
 		console.error(
@@ -32,44 +53,6 @@ export async function modifyBannerPayloadHandler(
 			1008,
 			"Invalid modify banner payload type. Type check not successful!"
 		);
-		return;
 	}
-
-	const payload = payloadFromClientAsObject as BannerPayload;
-
-	if (payload.action === "add") {
-		await addBanner(payload);
-	} else if (payload.action === "remove") {
-		await removeBanner(payload);
-	} else if (payload.action === "update") {
-		await updateBanner(payload);
-	}
+	return validAuthPayload;
 }
-
-async function removeBanner(payload: BannerPayload) {
-	try {
-		await deleteExistingBanner(payload.banner.id);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-}
-
-async function updateBanner(payload: BannerPayload) {
-	try {
-		await updateExistingBanner(payload.banner);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-}
-
-async function addBanner(payload: BannerPayload) {
-	try {
-		await persistBanner(payload.banner);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-}
-

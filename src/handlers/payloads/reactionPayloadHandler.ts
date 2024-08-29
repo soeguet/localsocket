@@ -1,25 +1,55 @@
 import type { ServerWebSocket, Server } from "bun";
-import { type ReactionPayload, PayloadSubType } from "../../types/payloadTypes";
 import {
 	persistReactionToDatabase,
 	retrieveUpdatedMessageFromDatabase,
 } from "../databaseHandler";
-import { validateReactionPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import {
+	PayloadSubTypeEnum,
+	type ReactionPayload,
+	ReactionPayloadSchema,
+} from "../../types/payloadTypes.ts";
 
 export async function reactionPayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validatedReactionPayload = validateReactionPayload(
-		payloadFromClientAsObject
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
+		return;
+	}
+
+	await persistReactionToDatabase(validAuthPayload.data);
+	await sendReactionPayloadToAllClients(validAuthPayload.data, server);
+}
+
+async function sendReactionPayloadToAllClients(
+	payload: ReactionPayload,
+	server: Server
+) {
+	const updatedMessage = await retrieveUpdatedMessageFromDatabase(
+		payload.reactionMessageId
 	);
 
-	if (!validatedReactionPayload) {
+	const updatedMessageWithPayloadType = {
+		...updatedMessage,
+		payloadType: PayloadSubTypeEnum.enum.reaction,
+	};
+
+	server.publish(
+		"the-group-chat",
+		JSON.stringify(updatedMessageWithPayloadType)
+	);
+}
+
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = ReactionPayloadSchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
 		ws.send(
 			`Invalid reaction payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
+				payload
 			)}`
 		);
 		console.error(
@@ -32,29 +62,6 @@ export async function reactionPayloadHandler(
 			1008,
 			"Invalid authentication payload type. Type check not successful!"
 		);
-		return;
 	}
-
-	const payload = payloadFromClientAsObject as ReactionPayload;
-
-	try {
-		await persistReactionToDatabase(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
-	const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-		(payloadFromClientAsObject as ReactionPayload).reactionMessageId
-	);
-	const updatedMessageWithPayloadType = {
-		...updatedMessage,
-		payloadType: PayloadSubType.reaction,
-	};
-
-	server.publish(
-		"the-group-chat",
-		JSON.stringify(updatedMessageWithPayloadType)
-	);
+	return validAuthPayload;
 }
-

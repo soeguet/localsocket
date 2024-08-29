@@ -1,9 +1,8 @@
 import type { Server } from "bun";
 import { retrieveAllBanners } from "../databaseHandler";
 import {
-	PayloadSubType,
 	type BannerListPayload,
-	type BannerObject,
+	type BannerObject, PayloadSubTypeEnum,
 	type Priority,
 } from "../../types/payloadTypes";
 import { errorLogger } from "../../logger/errorLogger";
@@ -44,10 +43,9 @@ export async function fetchAllBannersPayloadHandler(server: Server) {
 	}
 
 	const fetchAllBannersPayload: BannerListPayload = {
-		payloadType: PayloadSubType.fetchAllBanners,
+		payloadType: PayloadSubTypeEnum.enum.fetchAllBanners,
 		banners: bannersAsArray,
 	};
 
 	server.publish("the-group-chat", JSON.stringify(fetchAllBannersPayload));
 }
-

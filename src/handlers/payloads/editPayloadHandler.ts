@@ -1,52 +1,42 @@
 import type { ServerWebSocket, Server } from "bun";
-import { type EditEntity, PayloadSubType } from "../../types/payloadTypes";
 import {
 	editMessageContent,
 	retrieveUpdatedMessageFromDatabase,
 } from "../databaseHandler";
-import { validateEditPayload } from "../typeHandler";
 import { errorLogger } from "../../logger/errorLogger";
+import {
+	type EditEntity,
+	EditEntitySchema,
+	PayloadSubTypeEnum,
+} from "../../types/payloadTypes.ts";
 
 export async function editPayloadHandler(
 	payloadFromClientAsObject: unknown,
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validatedEditPayload = validateEditPayload(payloadFromClientAsObject);
+	const validatedEditPayload = validatePayload(payloadFromClientAsObject, ws);
 
-	if (!validatedEditPayload) {
-		ws.send(
-			`Invalid delete payload type. Type check not successful! ${JSON.stringify(
-				payloadFromClientAsObject
-			)}`
-		);
-		console.error(
-			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		errorLogger.logError(
-			"VALIDATION OF _DELETE_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
-		);
-		ws.close(
-			1008,
-			"Invalid delete payload type. Type check not successful!"
-		);
+	if (!validatedEditPayload.success) {
 		return;
 	}
 
-	try {
-		await editMessageContent(payloadFromClientAsObject as EditEntity);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
+	await editMessageContent(payloadFromClientAsObject as EditEntity);
 
+	await sendEditedMessageToClients(
+		payloadFromClientAsObject as EditEntity,
+		server
+	);
+}
+
+async function sendEditedMessageToClients(payload: EditEntity, server: Server) {
 	const updatedMessage = await retrieveUpdatedMessageFromDatabase(
-		(payloadFromClientAsObject as EditEntity).messageDbId
+		payload.messageDbId
 	);
 
 	const updatedMessageWithPayloadType = {
 		...updatedMessage,
-		payloadType: PayloadSubType.edit,
+		payloadType: PayloadSubTypeEnum.enum.edit,
 	};
 
 	server.publish(
@@ -55,3 +45,18 @@ export async function editPayloadHandler(
 	);
 }
 
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = EditEntitySchema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
+		ws.send("Invalid edit payload type. Type check not successful!");
+		console.error(
+			"VALIDATION OF _EDIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _EDIT_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		ws.close(1008, "Invalid edit payload type. Type check not successful!");
+	}
+	return validAuthPayload;
+}

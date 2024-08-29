@@ -1,12 +1,11 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
-	PayloadSubType,
-	type ErrorLog,
-	type SimplePayload,
+	ErrorLogSchema,
+	type PayloadSubType,
+	PayloadSubTypeEnum, type SimplePayload,
 } from "../types/payloadTypes";
 import {
-	checkForDatabaseErrors,
-	persistErrorLogInDatabase,
+	checkForDatabaseErrors, persistErrorLogInDatabase,
 } from "./databaseHandler";
 import { authPayloadHandler } from "./payloads/authPayloadHandler";
 import { clientListPayloadHandler } from "./payloads/clientListPayloadHandler";
@@ -20,14 +19,13 @@ import { fetchProfilePicturePayloadHandler } from "./payloads/fetchProfilePictur
 import { messageListPayloadHandler } from "./payloads/messageListPayloadHandler";
 import { messagePayloadHandler } from "./payloads/messagePayloadHandler";
 import { newProfilePictureHandler } from "./payloads/newProfilePicturePayloadHandler";
-import { profileUpdatePayloadHandler } from "./payloads/profileUpdatePayloadHandler";
 import { profileUpdatePayloadHandlerV2 } from "./payloads/profileUpdatePayloadHandlerV2";
 import { reactionPayloadHandler } from "./payloads/reactionPayloadHandler";
 import { fetchAllBannersPayloadHandler } from "./payloads/fetchAllBannersPayloadHandler";
 import { modifyBannerPayloadHandler } from "./payloads/modifyBannerPayloadHandler";
 import { fetchAllProfilePictureHashesPayloadHandler } from "./payloads/fetchAllProfilePictureHashesPayloadHandler";
-import { validateErrorLogPayload } from "./typeHandler";
 import { errorLogger } from "../logger/errorLogger";
+import type { ErrorLog } from "@prisma/client";
 
 function validateSimplePayload(payload: unknown): payload is SimplePayload {
 	return (payload as SimplePayload).payloadType !== undefined;
@@ -36,14 +34,13 @@ function validateSimplePayload(payload: unknown): payload is SimplePayload {
 export async function processErrorLog(errorLog: Request) {
 	const errorLogObject = await errorLog.json();
 
-	const validatedErrorLog = validateErrorLogPayload(errorLogObject);
-	if (validatedErrorLog === false) {
+	const validatedErrorLog = ErrorLogSchema.safeParse(errorLogObject);
+	if (!validatedErrorLog.success) {
 		errorLogger.logError(new Error("Error validating error log payload"));
+		return
 	}
 
-	const payload = errorLogObject as ErrorLog;
-
-	await persistErrorLogInDatabase(payload);
+	await persistErrorLogInDatabase(validatedErrorLog.data as ErrorLog);
 }
 
 async function parseInitialPayload(
@@ -77,9 +74,9 @@ export async function processIncomingMessage(
 	}
 
 	// switch part
-	switch (payloadFromClientAsUnknownObject.payloadType) {
-		case PayloadSubType.auth: {
-			// PayloadSubType.auth == 0
+	switch (payloadFromClientAsUnknownObject.payloadType as PayloadSubType) {
+		case PayloadSubTypeEnum.enum.auth: {
+			// PayloadSubTypeEnum.enum.auth == 0
 			await authPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -88,8 +85,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.message: {
-			// PayloadSubType.message == 1
+		case PayloadSubTypeEnum.enum.message: {
+			// PayloadSubTypeEnum.enum.message == 1
 			await messagePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -98,24 +95,26 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.clientList: {
-			// PayloadSubType.clientList == 2
+		case PayloadSubTypeEnum.enum.clientList: {
+			// PayloadSubTypeEnum.enum.clientList == 2
 			await clientListPayloadHandler(server);
 			break;
 		}
 
-		case PayloadSubType.profileUpdate: {
-			// PayloadSubType.profileUpdate == 3
-			await profileUpdatePayloadHandler(
-				payloadFromClientAsUnknownObject,
-				ws,
-				server
-			);
-			break;
+		case PayloadSubTypeEnum.enum.profileUpdate: {
+			throw new Error("ProfileUpdate !old! not implemented");
+			// PayloadSubTypeEnum.enum.profileUpdate == 3
+
+			// await profileUpdatePayloadHandler(
+			// 	payloadFromClientAsUnknownObject,
+			// 	ws,
+			// 	server
+			// );
+			// break;
 		}
 
-		case PayloadSubType.profileUpdateV2: {
-			// PayloadSubType.profileUpdateV2 == 17
+		case PayloadSubTypeEnum.enum.profileUpdateV2: {
+			// PayloadSubTypeEnum.enum.profileUpdateV2 == 17
 			await profileUpdatePayloadHandlerV2(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -124,22 +123,22 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.messageList: {
-			// PayloadSubType.messageList == 4
+		case PayloadSubTypeEnum.enum.messageList: {
+			// PayloadSubTypeEnum.enum.messageList == 4
 			await messageListPayloadHandler(ws);
 			break;
 		}
 
-		case PayloadSubType.typing:
-		case PayloadSubType.force: {
-			// PayloadSubType.typing == 5
-			// PayloadSubType.force == 6
+		case PayloadSubTypeEnum.enum.typing:
+		case PayloadSubTypeEnum.enum.force: {
+			// PayloadSubTypeEnum.enum.typing == 5
+			// PayloadSubTypeEnum.enum.force == 6
 			server.publish("the-group-chat", messageAsString);
 			break;
 		}
 
-		case PayloadSubType.reaction: {
-			// PayloadSubType.reaction == 7
+		case PayloadSubTypeEnum.enum.reaction: {
+			// PayloadSubTypeEnum.enum.reaction == 7
 			await reactionPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -148,8 +147,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.delete: {
-			// PayloadSubType.delete == 8
+		case PayloadSubTypeEnum.enum.delete: {
+			// PayloadSubTypeEnum.enum.delete == 8
 			await deletePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -158,8 +157,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.edit: {
-			// PayloadSubType.edit == 9
+		case PayloadSubTypeEnum.enum.edit: {
+			// PayloadSubTypeEnum.enum.edit == 9
 			await editPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -168,8 +167,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.emergencyInit: {
-			// PayloadSubType.emergencyInit == 10
+		case PayloadSubTypeEnum.enum.emergencyInit: {
+			// PayloadSubTypeEnum.enum.emergencyInit == 10
 			await emergencyInitPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				message,
@@ -179,8 +178,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.emergencyMessage: {
-			// PayloadSubType.emergencyMessage == 11
+		case PayloadSubTypeEnum.enum.emergencyMessage: {
+			// PayloadSubTypeEnum.enum.emergencyMessage == 11
 			await emergencyMessagePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -189,8 +188,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.newProfilePicture: {
-			// PayloadSubType.newProfilePicture == 13
+		case PayloadSubTypeEnum.enum.newProfilePicture: {
+			// PayloadSubTypeEnum.enum.newProfilePicture == 13
 			await newProfilePictureHandler(
 				payloadFromClientAsUnknownObject,
 				ws,
@@ -199,8 +198,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.fetchProfilePicture: {
-			// PayloadSubType.fetchProfilePicture == 14
+		case PayloadSubTypeEnum.enum.fetchProfilePicture: {
+			// PayloadSubTypeEnum.enum.fetchProfilePicture == 14
 			await fetchProfilePicturePayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
@@ -208,8 +207,8 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.fetchAllProfilePictures: {
-			// PayloadSubType.fetchAllProfilePictures == 15
+		case PayloadSubTypeEnum.enum.fetchAllProfilePictures: {
+			// PayloadSubTypeEnum.enum.fetchAllProfilePictures == 15
 			await fetchAllProfilePicturesPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
@@ -217,14 +216,14 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.fetchAllProfilePictureHashes: {
-			// PayloadSubType.fetchAllProfilePictureHashes == 20
+		case PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes: {
+			// PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes == 20
 			await fetchAllProfilePictureHashesPayloadHandler(ws);
 			break;
 		}
 
-		case PayloadSubType.fetchCurrentClientProfilePictureHash: {
-			// PayloadSubType.fetchCurrentClientProfilePictureHash == 16
+		case PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash: {
+			// PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash == 16
 			await fetchCurrentClientProfilePictureHashPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
@@ -232,14 +231,14 @@ export async function processIncomingMessage(
 			break;
 		}
 
-		case PayloadSubType.fetchAllBanners: {
-			// PayloadSubType.fetchAllBanners == 18
+		case PayloadSubTypeEnum.enum.fetchAllBanners: {
+			// PayloadSubTypeEnum.enum.fetchAllBanners == 18
 			await fetchAllBannersPayloadHandler(server);
 			break;
 		}
 
-		case PayloadSubType.modifyBanner: {
-			// PayloadSubType.modifyBanner == 19
+		case PayloadSubTypeEnum.enum.modifyBanner: {
+			// PayloadSubTypeEnum.enum.modifyBanner == 19
 			await modifyBannerPayloadHandler(
 				payloadFromClientAsUnknownObject,
 				ws
@@ -266,4 +265,3 @@ export async function processIncomingMessage(
 		}
 	}
 }
-

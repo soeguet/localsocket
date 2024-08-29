@@ -1,19 +1,15 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
-	PayloadSubType,
+	AuthenticationPayloadSchema,
 	type ClientEntity,
-	type ClientUpdatePayload,
-	type ProfilePictureObject,
 	type ClientListPayloadEnhanced,
+	type ClientUpdatePayloadV2, ClientUpdatePayloadV2Schema,
+	PayloadSubTypeEnum,
 } from "../../types/payloadTypes";
 import {
-	fetchProfilePicture,
-	persistProfilePicture,
 	retrieveAllRegisteredUsersFromDatabase,
 	updateClientProfileInformation,
 } from "../databaseHandler";
-import { validateclientUpdatePayload } from "../typeHandler";
-import { generateUnixTimestampFnv1aHash } from "../../helper/hashGenerator";
 import { errorLogger } from "../../logger/errorLogger";
 import { getVersionState } from "../../state/versionState.ts";
 
@@ -22,59 +18,17 @@ export async function profileUpdatePayloadHandlerV2(
 	ws: ServerWebSocket<WebSocket>,
 	server: Server
 ) {
-	const validMessagePayload = validateclientUpdatePayload(
-		payloadFromClientAsObject
-	);
-
-	if (!validMessagePayload) {
-		ws.send("Invalid clientUpdatePayload type. Type check not successful!");
-		ws.send(JSON.stringify(payloadFromClientAsObject));
-		ws.close(
-			1008,
-			"Invalid clientUpdatePayload type. Type check not successful!"
-		);
+	const validAuthPayload = validatePayload(payloadFromClientAsObject, ws);
+	if (!validAuthPayload.success) {
 		return;
 	}
 
-	// fetch bot versions of pictures
-	const payload = payloadFromClientAsObject as ClientUpdatePayload;
-	const clientProfilePicture = await fetchProfilePicture(payload.clientDbId);
+	const payload = payloadFromClientAsObject as ClientUpdatePayloadV2;
+	await updateClientProfileInformation(payload);
+	await sendRegisteredUserListToClients(server);
+}
 
-	// validate if the picture is the same as the one in the database
-	if (payload.clientProfileImage) {
-		if (
-			clientProfilePicture === undefined ||
-			clientProfilePicture === null ||
-			clientProfilePicture.data === "" ||
-			clientProfilePicture.data !== payload.clientProfileImage
-		) {
-			const profilePictureObject: ProfilePictureObject = {
-				clientDbId: payload.clientDbId,
-				imageHash: generateUnixTimestampFnv1aHash(),
-				data: payload.clientProfileImage,
-			};
-			// persist the picture
-			try {
-				await persistProfilePicture(profilePictureObject);
-			} catch (error) {
-				errorLogger.logError(error);
-				return;
-			}
-
-			// update the client profile picture hash
-			payload.clientProfileImage = generateUnixTimestampFnv1aHash();
-
-			// TODO inform all clients about the new picture
-		}
-	}
-
-	try {
-		await updateClientProfileInformation(payload);
-	} catch (error) {
-		errorLogger.logError(error);
-		return;
-	}
-
+async function sendRegisteredUserListToClients(server: Server) {
 	const allUsers = await retrieveAllRegisteredUsersFromDatabase();
 	if (allUsers === undefined || allUsers === null) {
 		errorLogger.logError(new Error("No users found"));
@@ -82,7 +36,7 @@ export async function profileUpdatePayloadHandlerV2(
 	}
 
 	const clientListPayload: ClientListPayloadEnhanced = {
-		payloadType: PayloadSubType.clientList,
+		payloadType: PayloadSubTypeEnum.enum.clientList,
 		// TODO validate this
 		version: getVersionState(),
 		clients: allUsers as ClientEntity[],
@@ -91,3 +45,23 @@ export async function profileUpdatePayloadHandlerV2(
 	server.publish("the-group-chat", JSON.stringify(clientListPayload));
 }
 
+function validatePayload(payload: unknown, ws: ServerWebSocket<WebSocket>) {
+	const validAuthPayload = ClientUpdatePayloadV2Schema.safeParse(payload);
+
+	if (!validAuthPayload.success) {
+		ws.send(
+			"Invalid authentication payload type. Type check not successful!"
+		);
+		console.error(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		errorLogger.logError(
+			"VALIDATION OF _AUTH_ PAYLOAD FAILED. PLEASE CHECK THE PAYLOAD AND TRY AGAIN."
+		);
+		ws.close(
+			1008,
+			"Invalid authentication payload type. Type check not successful!"
+		);
+	}
+	return validAuthPayload;
+}

@@ -5,98 +5,96 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model ErrorLog {
-    errorDbId      Int    @id @default(autoincrement())
-    title          String
-    message        String
-    stack          String
-    time           String
-    clientDbId     String
-    clientUsername String
+  errorDbId      Int    @id @default(autoincrement())
+  title          String
+  message        String
+  stack          String
+  time           String
+  clientDbId     String
+  clientUsername String
 }
 
 model Banners {
-    id       String  @id
-    title    String
-    message  String
-    priority Int
-    hidden   Boolean
+  id       String  @id
+  title    String
+  message  String
+  priority Int
+  hidden   Boolean
 }
 
 model EmergencyMessages {
-    emergencyMessagePayloadDbId Int    @id @default(autoincrement())
-    emergencyChatId             String
-    clientDbId                  String
-    messageDbId                 String @unique
-    time                        String
-    message                     String
+  emergencyMessagePayloadDbId Int    @id @default(autoincrement())
+  emergencyChatId             String
+  clientDbId                  String
+  messageDbId                 String @unique
+  time                        String
+  message                     String
 }
 
-model ProfilePictures {
-    profilePictureDbId Int    @id @default(autoincrement())
-    clientDbId         String @unique
-    imageHash          String @unique
-    data               String
+model Pictures {
+  imageHash String @id
+  data      String
 }
 
 model Client {
-    clientDbId         String           @id
-    clientUsername     String
-    clientColor        String?
-    clientProfileImage String?
-    availability       Boolean          @default(true)
-    messagePayload     MessagePayload[]
+  clientDbId               String           @id
+  clientUsername           String
+  clientColor              String?
+  clientProfilePictureHash String?
+  availability             Boolean          @default(true)
+  messagePayload           MessagePayload[]
 }
 
 model MessagePayload {
-    payloadDbId        Int            @id @default(autoincrement())
-    messagePayloadDbId String         @unique
-    clientDbId         String
-    quoteType          QuoteType?
-    reactionType       ReactionType[]
-    clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
-    messageType        MessageType?
-    imageType          ImageType?
+  payloadDbId        Int            @id @default(autoincrement())
+  messagePayloadDbId String         @unique
+  clientDbId         String
+  quoteType          QuoteType?
+  reactionType       ReactionType[]
+  clientType         Client         @relation(fields: [clientDbId], references: [clientDbId])
+  messageType        MessageType?
+  imageType          ImageType?
 }
 
 model QuoteType {
-    quoteDbId           String          @id
-    quoteClientId       String?
-    quoteMessageContext String?
-    quoteTime           String?
-    quoteDate           String?
-    messagePayload      MessagePayload? @relation(fields: [quoteDbId], references: [messagePayloadDbId])
+  quoteDbId           String          @id
+  quoteClientId       String?
+  quoteMessageContext String?
+  quoteTime           String?
+  quoteDate           String?
+  messagePayload      MessagePayload? @relation(fields: [quoteDbId], references: [messagePayloadDbId])
 }
 
 model MessageType {
-    messageDbId    String         @id
-    deleted        Boolean        @default(false)
-    edited         Boolean        @default(false)
-    messageContext String
-    messageTime    String
-    messageDate    String
-    messagePayload MessagePayload @relation(fields: [messageDbId], references: [messagePayloadDbId])
+  messageDbId    String         @id
+  deleted        Boolean        @default(false)
+  edited         Boolean        @default(false)
+  messageContext String
+  messageTime    String
+  messageDate    String
+  messagePayload MessagePayload @relation(fields: [messageDbId], references: [messagePayloadDbId])
 }
 
 model ReactionType {
-    reactionDbId      String         @id
-    reactionMessageId String
-    reactionContext   String
-    reactionClientId  String
-    messagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messagePayloadDbId])
+  reactionDbId      String         @id
+  reactionMessageId String
+  reactionContext   String
+  reactionClientId  String
+  messagePayload    MessagePayload @relation(fields: [reactionMessageId], references: [messagePayloadDbId])
 }
 
 model ImageType {
-    imageDbId      String          @id
-    data           String?
-    type           String?
-    messagePayload MessagePayload? @relation(fields: [imageDbId], references: [messagePayloadDbId])
+  imageDbId      String          @id
+  data           String?
+  type           String?
+  messagePayload MessagePayload? @relation(fields: [imageDbId], references: [messagePayloadDbId])
 }
