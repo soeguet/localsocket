@@ -3,6 +3,11 @@ import {
 	processIncomingMessage,
 } from "./handlers/incomingMessageHandler";
 import { errorLogger } from "./logger/errorLogger";
+import {
+	FetchPicturePayloadSchema,
+	PayloadSubTypeEnum,
+} from "./types/payloadTypes.ts";
+import { fetchPictureApiHandler } from "./handlers/payloads/fetchPictureApiHandler.ts";
 
 console.log("Hello via Bun!");
 
@@ -54,6 +59,39 @@ const server = Bun.serve<WebSocket>({
 					headers: corsHeaders,
 				});
 			}
+		}
+
+		if (req.method === "POST" && req.url.endsWith("/v1/fetchImage")) {
+			const bodyText = await req.text();
+			// Parse the string to JSON
+			const body = JSON.parse(bodyText);
+
+			const payload = FetchPicturePayloadSchema.safeParse(body);
+			if (!payload.success) {
+				return new Response("Invalid payload", {
+					status: 400,
+					headers: corsHeaders,
+				});
+			}
+
+			const image = await fetchPictureApiHandler(payload.data.imageHash);
+			if (image === null) {
+				return new Response("Image not found", {
+					status: 404,
+					headers: corsHeaders,
+				});
+			}
+
+			const deliverPicturePayload = {
+				payloadType: PayloadSubTypeEnum.enum.deliverPicture,
+				imageHash: payload.data.imageHash,
+				data: image.data,
+			};
+
+			return new Response(JSON.stringify(deliverPicturePayload), {
+				status: 200,
+				headers: corsHeaders,
+			});
 		}
 
 		const url = new URL(req.url);

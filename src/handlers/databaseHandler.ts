@@ -158,6 +158,19 @@ export async function fetchPictureByHash(imageHash: string) {
 	}
 }
 
+export async function fetchImage(imageHash: string) {
+	try {
+		return prisma.pictures.findFirst({
+			where: {
+				imageHash: imageHash
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
+}
+
 export async function fetchAllPictures() {
 	try {
 		return prisma.pictures.findMany();

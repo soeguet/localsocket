@@ -16,6 +16,8 @@ enum PayloadTypes {
 	allEmergencyMessages = "allEmergencyMessages",
 	newProfilePicture = "newProfilePicture",
 	fetchProfilePicture = "fetchProfilePicture",
+	deliverPicture = "deliverPicture",
+	fetchPicture = "fetchPicture",
 	fetchAllProfilePictures = "fetchAllProfilePictures",
 	fetchCurrentClientProfilePictureHash = "fetchCurrentClientProfilePictureHash",
 	fetchAllProfilePictureHashes = "fetchAllProfilePictureHashes",
@@ -306,6 +308,19 @@ export const FetchProfilePicturePayloadSchema = z.object({
 export type FetchProfilePicturePayload = z.infer<
 	typeof FetchProfilePicturePayloadSchema
 >;
+
+export const FetchPicturePayloadSchema = z.object({
+	payloadType: z.literal(PayloadSubTypeEnum.enum.fetchPicture),
+	imageHash: HashSchema,
+});
+export type FetchPicturePayload = z.infer<typeof FetchPicturePayloadSchema>;
+
+export const DeliverPicturePayloadSchema = z.object({
+	payloadType: z.literal(PayloadSubTypeEnum.enum.deliverPicture),
+	imageHash: HashSchema,
+	data: z.string(),
+});
+export type DeliverPicturePayload = z.infer<typeof DeliverPicturePayloadSchema>;
 
 export const FetchCurrentClientProfilePictureHashPayloadSchema = z.object({
 	payloadType: z.literal(

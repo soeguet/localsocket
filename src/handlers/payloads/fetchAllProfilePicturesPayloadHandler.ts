@@ -1,10 +1,8 @@
 import type { ServerWebSocket } from "bun";
 import {
 	AuthenticationPayloadSchema,
-	type FetchAllProfilePicturesPayload,
-	PayloadSubTypeEnum,
+
 } from "../../types/payloadTypes";
-import { fetchAllPictures } from "../databaseHandler";
 import { errorLogger } from "../../logger/errorLogger";
 
 export async function fetchAllProfilePicturesPayloadHandler(
