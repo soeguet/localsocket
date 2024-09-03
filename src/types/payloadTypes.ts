@@ -64,7 +64,7 @@ export type ProfilePicturesHashes = z.infer<typeof ProfilePicturesHashesSchema>;
 
 export const AllProfilePictureHashesPayloadSchema = z.object({
 	payloadType: z.literal(
-		PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes
+		PayloadSubTypeEnum.enum.fetchAllProfilePictureHashes,
 	),
 	profilePictureHashes: z.array(ProfilePicturesHashesSchema).optional(),
 });
@@ -106,6 +106,7 @@ export type ProfilePicture = z.infer<typeof ProfilePictureSchema>;
 export const ProfilePictureObjectSchema = z.object({
 	clientDbId: ClientIdSchema,
 	imageHash: ProfilePictureHashSchema,
+	imageBase64: z.string().optional(),
 	data: ProfilePictureSchema,
 });
 export type ProfilePictureObject = z.infer<typeof ProfilePictureObjectSchema>;
@@ -184,6 +185,7 @@ export const ClientEntitySchema = z.object({
 	clientColor: z.string().optional().nullable(),
 	// TODO rename this property to clientProfilePictureHashHash
 	clientProfilePictureHash: z.string().optional().nullable(),
+	clientProfilePictureBase64: z.string().optional().nullable(),
 	availability: z.boolean(),
 });
 export type ClientEntity = z.infer<typeof ClientEntitySchema>;
@@ -198,7 +200,7 @@ export const AuthenticationPayloadSchema = z.intersection(
 	z.object({
 		payloadType: z.literal(PayloadSubTypeEnum.enum.auth),
 		version: VersionEntitySchema,
-	})
+	}),
 );
 export type AuthenticationPayload = z.infer<typeof AuthenticationPayloadSchema>;
 
@@ -309,22 +311,24 @@ export type FetchProfilePicturePayload = z.infer<
 	typeof FetchProfilePicturePayloadSchema
 >;
 
-export const FetchPicturePayloadSchema = z.object({
-	payloadType: z.literal(PayloadSubTypeEnum.enum.fetchPicture),
-	imageHash: HashSchema,
-});
-export type FetchPicturePayload = z.infer<typeof FetchPicturePayloadSchema>;
-
 export const DeliverPicturePayloadSchema = z.object({
 	payloadType: z.literal(PayloadSubTypeEnum.enum.deliverPicture),
 	imageHash: HashSchema,
+	imageBase64: z.string().optional(),
 	data: z.string(),
 });
 export type DeliverPicturePayload = z.infer<typeof DeliverPicturePayloadSchema>;
 
+export const FetchPicturePayloadSchema = z.object({
+	payloadType: z.literal(PayloadSubTypeEnum.enum.fetchPicture),
+	imageHash: HashSchema,
+	imageBase64: z.string().optional(),
+});
+export type FetchPicturePayload = z.infer<typeof FetchPicturePayloadSchema>;
+
 export const FetchCurrentClientProfilePictureHashPayloadSchema = z.object({
 	payloadType: z.literal(
-		PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash
+		PayloadSubTypeEnum.enum.fetchCurrentClientProfilePictureHash,
 	),
 	clientDbId: ClientIdSchema,
 	clientProfilePictureHash: HashSchema,
@@ -337,30 +341,6 @@ export const ReactionPayloadSchema = ReactionEntitySchema.extend({
 	payloadType: z.literal(PayloadSubTypeEnum.enum.reaction),
 });
 export type ReactionPayload = z.infer<typeof ReactionPayloadSchema>;
-
-// ajvValidator.addSchema(
-// 	{
-// 		type: "object",
-// 		properties: {
-// 			title: { type: "string", minLength: 1 },
-// 			message: { type: "string", minLength: 1 },
-// 			stack: { type: "string", minLength: 1 },
-// 			time: { type: "string", minLength: 1 },
-// 			clientDbId: { type: "string", minLength: 1 },
-// 			clientUsername: { type: "string", minLength: 1 },
-// 		},
-// 		required: [
-// 			"title",
-// 			"message",
-// 			"stack",
-// 			"time",
-// 			"clientDbId",
-// 			"clientUsername",
-// 		],
-// 		additionalProperties: false,
-// 	},
-// 	"errorLogValidator"
-// );
 
 export const ErrorLogSchema = z.object({
 	title: z.string(),
