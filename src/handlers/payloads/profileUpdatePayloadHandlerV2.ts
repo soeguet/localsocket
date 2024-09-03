@@ -1,6 +1,5 @@
 import type { Server, ServerWebSocket } from "bun";
 import {
-	AuthenticationPayloadSchema,
 	type ClientEntity,
 	type ClientListPayloadEnhanced,
 	type ClientUpdatePayloadV2, ClientUpdatePayloadV2Schema,

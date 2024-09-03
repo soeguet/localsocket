@@ -40,7 +40,6 @@ export async function persistErrorLogInDatabase(errorLog: ErrorLog) {
 }
 
 export async function persistProfilePicture(payload: ProfilePictureObject) {
-
 	const existingRecord = await prisma.pictures.findUnique({
 		where: {
 			imageHash: payload.imageHash,
@@ -64,7 +63,7 @@ export async function fetchAllProfilePictureHashes() {
 		return prisma.client.findMany({
 			select: {
 				clientProfilePictureHash: true,
-				clientDbId: true
+				clientDbId: true,
 			},
 		});
 	} catch (error) {
@@ -149,7 +148,20 @@ export async function fetchPictureByHash(imageHash: string) {
 	try {
 		return prisma.pictures.findFirst({
 			where: {
-				imageHash: imageHash
+				imageHash: imageHash,
+			},
+		});
+	} catch (error) {
+		errorLogger.logError(error);
+		return null;
+	}
+}
+
+export async function fetchImage(imageHash: string) {
+	try {
+		return prisma.pictures.findFirst({
+			where: {
+				imageHash: imageHash,
 			},
 		});
 	} catch (error) {
@@ -322,11 +334,13 @@ export async function updateClientProfileInformation(
 				clientProfilePictureHash: payload.clientProfilePictureHash,
 				clientColor: payload.clientColor,
 				availability: payload.availability,
+				clientProfilePictureBase64: payload.clientProfilePictureBase64,
 			},
 			create: {
 				clientDbId: payload.clientDbId,
 				clientUsername: payload.clientUsername,
 				clientProfilePictureHash: payload.clientProfilePictureHash,
+				clientProfilePictureBase64: payload.clientProfilePictureBase64,
 				clientColor: payload.clientColor,
 				availability: payload.availability,
 			},
