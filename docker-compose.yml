@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+
+    ports:
+      - "5588:5588"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/express
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+    command: sh -c "sleep 5;bun install;bun run generate;bun prisma migrate dev --name=init;bun run src/index.ts"
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=express
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+

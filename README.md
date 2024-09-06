@@ -1,15 +1,24 @@
 # localsocket
 
-websocket for personal use. utilizing bun as a websocket. written for wails/react/tailwindcss clients "localchat".
+websocket for personal use. utilizing bun as a websocket. written for wails/react/tailwindcss client ("localchat")[https://github.com/soeguet/localchat].
 
-To install dependencies:
+# Tech Stack
+- bun
+- typescript
+- zod
+- prisma
+- postgres
+- docker
 
-```bash
-bun install
+# Setup
+create a .env file with the following:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/express
 ```
 
-To run:
-
-```bash
-bun .
+# Run
+```sh
+docker compose up --build -d
 ```
+afterwards run the (client)[https://github.com/soeguet/localchat] and connect to the server.

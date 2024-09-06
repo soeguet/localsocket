@@ -188,3 +188,4 @@ prisma/migrations
 .nvim/.bookmarks
 Session.vim
 nohup.out
+prisma/generated/client
