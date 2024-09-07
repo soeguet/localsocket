@@ -1,3 +1,4 @@
+
 services:
   db:
     image: "postgres"
@@ -9,6 +10,12 @@ services:
       POSTGRES_DB: "express"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   server:
     build: .
     ports:
@@ -16,11 +23,14 @@ services:
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/express?schema=public"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - .:/app
-    command: sh -c "sleep 5;bun prisma migrate dev --name=init;bun run src/index.ts"
-
+    command: >
+      sh -c "
+      bun prisma migrate dev --name=init && 
+      bun run ."
 volumes:
   db_data:
 

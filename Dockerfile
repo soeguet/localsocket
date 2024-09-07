@@ -1,16 +1,17 @@
-FROM ubuntu:20.04
+FROM fedora:latest
 
-RUN apt-get update && apt-get install -y \
+RUN dnf update -y && dnf install -y \
     curl \
-    && rm -rf /var/lib/apt/lists/*
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
+    && dnf clean all
+RUN curl -sL https://rpm.nodesource.com/setup_20.x | bash -
+RUN dnf install -y nodejs
 
-RUN apt-get install unzip
+RUN dnf install -y unzip
 RUN npm install -g bun
 
 COPY . .
 
 RUN bun install --force
-RUN bun install -g prisma@5.18.0
+RUN bun install -g prisma
 RUN bunx prisma generate
+
