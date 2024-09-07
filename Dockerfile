@@ -13,3 +13,4 @@ COPY . .
 
 RUN bun install --force
 RUN bun install -g prisma@5.18.0
+RUN bunx prisma generate
